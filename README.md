@@ -1,6 +1,6 @@
-# Tower of Sin
+![](/tos_logo_original.png)
 
-![](/tos_logo.png)
+# Tower of Sin
 
 **Developers:** Evelyn Johnson, Mario Tinoco, and Soham Hisabia.<br>
 Created in Spring 2026 in CS 426 - Video Game Design and Development at the University of Illinois Chicago.
