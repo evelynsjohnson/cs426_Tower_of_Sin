@@ -9,7 +9,7 @@ public class FirstPersonMovement : MonoBehaviour
 
     [Header("Running")]
     public bool canRun = true;
-    public bool IsRunningForward { get; private set; }
+    public bool IsRunning { get; private set; }
     public float runSpeed = 9;
     public KeyCode runningKey = KeyCode.LeftShift;
 
@@ -146,10 +146,10 @@ public class FirstPersonMovement : MonoBehaviour
     void FixedUpdate()
     {
         // Update IsRunning from input.
-        IsRunningForward = canRun && Input.GetKey(runningKey);
+        IsRunning = canRun && Input.GetKey(runningKey);
 
         // Get targetMovingSpeed.
-        float targetMovingSpeed = IsRunningForward ? runSpeed : speed;
+        float targetMovingSpeed = IsRunning ? runSpeed : speed;
         if (speedOverrides.Count > 0)
         {
             targetMovingSpeed = speedOverrides[speedOverrides.Count - 1]();
@@ -173,12 +173,12 @@ public class FirstPersonMovement : MonoBehaviour
             bool isStrafingRight = horizontalInput > 0.1f;
             bool isCrouching = Input.GetKey(crouchKey);
 
-            animator.SetBool("isWalkingFoward", isMovingForward && !IsRunningForward);
+            animator.SetBool("isWalkingFoward", isMovingForward && !IsRunning);
             animator.SetBool("isWalkingBackward", isMovingBackward);
             animator.SetBool("isStrafingLeft", isStrafingLeft);
             animator.SetBool("isStrafingRight", isStrafingRight);
             animator.SetBool("isCrouching", isCrouching);
-            animator.SetBool("isRunningForward", isMovingForward && IsRunningForward);
+            animator.SetBool("IsRunning", isMovingForward && IsRunning);
         }
     }
 }
