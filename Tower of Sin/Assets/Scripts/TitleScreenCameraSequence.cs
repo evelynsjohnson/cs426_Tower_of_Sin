@@ -21,6 +21,10 @@ public class TitleScreenCameraSequence : MonoBehaviour
     [Header("Sequence Settings")]
     public List<CameraShot> shots = new List<CameraShot>();
 
+    [Header("Fade Settings")]
+    public float fadeDuration = 1f;
+    public float blackHoldDuration = 0.5f;
+
     private int currentShotIndex = 0;
 
     void Start()
@@ -31,81 +35,93 @@ public class TitleScreenCameraSequence : MonoBehaviour
             return;
         }
 
-        // Start screen fully black
-        Color c = fadeImage.color;
-        c.a = 1f;
-        fadeImage.color = c;
-
-        StartCoroutine(PlayCameraSequence());
+        // Start fully black
+        SetFade(1f);
+        StartCoroutine(PlaySequence());
     }
 
-    IEnumerator PlayCameraSequence()
+    IEnumerator PlaySequence()
     {
         while (true)
         {
             CameraShot shot = shots[currentShotIndex];
 
-            // Snap to start position
+            // Fade OUT to black before switching
+            yield return StartCoroutine(Fade(1f));
+
+            // Snap to start position while black
             mainCamera.transform.position = shot.startPoint.position;
             mainCamera.transform.rotation = shot.startPoint.rotation;
 
-            // Calculate how long this shot will take based on distance
-            float distance = Vector3.Distance(shot.startPoint.position, shot.endPoint.position);
-            float animDuration = shot.moveSpeed > 0 ? distance / shot.moveSpeed : 3f;
+            yield return new WaitForSeconds(blackHoldDuration);
 
-            // SAFETY: Force the animation to be at least 2.5 seconds long. 
-            // We need 1s to fade clear, 1s to fade black, and at least 0.5s of middle time!
-            animDuration = Mathf.Max(animDuration, 2.5f);
+            // Fade IN from black
+            yield return StartCoroutine(Fade(0f));
 
-            float elapsed = 0f;
+            // Move camera
+            yield return StartCoroutine(MoveCamera(shot));
 
-            // ONE single loop to perfectly control movement and fading together
-            while (elapsed < animDuration)
-            {
-                elapsed += Time.deltaTime;
-
-                // 1. Move Camera Smoothly
-                float t = elapsed / animDuration;
-                float smoothT = t * t * (3f - 2f * t); // Smoothstep easing
-
-                mainCamera.transform.position = Vector3.Lerp(shot.startPoint.position, shot.endPoint.position, smoothT);
-                mainCamera.transform.rotation = Quaternion.Slerp(shot.startPoint.rotation, shot.endPoint.rotation, smoothT);
-
-                // 2. Control the Fade perfectly based on exact time
-                Color color = fadeImage.color;
-
-                if (elapsed <= 1f)
-                {
-                    // The First 1 Second: Fade from Black (1) to Clear (0)
-                    color.a = Mathf.Lerp(1f, 0f, elapsed / 1f);
-                }
-                else if (elapsed >= animDuration - 1f)
-                {
-                    // The Last 1 Second: Fade from Clear (0) to Black (1)
-                    float fadeOutElapsed = elapsed - (animDuration - 1f);
-                    color.a = Mathf.Lerp(0f, 1f, fadeOutElapsed / 1f);
-                }
-                else
-                {
-                    // In between the first and last second: Stay completely clear
-                    color.a = 0f;
-                }
-
-                fadeImage.color = color;
-
-                yield return null; // Wait for next frame
-            }
-
-            // 3. The shot is fully over. Force perfectly Black just in case.
-            Color finalColor = fadeImage.color;
-            finalColor.a = 1f;
-            fadeImage.color = finalColor;
-
-            // 4. Hold the screen totally black for 1 second before snapping to the next camera
-            yield return new WaitForSeconds(1f);
-
-            // Go to the next shot in the list
             currentShotIndex = (currentShotIndex + 1) % shots.Count;
         }
+    }
+
+    IEnumerator MoveCamera(CameraShot shot)
+    {
+        float distance = Vector3.Distance(
+            shot.startPoint.position,
+            shot.endPoint.position);
+
+        float duration = shot.moveSpeed > 0
+            ? distance / shot.moveSpeed
+            : 3f;
+
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+
+            // Smoothstep easing
+            float smoothT = t * t * (3f - 2f * t);
+
+            mainCamera.transform.position =
+                Vector3.Lerp(shot.startPoint.position,
+                             shot.endPoint.position,
+                             smoothT);
+
+            mainCamera.transform.rotation =
+                Quaternion.Slerp(shot.startPoint.rotation,
+                                 shot.endPoint.rotation,
+                                 smoothT);
+
+            yield return null;
+        }
+    }
+
+    IEnumerator Fade(float targetAlpha)
+    {
+        float startAlpha = fadeImage.color.a;
+        float elapsed = 0f;
+
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / fadeDuration;
+
+            float newAlpha = Mathf.Lerp(startAlpha, targetAlpha, t);
+            SetFade(newAlpha);
+
+            yield return null;
+        }
+
+        SetFade(targetAlpha);
+    }
+
+    void SetFade(float alpha)
+    {
+        Color c = fadeImage.color;
+        c.a = alpha;
+        fadeImage.color = c;
     }
 }
