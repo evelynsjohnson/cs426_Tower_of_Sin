@@ -43,18 +43,21 @@ public class TitleScreenButtons : MonoBehaviour,
         {
             case ButtonType.Begin:
                 SceneManager.LoadScene("Prison_Scene");
+                targetImage.texture = normalTexture;
                 break;
 
             case ButtonType.Options:
                 if (optionsCanvas != null)
                     optionsCanvas.SetActive(true);
                     mainCanvas.SetActive(false);
+                    targetImage.texture = normalTexture;
                 break;
 
             case ButtonType.Credits:
                 if (creditsCanvas != null)
                     creditsCanvas.SetActive(true);
                     mainCanvas.SetActive(false);
+                    targetImage.texture = normalTexture;
                 break;
         }
     }
