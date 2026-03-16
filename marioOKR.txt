@@ -1,0 +1,4 @@
+Inventory System UI -- Friday by 5pm (estimate: 1hr)
+Inventory Functunality (pick up and store items) -- Friday by 5pm (estimate: 3hr)
+Sample Items -- Friday by 5pm (estimate: 2hr)
+Chest Functionality (open animation and get items) -- Friday by 5pm (estimate 3hr)
