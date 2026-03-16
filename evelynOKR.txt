@@ -1,0 +1,10 @@
+Schedule and deliverable:
+	Create empty game objects where enemies, loot and exits have a chance to spawn on the map each round. Sun 8pm (est: 2 hrs)
+	Create enemies + animate their attacks + sound effects. Sat/Sun 28th 8pm (est: 4 hr, goes hand-in-hand with damage calcs + HP/ATK, etc)
+	Create and manage scripts for hitting enemies, opening loot chests, going through the exits of the dungeons Sat/Sun 28th 8pm (est: 3 hr)
+	Handle resetting the entire dungeon once the player exits. Sat/Sun 4th 8pm (est: 1 hr)
+	Create "prison room" scene, able to access inventory, go to next dungeon, etc. Sat/Sun 4th 8pm (est: 3 hrs)
+	Create "Realm of Souls" scene. Thu 26th 8pm (est: 1 hrs)
+	Create narrator dialogue + implement. Thu 26th 8pm (est: 1 hr)
+	Create HP bars for user, enemies, and other UI items like Floor #. Wed 1st 8pm (est: 1 hrs)
+	(Will be in Ireland for Spring Break until the weekend)
