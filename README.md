@@ -1,4 +1,4 @@
-![](/tos_logo_original.png)
+![](/Logos/logo_white.png)
 
 # Tower of Sin
 
