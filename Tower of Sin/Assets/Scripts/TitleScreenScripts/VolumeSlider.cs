@@ -7,21 +7,23 @@ public class VolumeSlider : MonoBehaviour
     public AudioMixer audioMixer;
     public Slider slider;
 
+    [Header("Settings")]
+    public float defaultVolume = 0.25f;
+
     void Start()
     {
-        float savedVolume = PlayerPrefs.GetFloat("MasterVolume", 0.5f);
-        slider.value = savedVolume;
-        SetVolume(savedVolume);
+        slider.value = defaultVolume;
+
+        SetVolume(defaultVolume);
 
         slider.onValueChanged.AddListener(SetVolume);
     }
 
     public void SetVolume(float value)
     {
-        // Convert linear slider (0–1) to logarithmic decibels
-        float dB = Mathf.Log10(value) * 20f;
-        audioMixer.SetFloat("MasterVolume", dB);
+        float clampedValue = Mathf.Clamp(value, 0.0001f, 1f);
 
-        PlayerPrefs.SetFloat("MasterVolume", value);
+        float dB = Mathf.Log10(clampedValue) * 20f;
+        audioMixer.SetFloat("MasterVolume", dB);
     }
 }
