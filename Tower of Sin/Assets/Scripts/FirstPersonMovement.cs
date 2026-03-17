@@ -173,12 +173,18 @@ public class FirstPersonMovement : MonoBehaviour
             bool isStrafingRight = horizontalInput > 0.1f;
             bool isCrouching = Input.GetKey(crouchKey);
 
-            animator.SetBool("isWalkingFoward", isMovingForward && !IsRunning);
-            animator.SetBool("isWalkingBackward", isMovingBackward);
+            animator.SetBool("isWalkingForward", isMovingForward && !IsRunning);
+            animator.SetBool("isRunningForward", isMovingForward && IsRunning);
+
+            animator.SetBool("isWalkingBackward", isMovingBackward && !IsRunning);
+            animator.SetBool("isRunningBackward", isMovingBackward && IsRunning);
+
             animator.SetBool("isStrafingLeft", isStrafingLeft);
             animator.SetBool("isStrafingRight", isStrafingRight);
+
             animator.SetBool("isCrouching", isCrouching);
-            animator.SetBool("IsRunning", isMovingForward && IsRunning);
+
+            animator.SetBool("IsRunning", IsRunning);
         }
     }
 }
