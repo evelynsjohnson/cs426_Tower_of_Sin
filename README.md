@@ -44,6 +44,7 @@ Can **YOU** prove your redemption?
 ### Sound Design Resources
 * https://pixabay.com/
 * https://freesound.org
+* https://www.flaticon.com
 * https://elevenlabs.io/app/speech-synthesis/text-to-speech 
 * https://www.audacityteam.org
 * https://youtu.be/t3B802PIuB0?si=KwOZSvQbryo5qLsh 
