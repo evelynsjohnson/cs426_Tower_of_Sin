@@ -1,0 +1,12 @@
+--- PROGRESSION SYSTEM ---
+
+- Implement floor counter (track current floor number, increment when player uses exit)
+  -- Target: Wed Mar 19 by 11pm (estimate: 3 hrs)
+
+--- GENERAL ENEMIES ---
+
+- Implement base Enemy class (HP, ATK stat, take damage, death + placeholder loot drop)
+  -- Target: Wed Mar 19 by 5pm (estimate: 4 hrs)
+
+- Implement basic Soldier/Melee Enemy (aggro range, moves toward player, deals damage on contact)
+  -- Target: Fri Mar 20 by 5pm (estimate: 6 hrs)
