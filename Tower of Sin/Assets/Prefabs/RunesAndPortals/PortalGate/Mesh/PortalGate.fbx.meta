@@ -116,5 +116,5 @@ AssetOrigin:
   productId: 85098
   packageName: RunesAndPortals
   packageVersion: 5.0
-  assetPath: Assets/@PaulosCreations/RunesAndPortals/PortalGate/Mesh/PortalGate.fbx
+  assetPath: Assets/Prefabs/RunesAndPortals/PortalGate/Mesh/PortalGate.fbx
   uploadId: 609286

@@ -6,7 +6,7 @@ using UnityEngine;
 public class PortalGate_Controller : MonoBehaviour
 {
     [Header("Applied to the effects at start")]
-    [SerializeField] private Color portalEffectColor;
+    [SerializeField] private Color portalEffectColor = Color.cyan; // Gave it a default color just in case
 
     [Header("Changing these might `break` the effects")]
     [Space(20)]
@@ -25,34 +25,57 @@ public class PortalGate_Controller : MonoBehaviour
 
     private void OnEnable()
     {
+        // Safety check to prevent errors if the renderer is missing
+        if (portalRenderer == null) return;
+
         //get materials to set color and emmision
         Material[] mats = portalRenderer.materials.ToArray();
-        portalMat = mats[0];
-        portalEffectMat = mats[1];
 
-        portalMat.SetColor("_EmissionColor", portalEffectColor);
-        portalMat.SetFloat("_EmissionStrength", 0);
-        portalEffectMat.SetColor("_ColorMain", portalEffectColor);
-        portalEffectMat.SetFloat("_PortalFade", 0f);
+        if (mats.Length > 1)
+        {
+            portalMat = mats[0];
+            portalEffectMat = mats[1];
 
-        symbolStartPos = symbolTF.localPosition;
-        symbolTF.GetComponent<Renderer>().material = portalMat;
+            portalMat.SetColor("_EmissionColor", portalEffectColor);
+            portalMat.SetFloat("_EmissionStrength", 0);
+            portalEffectMat.SetColor("_ColorMain", portalEffectColor);
+            portalEffectMat.SetFloat("_PortalFade", 0f);
+        }
+
+        if (symbolTF != null)
+        {
+            symbolStartPos = symbolTF.localPosition;
+            if (symbolTF.GetComponent<Renderer>() != null)
+                symbolTF.GetComponent<Renderer>().material = portalMat;
+        }
 
         //get and set light intensity
-        portalLight.color = portalEffectColor;
-        lightF = portalLight.intensity;
-        portalLight.intensity = 0;
+        if (portalLight != null)
+        {
+            portalLight.color = portalEffectColor;
+            lightF = portalLight.intensity;
+            portalLight.intensity = 0;
+        }
 
         foreach (ParticleSystem part in effectsPartSystems)
         {
-            ParticleSystem.MainModule mod = part.main;
-            mod.startColor = portalEffectColor;
+            if (part != null)
+            {
+                ParticleSystem.MainModule mod = part.main;
+                mod.startColor = portalEffectColor;
+            }
         }
+    }
+
+    // --- ADDED THIS TO MAKE IT AUTO-START ---
+    private void Start()
+    {
+        F_TogglePortalGate(true);
     }
 
     public void F_TogglePortalGate(bool _activate)
     {
-        if (inTransition || portalActive == _activate)
+        if (inTransition || portalActive == _activate || portalRenderer == null)
             return;
 
         portalActive = _activate;
@@ -61,19 +84,20 @@ public class PortalGate_Controller : MonoBehaviour
         {
             foreach (ParticleSystem part in effectsPartSystems)
             {
-                part.Play();
+                if (part != null) part.Play();
             }
 
-            portalAudio.Play();
-            flashAudio.Play();
+            if (portalAudio != null) portalAudio.Play();
+            if (flashAudio != null) flashAudio.Play();
 
-            symbolMovementCor = StartCoroutine(SymbolMovement());
+            if (symbolTF != null)
+                symbolMovementCor = StartCoroutine(SymbolMovement());
         }
         else if (!_activate)//deactivate
         {
             foreach (ParticleSystem part in effectsPartSystems)
             {
-                part.Stop();
+                if (part != null) part.Stop();
             }
         }
 
@@ -91,16 +115,15 @@ public class PortalGate_Controller : MonoBehaviour
             {
                 transitionF = Mathf.MoveTowards(transitionF, 1, Time.deltaTime * 0.2f);
 
-                portalMat.SetFloat("_EmissionStrength", transitionF);
-                portalEffectMat.SetFloat("_PortalFade", transitionF * 0.4f);
-                portalLight.intensity = lightF * transitionF;
-                portalAudio.volume = transitionF * 0.8f;//max volume
+                if (portalMat != null) portalMat.SetFloat("_EmissionStrength", transitionF);
+                if (portalEffectMat != null) portalEffectMat.SetFloat("_PortalFade", transitionF * 0.4f);
+                if (portalLight != null) portalLight.intensity = lightF * transitionF;
+                if (portalAudio != null) portalAudio.volume = transitionF * 0.8f;//max volume
 
                 yield return new WaitForSeconds(Time.deltaTime);
             }
 
             inTransition = false;
-            StopCoroutine(transitionCor);
         }
         else if (!portalActive)//fade out
         {
@@ -108,18 +131,18 @@ public class PortalGate_Controller : MonoBehaviour
             {
                 transitionF = Mathf.MoveTowards(transitionF, 0f, Time.deltaTime * 0.4f);
 
-                portalMat.SetFloat("_EmissionStrength", transitionF);
-                portalEffectMat.SetFloat("_PortalFade", transitionF * 0.4f);
-                portalLight.intensity = lightF * transitionF;
-                portalAudio.volume = transitionF * 0.8f;//max volume
+                if (portalMat != null) portalMat.SetFloat("_EmissionStrength", transitionF);
+                if (portalEffectMat != null) portalEffectMat.SetFloat("_PortalFade", transitionF * 0.4f);
+                if (portalLight != null) portalLight.intensity = lightF * transitionF;
+                if (portalAudio != null) portalAudio.volume = transitionF * 0.8f;//max volume
 
                 yield return new WaitForSeconds(Time.deltaTime);
             }
 
-            portalAudio.Stop();
+            if (portalAudio != null) portalAudio.Stop();
             inTransition = false;
-            StopCoroutine(symbolMovementCor);
-            StopCoroutine(transitionCor);
+
+            if (symbolMovementCor != null) StopCoroutine(symbolMovementCor);
         }
     }
 

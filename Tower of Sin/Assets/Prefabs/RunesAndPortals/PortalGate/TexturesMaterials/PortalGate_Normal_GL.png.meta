@@ -112,5 +112,5 @@ AssetOrigin:
   productId: 85098
   packageName: RunesAndPortals
   packageVersion: 5.0
-  assetPath: Assets/@PaulosCreations/RunesAndPortals/PortalGate/TexturesMaterials/PortalGate_Normal_GL.png
+  assetPath: Assets/Prefabs/RunesAndPortals/PortalGate/TexturesMaterials/PortalGate_Normal_GL.png
   uploadId: 609286

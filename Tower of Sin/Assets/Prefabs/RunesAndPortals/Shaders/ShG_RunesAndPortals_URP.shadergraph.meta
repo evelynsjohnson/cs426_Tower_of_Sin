@@ -13,5 +13,5 @@ AssetOrigin:
   productId: 85098
   packageName: RunesAndPortals
   packageVersion: 5.0
-  assetPath: Assets/@PaulosCreations/RunesAndPortals/Shaders/ShG_RunesAndPortals_URP.shadergraph
+  assetPath: Assets/Prefabs/RunesAndPortals/Shaders/ShG_RunesAndPortals_URP.shadergraph
   uploadId: 609286
