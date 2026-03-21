@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>
-/// Drives the Animator on the Wrath enemy model.
+/// Drives the Animator on the enemy model.
 /// Attach this to the same root GameObject as SoldierEnemy.
 ///
 /// Animator parameters required:

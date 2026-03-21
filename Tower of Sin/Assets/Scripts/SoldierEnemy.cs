@@ -5,7 +5,9 @@ public class SoldierEnemy : Enemy
 {
     [Header("AI")]
     public float aggroRange = 10f;
+    public float attackRange = 1.5f;
     public float attackCooldown = 1.5f;
+    public float turnSpeed = 10f;
 
     private NavMeshAgent agent;
     private Transform player;
@@ -26,36 +28,77 @@ public class SoldierEnemy : Enemy
             player = playerObj.transform;
             playerHealth = playerObj.GetComponent<PlayerHealth>();
         }
+
+        if (agent != null)
+        {
+            agent.updateRotation = false;
+            agent.stoppingDistance = attackRange;
+        }
     }
 
     void Update()
     {
-        if (IsDead || player == null) return;
+        if (IsDead || player == null || agent == null) return;
 
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
 
-        if (agent != null)
+        if (distanceToPlayer <= aggroRange)
         {
-            if (distanceToPlayer <= aggroRange)
+            FacePlayer();
+
+            if (distanceToPlayer > attackRange + 0.1f)
+            {
+                agent.isStopped = false;
                 agent.SetDestination(player.position);
+
+                if (animator != null)
+                    animator.SetBool("IsMoving", true);
+            }
             else
+            {
+                // Fully stop and hold position
                 agent.ResetPath();
+                agent.isStopped = true;
+                agent.velocity = Vector3.zero;
+
+                if (animator != null)
+                    animator.SetBool("IsMoving", false);
+
+                if (Time.time >= nextAttackTime)
+                {
+                    nextAttackTime = Time.time + attackCooldown;
+
+                    if (animator != null)
+                        animator.SetTrigger("Attack");
+
+                    playerHealth?.TakeDamage(atk);
+                }
+            }
+        }
+        else
+        {
+            agent.ResetPath();
+            agent.isStopped = true;
+            agent.velocity = Vector3.zero;
+
+            if (animator != null)
+                animator.SetBool("IsMoving", false);
         }
     }
 
-    void OnCollisionStay(Collision collision)
+    void FacePlayer()
     {
-        if (IsDead) return;
+        Vector3 direction = player.position - transform.position;
+        direction.y = 0f;
 
-        if (collision.gameObject.CompareTag("Player") && Time.time >= nextAttackTime)
+        if (direction.sqrMagnitude > 0.001f)
         {
-            playerHealth?.TakeDamage(atk);
-
-            // Play attack animation if one is set up
-            if (animator != null)
-                animator.SetTrigger("Attack");
-
-            nextAttackTime = Time.time + attackCooldown;
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                targetRotation,
+                turnSpeed * Time.deltaTime
+            );
         }
     }
 }
