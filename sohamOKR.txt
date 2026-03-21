@@ -1,8 +1,3 @@
---- PROGRESSION SYSTEM ---
-
-- Implement floor counter (track current floor number, increment when player uses exit)
-  -- Target: Wed Mar 19 by 11pm (estimate: 3 hrs)
-
 --- GENERAL ENEMIES ---
 
 - Implement base Enemy class (HP, ATK stat, take damage, death + placeholder loot drop)
