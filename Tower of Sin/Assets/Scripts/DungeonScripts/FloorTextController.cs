@@ -1,15 +1,21 @@
 using TMPro;
+using Unity.VectorGraphics;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class FloorTextController : MonoBehaviour
 {
     public TextMeshProUGUI floorText;
 
-    public static int floorNumber = 1;
+    public static int floorNumber = 0;
 
     void Start()
     {
-        UpdateUI();
+        UnityEngine.SceneManagement.Scene currentScene = SceneManager.GetActiveScene();
+        string curSceneName = currentScene.name;
+
+        UpdateFloorText(curSceneName);
+        UpdateUI(curSceneName);
     }
 
     public void UpdateFloorText(string sceneName)
@@ -22,7 +28,7 @@ public class FloorTextController : MonoBehaviour
         UpdateUI(sceneName);
     }
 
-    private void UpdateUI(string sceneName = "")
+    private void UpdateUI(string sceneName)
     {
         if (sceneName.Contains("Boss_Scene"))
         {

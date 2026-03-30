@@ -11,6 +11,7 @@ public class PortalTeleporter : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             int floorNumber = FloorTextController.floorNumber;
+
             Scene currentScene = SceneManager.GetActiveScene();
             string curSceneName = currentScene.name;
 

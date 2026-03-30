@@ -38,7 +38,7 @@ public class PlayerHealth : MonoBehaviour
         if (currentHealth <= 0)
         {
             currentHealth = 0;
-            FloorTextController.floorNumber = 0;
+            FloorTextController.floorNumber = 1;
             UpdateUI();
             SceneManager.LoadScene("Death_Realm");
         }
