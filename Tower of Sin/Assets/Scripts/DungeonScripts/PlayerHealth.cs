@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class PlayerHealth : MonoBehaviour
 {
@@ -10,7 +11,7 @@ public class PlayerHealth : MonoBehaviour
     public TextMeshProUGUI healthUIText;
     public Image healthBarFill;
 
-    public float drainSpeed = 5f; // <--- NEW
+    public float drainSpeed = 5f;
 
     void Start()
     {
@@ -34,7 +35,13 @@ public class PlayerHealth : MonoBehaviour
     public void TakeDamage(float damage)
     {
         currentHealth -= damage;
-        if (currentHealth < 0) currentHealth = 0;
+        if (currentHealth <= 0)
+        {
+            currentHealth = 0;
+            FloorTextController.floorNumber = 0;
+            UpdateUI();
+            SceneManager.LoadScene("Death_Realm");
+        }
         UpdateUI();
     }
 

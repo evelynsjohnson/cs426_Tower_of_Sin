@@ -113,10 +113,8 @@ public class FirstPersonMovement : MonoBehaviour
 
         bool hitEnemy = false;
 
-        // --- NEW DAMAGE & CRIT CALCULATION ---
         float finalDamage = (slashChoice == 1) ? slash1BaseDamage : slash2BaseDamage;
 
-        // Roll a number between 0 and 100. If it's less than our crit chance, it's a crit!
         bool isCrit = Random.Range(0f, 100f) <= critChance;
         if (isCrit)
         {

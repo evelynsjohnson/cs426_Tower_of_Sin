@@ -1941,16 +1941,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c47b463405100747a95bf8d1884dcdb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  maxHealth: 100
+  maxHealth: 50
   damageToPlayer: 25
   uiCanvasObject: {fileID: 3979976454785301982}
   healthText: {fileID: 7180103447727898867}
   healthBarFill: {fileID: 3189913391675539088}
   healthDrainSpeed: 5
   deathAnimationDuration: 2
-  aggroRadius: 10
+  aggroRadius: 8
   attackRadius: 2
-  maxLeashDistance: 20
+  maxLeashDistance: 15
   walkSpeed: 1
   attackCooldown: 2
   attackDamageDelay: 1
