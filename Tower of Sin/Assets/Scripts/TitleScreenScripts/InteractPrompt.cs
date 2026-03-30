@@ -21,7 +21,7 @@ public class InteractPrompt : MonoBehaviour
     {
         if (player == null) return;
 
-        // 1. Distance Check
+        // Distance Check
         float distance = Vector3.Distance(transform.position, player.position);
 
         if (distance <= activationDistance)

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System.Collections;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(AudioSource))]
@@ -14,21 +15,28 @@ public class FirstPersonMovement : MonoBehaviour
     public KeyCode runningKey = KeyCode.LeftShift;
 
     [Header("Animation Controls")]
-    [Tooltip("Drag your character model here if the script can't find the Animator automatically.")]
     public Animator animator;
     public KeyCode crouchKey = KeyCode.LeftControl;
     public KeyCode jumpKey = KeyCode.Space;
     public KeyCode slashKey = KeyCode.Mouse0;
 
-    [Header("Combat & Audio")]
+    [Header("Combat Stats")]
+    public float slash1BaseDamage = 10f;
+    public float slash2BaseDamage = 20f;
+
+    [Tooltip("Percentage chance to deal double damage (0 to 100)")]
+    [Range(0f, 100f)]
+    public float critChance = 15f;
+
+    [Header("Combat Setup & Audio")]
     public float attackRange = 2.5f;
-    [Tooltip("Assign your Main Camera here so the raycast shoots from your view.")]
     public Transform cameraTransform;
 
-    [Tooltip("How long is your PlayerSlash animation in seconds?")]
-    public float slash1AnimDuration = 1.0f;
-    [Tooltip("How long is your PlayerSlash2 animation in seconds?")]
-    public float slash2AnimDuration = 1.0f;
+    public float slash1AnimDuration = 1.05f;
+    public float slash1HitDelay = 0.20f;
+
+    public float slash2AnimDuration = 1.30f;
+    public float slash2HitDelay = 0.30f;
 
     public AudioClip swordSwing1; // Hit enemy (PlayerSlash)
     public AudioClip swordSwing2; // Hit enemy (PlayerSlash2)
@@ -38,29 +46,22 @@ public class FirstPersonMovement : MonoBehaviour
     Rigidbody rigidbody;
     AudioSource audioSource;
 
-    // Timer to track when we can attack again
+    // Combat tracking
     private float nextSlashTime = 0f;
+    private int swingCount = 0;
 
-    /// <summary> Functions to override movement speed. Will use the last added override. </summary>
     public List<System.Func<float>> speedOverrides = new List<System.Func<float>>();
 
     void Awake()
     {
-        // Get components
         rigidbody = GetComponent<Rigidbody>();
         audioSource = GetComponent<AudioSource>();
 
-        // Get the animator if it wasn't manually assigned in the Inspector
         if (animator == null)
         {
             animator = GetComponentInChildren<Animator>();
-            if (animator == null)
-            {
-                Debug.LogWarning("No Animator found! Please drag your character model into the Animator slot in the Inspector.");
-            }
         }
 
-        // Fallback to main camera if not assigned
         if (cameraTransform == null && Camera.main != null)
         {
             cameraTransform = Camera.main.transform;
@@ -76,7 +77,6 @@ public class FirstPersonMovement : MonoBehaviour
                 animator.SetTrigger("isJumping");
             }
 
-            // Only allow slashing if the current time is greater than the next allowed slash time
             if (Input.GetKeyDown(slashKey) && Time.time >= nextSlashTime)
             {
                 PerformSlash();
@@ -86,33 +86,67 @@ public class FirstPersonMovement : MonoBehaviour
 
     void PerformSlash()
     {
-        // 1. Pick a random slash (1 or 2)
-        int slashChoice = Random.Range(1, 3);
+        swingCount++;
+        int slashChoice = 1; // Default to standard slash
 
-        // Clear any old stuck triggers before setting a new one
+        if (swingCount >= 3)
+        {
+            slashChoice = 2;
+            swingCount = 0;
+        }
+
         animator.ResetTrigger("isSlashing");
-
-        // Tell the animator which slash to use, then trigger it
         animator.SetInteger("slashType", slashChoice);
         animator.SetTrigger("isSlashing");
 
-        // 2. Check if we hit an enemy
+        float currentDelay = (slashChoice == 1) ? slash1HitDelay : slash2HitDelay;
+
+        StartCoroutine(DealDamageAfterDelay(currentDelay, slashChoice));
+
+        float animLength = (slashChoice == 1) ? slash1AnimDuration : slash2AnimDuration;
+        nextSlashTime = Time.time + animLength + 1.0f;
+    }
+
+    private IEnumerator DealDamageAfterDelay(float delayTime, int slashChoice)
+    {
+        yield return new WaitForSeconds(delayTime);
+
         bool hitEnemy = false;
+
+        // --- NEW DAMAGE & CRIT CALCULATION ---
+        float finalDamage = (slashChoice == 1) ? slash1BaseDamage : slash2BaseDamage;
+
+        // Roll a number between 0 and 100. If it's less than our crit chance, it's a crit!
+        bool isCrit = Random.Range(0f, 100f) <= critChance;
+        if (isCrit)
+        {
+            finalDamage *= 2f; // Double the damage
+        }
 
         if (cameraTransform != null)
         {
             RaycastHit hit;
-            // Shoot a ray forward from the camera
-            if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, attackRange))
+            float swordThickness = 0.5f;
+
+            if (Physics.SphereCast(cameraTransform.position, swordThickness, cameraTransform.forward, out hit, attackRange))
             {
                 if (hit.collider.CompareTag("Enemy"))
                 {
                     hitEnemy = true;
+
+                    PrisonZombieAI zombie = hit.collider.GetComponentInParent<PrisonZombieAI>();
+                    if (zombie != null)
+                    {
+                        zombie.TakeDamage(finalDamage);
+
+                        // testing
+                        if (isCrit) Debug.Log("<color=orange>CRITICAL HIT! Dealt " + finalDamage + " damage!</color>");
+                        else Debug.Log("Dealt " + finalDamage + " damage!");
+                    }
                 }
             }
         }
 
-        // 3. Play the correct audio
         AudioClip clipToPlay = null;
 
         if (slashChoice == 1)
@@ -124,31 +158,18 @@ public class FirstPersonMovement : MonoBehaviour
             clipToPlay = hitEnemy ? swordSwing2 : swordWoosh2;
         }
 
-        float clipLength = 0f;
-
         if (clipToPlay != null)
         {
+            audioSource.pitch = 1.5f;
             audioSource.PlayOneShot(clipToPlay);
-            clipLength = clipToPlay.length;
+            audioSource.pitch = 1.0f;
         }
-
-        // 4. Calculate Cooldown
-        // Find out which animation duration to use
-        float animLength = (slashChoice == 1) ? slash1AnimDuration : slash2AnimDuration;
-
-        // Find whichever is longer: the animation or the audio
-        float longestDuration = Mathf.Max(clipLength, animLength);
-
-        // Set the cooldown: Current Time + Longest Duration + 2 Second Delay
-        nextSlashTime = Time.time + longestDuration + 1.0f;
     }
 
     void FixedUpdate()
     {
-        // Update IsRunning from input.
         IsRunning = canRun && Input.GetKey(runningKey);
 
-        // Get targetMovingSpeed.
         float targetMovingSpeed = IsRunning ? runSpeed : speed;
         if (speedOverrides.Count > 0)
         {
@@ -158,13 +179,9 @@ public class FirstPersonMovement : MonoBehaviour
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
 
-        // Get targetVelocity from input.
         Vector2 targetVelocity = new Vector2(horizontalInput * targetMovingSpeed, verticalInput * targetMovingSpeed);
-
-        // Apply movement.
         rigidbody.linearVelocity = transform.rotation * new Vector3(targetVelocity.x, rigidbody.linearVelocity.y, targetVelocity.y);
 
-        // --- ANIMATION LOGIC ---
         if (animator != null)
         {
             bool isMovingForward = verticalInput > 0.1f;
@@ -175,15 +192,11 @@ public class FirstPersonMovement : MonoBehaviour
 
             animator.SetBool("isWalkingForward", isMovingForward && !IsRunning);
             animator.SetBool("isRunningForward", isMovingForward && IsRunning);
-
             animator.SetBool("isWalkingBackward", isMovingBackward && !IsRunning);
             animator.SetBool("isRunningBackward", isMovingBackward && IsRunning);
-
             animator.SetBool("isStrafingLeft", isStrafingLeft);
             animator.SetBool("isStrafingRight", isStrafingRight);
-
             animator.SetBool("isCrouching", isCrouching);
-
             animator.SetBool("IsRunning", IsRunning);
         }
     }

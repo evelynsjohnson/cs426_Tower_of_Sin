@@ -27,7 +27,7 @@ Transform:
   m_GameObject: {fileID: 3228617577630553162}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -1, z: -0, w: 0}
-  m_LocalPosition: {x: 0.022999706, y: 0.59, z: 0.5419999}
+  m_LocalPosition: {x: 0.003, y: 0.413, z: 0.424}
   m_LocalScale: {x: 0.06, y: 0.06, z: 0.06}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -344,6 +344,7 @@ MonoBehaviour:
   interactionDistance: 3
   chestOpenSound: {fileID: 8300000, guid: 1b7772875660ed1459140d9c8c8e5f23, type: 3}
   chestCloseSound: {fileID: 8300000, guid: 1b7772875660ed1459140d9c8c8e5f23, type: 3}
+  playerUI: {fileID: 0}
 --- !u!4 &2120743830538816199 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 4ad289074c1d9c2469c5bea23e1b3704, type: 3}
