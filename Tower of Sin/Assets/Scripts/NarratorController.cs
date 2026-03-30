@@ -18,6 +18,8 @@ public class NarratorController : MonoBehaviour
         {
             instance = this;
             DontDestroyOnLoad(gameObject);
+
+            audioSource = GetComponent<AudioSource>();
         }
         else
         {
@@ -28,11 +30,16 @@ public class NarratorController : MonoBehaviour
 
     void Start()
     {
-        audioSource = GetComponent<AudioSource>();
         SceneManager.sceneLoaded += OnSceneLoaded;
+
+        CheckAndPlayIntro(SceneManager.GetActiveScene());
     }
 
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        CheckAndPlayIntro(scene);
+    }
+    private void CheckAndPlayIntro(Scene scene)
     {
         int floorNumber = FloorTextController.floorNumber;
 
@@ -45,15 +52,24 @@ public class NarratorController : MonoBehaviour
 
     private IEnumerator PlayIntroSequence()
     {
-        if (ah_another_sinful_soul == null) yield break;
+        if (ah_another_sinful_soul == null)
+        {
+            yield break;
+        }
 
         audioSource.PlayOneShot(ah_another_sinful_soul);
-        yield return new WaitForSeconds(ah_another_sinful_soul.length);
+        yield return new WaitForSeconds(ah_another_sinful_soul.length + 3);
 
-        audioSource.PlayOneShot(cast_your_gaze);
-        yield return new WaitForSeconds(cast_your_gaze.length);
+        if (cast_your_gaze != null)
+        {
+            audioSource.PlayOneShot(cast_your_gaze);
+            yield return new WaitForSeconds(cast_your_gaze.length + 3);
+        }
 
-        audioSource.PlayOneShot(you_can_navigate);
+        if (you_can_navigate != null)
+        {
+            audioSource.PlayOneShot(you_can_navigate);
+        }
     }
 
     private void OnDestroy()

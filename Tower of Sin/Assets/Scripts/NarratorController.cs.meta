@@ -1,2 +1,14 @@
 fileFormatVersion: 2
 guid: 8b98ac074b86e14499be3d07766c1b96
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - ah_another_sinful_soul: {fileID: 8300000, guid: 80611c8a264dac64ea9051b696d2fd6d, type: 3}
+  - cast_your_gaze: {fileID: 8300000, guid: c92d7639529389746b27e0d657edcd92, type: 3}
+  - you_can_navigate: {fileID: 8300000, guid: 75114c4c55ec3094f86687627446f41c, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
