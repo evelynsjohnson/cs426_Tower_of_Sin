@@ -53,7 +53,7 @@ public class FirstPersonMovement : MonoBehaviour
     public List<System.Func<float>> speedOverrides = new List<System.Func<float>>();
 
     [Header("Audio Offsets")]
-    public float slash1AudioOffset = 0f;
+    public float slash1AudioOffset = 0.2f;
     public float slash2AudioOffset = 0.5f; // Starts 0.5 seconds in
     void Awake()
     {
@@ -81,31 +81,34 @@ public class FirstPersonMovement : MonoBehaviour
 
         if (Input.GetKeyDown(jumpKey)) animator.SetTrigger("isJumping");
 
-        // Charging/Slashing
         if (Time.time >= nextSlashTime)
         {
-            // Start charging
-            if (Input.GetKeyDown(slashKey))
-            {
-                isCharging = true;
-                holdTimer = 0f;
-            }
-
-            if (isCharging)
+            if (Input.GetKey(slashKey))
             {
                 holdTimer += Time.deltaTime;
 
                 if (holdTimer >= chargeTimeRequired)
                 {
                     PerformSlash(2);
-                    isCharging = false;
-                }
-                else if (Input.GetKeyUp(slashKey))
-                {
-                    PerformSlash(1);
-                    isCharging = false;
+                    holdTimer = 0f;
                 }
             }
+            else if (Input.GetKeyUp(slashKey))
+            {
+                if (holdTimer > 0f)
+                {
+                    PerformSlash(1);
+                    holdTimer = 0f;
+                }
+            }
+            else
+            {
+                holdTimer = 0f;
+            }
+        }
+        else
+        {
+            holdTimer = 0f;
         }
     }
 
