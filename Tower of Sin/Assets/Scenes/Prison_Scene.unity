@@ -39752,6 +39752,7 @@ GameObject:
   - component: {fileID: 114657890407471637}
   - component: {fileID: 114103968970445073}
   - component: {fileID: 2147245777}
+  - component: {fileID: 124991110401576832}
   m_Layer: 0
   m_Name: First Person Camera
   m_TagString: MainCamera
@@ -39831,12 +39832,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1593727963436535}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.19363926, y: -0.06623238, z: 0.040858496, w: 0.9779814}
-  m_LocalPosition: {x: -0.0054544243, y: 0.1844309, z: -0.12351929}
+  m_LocalRotation: {x: -0.04348446, y: -0.13636634, z: -0.004929015, w: 0.9896914}
+  m_LocalPosition: {x: 0, y: 0.59, z: 0.21}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 6515712192111003678}
+  m_Father: {fileID: 5465940246121059187}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4773208322017959
 Transform:
@@ -39900,7 +39901,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.18
+  near clip plane: 0.24
   far clip plane: 1000
   field of view: 60
   orthographic: 0
@@ -40130,6 +40131,20 @@ Behaviour:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1593727963436535}
   m_Enabled: 1
+--- !u!114 &124991110401576832
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1593727963436535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff8129c7ea359384a96876a5455a71da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  headBone: {fileID: 5465940246121059187}
+  stabilizationFactor: 0.5
 --- !u!136 &136877096852500177
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -42183,6 +42198,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 4490257813953675}
   - {fileID: 2559285842379647503}
   - {fileID: 8169382870426395724}
   - {fileID: 5742672707166986464}
@@ -42391,7 +42407,7 @@ Animator:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 919132147693955421}
   m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: d41f82329bd69b249bafe4c9df94d742, type: 3}
+  m_Avatar: {fileID: 9000000, guid: 946db90a7601f78469fc23adac95a167, type: 3}
   m_Controller: {fileID: 9100000, guid: f98bed18453d22a46a2cfe06dcd6f5e5, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
@@ -42611,7 +42627,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 4490257813953675}
   - {fileID: 5901452233509560676}
   m_Father: {fileID: 366175169457276003}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

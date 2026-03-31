@@ -17,7 +17,7 @@ public class AchievementController : MonoBehaviour
 
     void Update()
     {
-        if (Time.timeScale == 0f && !isCanvasOpen) return;
+        if (Time.timeScale == 0f && !isCanvasOpen) return; // other UI is open
         if (Input.GetKeyDown(KeyCode.T))
         {
             ToggleAchievements();
