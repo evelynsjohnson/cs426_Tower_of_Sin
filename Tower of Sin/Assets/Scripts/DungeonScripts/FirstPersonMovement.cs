@@ -8,27 +8,23 @@ public class FirstPersonMovement : MonoBehaviour
 {
     public float speed = 5;
 
-    [Header("Running")]
     public bool canRun = true;
     public bool IsRunning { get; private set; }
     public float runSpeed = 9;
     public KeyCode runningKey = KeyCode.LeftShift;
 
-    [Header("Animation Controls")]
     public Animator animator;
     public KeyCode crouchKey = KeyCode.LeftControl;
     public KeyCode jumpKey = KeyCode.Space;
     public KeyCode slashKey = KeyCode.Mouse0;
 
-    [Header("Combat Stats")]
     public float slash1BaseDamage = 10f;
     public float slash2BaseDamage = 20f;
+    public float chargeTimeRequired = .5f;
 
-    [Tooltip("Percentage chance to deal double damage (0 to 100)")]
     [Range(0f, 100f)]
     public float critChance = 15f;
 
-    [Header("Combat Setup & Audio")]
     public float attackRange = 2.5f;
     public Transform cameraTransform;
 
@@ -38,17 +34,18 @@ public class FirstPersonMovement : MonoBehaviour
     public float slash2AnimDuration = 1.30f;
     public float slash2HitDelay = 0.30f;
 
-    public AudioClip swordSwing1; // Hit enemy (PlayerSlash)
-    public AudioClip swordSwing2; // Hit enemy (PlayerSlash2)
-    public AudioClip swordWoosh1; // Miss (PlayerSlash)
-    public AudioClip swordWoosh2; // Miss (PlayerSlash2)
+    public AudioClip swordSwing1;
+    public AudioClip swordSwing2;
+    public AudioClip swordWoosh1;
+    public AudioClip swordWoosh2;
 
     Rigidbody rigidbody;
     AudioSource audioSource;
 
     // Combat tracking
     private float nextSlashTime = 0f;
-    private int swingCount = 0;
+    private float holdTimer = 0f;
+    private bool isCharging = false;
 
     public List<System.Func<float>> speedOverrides = new List<System.Func<float>>();
 
@@ -57,54 +54,60 @@ public class FirstPersonMovement : MonoBehaviour
         rigidbody = GetComponent<Rigidbody>();
         audioSource = GetComponent<AudioSource>();
 
-        if (animator == null)
-        {
-            animator = GetComponentInChildren<Animator>();
-        }
-
-        if (cameraTransform == null && Camera.main != null)
-        {
-            cameraTransform = Camera.main.transform;
-        }
+        if (animator == null) animator = GetComponentInChildren<Animator>();
+        if (cameraTransform == null && Camera.main != null) cameraTransform = Camera.main.transform;
     }
 
     void Update()
     {
-        if (animator != null)
+        HandleInput();
+    }
+
+    void HandleInput()
+    {
+        if (animator == null) return;
+
+        if (Input.GetKeyDown(jumpKey)) animator.SetTrigger("isJumping");
+
+        // Charging/Slashing
+        if (Time.time >= nextSlashTime)
         {
-            if (Input.GetKeyDown(jumpKey))
+            // Start charging
+            if (Input.GetKeyDown(slashKey))
             {
-                animator.SetTrigger("isJumping");
+                isCharging = true;
+                holdTimer = 0f;
             }
 
-            if (Input.GetKeyDown(slashKey) && Time.time >= nextSlashTime)
+            if (isCharging)
             {
-                PerformSlash();
+                holdTimer += Time.deltaTime;
+
+                if (holdTimer >= chargeTimeRequired)
+                {
+                    PerformSlash(2);
+                    isCharging = false;
+                }
+                else if (Input.GetKeyUp(slashKey))
+                {
+                    PerformSlash(1);
+                    isCharging = false;
+                }
             }
         }
     }
 
-    void PerformSlash()
+    void PerformSlash(int slashChoice)
     {
-        swingCount++;
-        int slashChoice = 1; // Default to standard slash
-
-        if (swingCount >= 3)
-        {
-            slashChoice = 2;
-            swingCount = 0;
-        }
-
         animator.ResetTrigger("isSlashing");
         animator.SetInteger("slashType", slashChoice);
         animator.SetTrigger("isSlashing");
 
         float currentDelay = (slashChoice == 1) ? slash1HitDelay : slash2HitDelay;
-
         StartCoroutine(DealDamageAfterDelay(currentDelay, slashChoice));
 
         float animLength = (slashChoice == 1) ? slash1AnimDuration : slash2AnimDuration;
-        nextSlashTime = Time.time + animLength + 1.0f;
+        nextSlashTime = Time.time + animLength;
     }
 
     private IEnumerator DealDamageAfterDelay(float delayTime, int slashChoice)
@@ -112,14 +115,9 @@ public class FirstPersonMovement : MonoBehaviour
         yield return new WaitForSeconds(delayTime);
 
         bool hitEnemy = false;
-
         float finalDamage = (slashChoice == 1) ? slash1BaseDamage : slash2BaseDamage;
 
-        bool isCrit = Random.Range(0f, 100f) <= critChance;
-        if (isCrit)
-        {
-            finalDamage *= 2f; // Double the damage
-        }
+        if (Random.Range(0f, 100f) <= critChance) finalDamage *= 2f;
 
         if (cameraTransform != null)
         {
@@ -131,30 +129,22 @@ public class FirstPersonMovement : MonoBehaviour
                 if (hit.collider.CompareTag("Enemy"))
                 {
                     hitEnemy = true;
-
                     PrisonZombieAI zombie = hit.collider.GetComponentInParent<PrisonZombieAI>();
-                    if (zombie != null)
-                    {
-                        zombie.TakeDamage(finalDamage);
+                    if (zombie != null) zombie.TakeDamage(finalDamage);
+                }
 
-                        // testing
-                        if (isCrit) Debug.Log("<color=orange>CRITICAL HIT! Dealt " + finalDamage + " damage!</color>");
-                        else Debug.Log("Dealt " + finalDamage + " damage!");
-                    }
+                TargetDummy dummy = hit.collider.GetComponentInParent<TargetDummy>();
+                if (dummy != null)
+                {
+                    hitEnemy = true;
+                    dummy.TakeDamage(finalDamage);
                 }
             }
         }
 
-        AudioClip clipToPlay = null;
-
-        if (slashChoice == 1)
-        {
-            clipToPlay = hitEnemy ? swordSwing1 : swordWoosh1;
-        }
-        else if (slashChoice == 2)
-        {
-            clipToPlay = hitEnemy ? swordSwing2 : swordWoosh2;
-        }
+        AudioClip clipToPlay = (slashChoice == 1)
+            ? (hitEnemy ? swordSwing1 : swordWoosh1)
+            : (hitEnemy ? swordSwing2 : swordWoosh2);
 
         if (clipToPlay != null)
         {
@@ -169,10 +159,7 @@ public class FirstPersonMovement : MonoBehaviour
         IsRunning = canRun && Input.GetKey(runningKey);
 
         float targetMovingSpeed = IsRunning ? runSpeed : speed;
-        if (speedOverrides.Count > 0)
-        {
-            targetMovingSpeed = speedOverrides[speedOverrides.Count - 1]();
-        }
+        if (speedOverrides.Count > 0) targetMovingSpeed = speedOverrides[speedOverrides.Count - 1]();
 
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
@@ -180,22 +167,26 @@ public class FirstPersonMovement : MonoBehaviour
         Vector2 targetVelocity = new Vector2(horizontalInput * targetMovingSpeed, verticalInput * targetMovingSpeed);
         rigidbody.linearVelocity = transform.rotation * new Vector3(targetVelocity.x, rigidbody.linearVelocity.y, targetVelocity.y);
 
-        if (animator != null)
-        {
-            bool isMovingForward = verticalInput > 0.1f;
-            bool isMovingBackward = verticalInput < -0.1f;
-            bool isStrafingLeft = horizontalInput < -0.1f;
-            bool isStrafingRight = horizontalInput > 0.1f;
-            bool isCrouching = Input.GetKey(crouchKey);
+        UpdateAnimationStates(horizontalInput, verticalInput);
+    }
 
-            animator.SetBool("isWalkingForward", isMovingForward && !IsRunning);
-            animator.SetBool("isRunningForward", isMovingForward && IsRunning);
-            animator.SetBool("isWalkingBackward", isMovingBackward && !IsRunning);
-            animator.SetBool("isRunningBackward", isMovingBackward && IsRunning);
-            animator.SetBool("isStrafingLeft", isStrafingLeft);
-            animator.SetBool("isStrafingRight", isStrafingRight);
-            animator.SetBool("isCrouching", isCrouching);
-            animator.SetBool("IsRunning", IsRunning);
-        }
+    void UpdateAnimationStates(float horizontalInput, float verticalInput)
+    {
+        if (animator == null) return;
+
+        bool isMovingForward = verticalInput > 0.1f;
+        bool isMovingBackward = verticalInput < -0.1f;
+        bool isStrafingLeft = horizontalInput < -0.1f;
+        bool isStrafingRight = horizontalInput > 0.1f;
+        bool isCrouching = Input.GetKey(crouchKey);
+
+        animator.SetBool("isWalkingForward", isMovingForward && !IsRunning);
+        animator.SetBool("isRunningForward", isMovingForward && IsRunning);
+        animator.SetBool("isWalkingBackward", isMovingBackward && !IsRunning);
+        animator.SetBool("isRunningBackward", isMovingBackward && IsRunning);
+        animator.SetBool("isStrafingLeft", isStrafingLeft);
+        animator.SetBool("isStrafingRight", isStrafingRight);
+        animator.SetBool("isCrouching", isCrouching);
+        animator.SetBool("IsRunning", IsRunning);
     }
 }
