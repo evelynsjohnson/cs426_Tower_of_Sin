@@ -22,6 +22,9 @@ public class FirstPersonMovement : MonoBehaviour
     public float slash2BaseDamage = 20f;
     public float chargeTimeRequired = .5f;
 
+    private float currentHorizontalInput = 0f;
+    private float currentVerticalInput = 0f;
+
     [Range(0f, 100f)]
     public float critChance = 15f;
 
@@ -49,6 +52,9 @@ public class FirstPersonMovement : MonoBehaviour
 
     public List<System.Func<float>> speedOverrides = new List<System.Func<float>>();
 
+    [Header("Audio Offsets")]
+    public float slash1AudioOffset = 0f;
+    public float slash2AudioOffset = 0.5f; // Starts 0.5 seconds in
     void Awake()
     {
         rigidbody = GetComponent<Rigidbody>();
@@ -61,6 +67,12 @@ public class FirstPersonMovement : MonoBehaviour
     void Update()
     {
         HandleInput();
+
+        currentHorizontalInput = Input.GetAxisRaw("Horizontal");
+        currentVerticalInput = Input.GetAxisRaw("Vertical");
+        IsRunning = canRun && Input.GetKey(runningKey);
+
+        UpdateAnimationStates(currentHorizontalInput, currentVerticalInput);
     }
 
     void HandleInput()
@@ -121,19 +133,23 @@ public class FirstPersonMovement : MonoBehaviour
 
         if (cameraTransform != null)
         {
-            RaycastHit hit;
-            float swordThickness = 0.5f;
+            Vector3 hitCenter = cameraTransform.position + (cameraTransform.forward * (attackRange * 0.5f));
 
-            if (Physics.SphereCast(cameraTransform.position, swordThickness, cameraTransform.forward, out hit, attackRange))
+            // Make hit bubble
+            float hitRadius = (slashChoice == 1) ? 1.0f : 1.5f;
+
+            Collider[] hitColliders = Physics.OverlapSphere(hitCenter, hitRadius);
+
+            foreach (Collider hitCol in hitColliders)
             {
-                if (hit.collider.CompareTag("Enemy"))
+                if (hitCol.CompareTag("Enemy"))
                 {
                     hitEnemy = true;
-                    PrisonZombieAI zombie = hit.collider.GetComponentInParent<PrisonZombieAI>();
-                    if (zombie != null) zombie.TakeDamage(finalDamage);
+                    PrisonZombieAI zombie = hitCol.GetComponentInParent<PrisonZombieAI>();
+                    if (zombie != null) zombie.TakeDamage(finalDamage, slashChoice);
                 }
 
-                TargetDummy dummy = hit.collider.GetComponentInParent<TargetDummy>();
+                TargetDummy dummy = hitCol.GetComponentInParent<TargetDummy>();
                 if (dummy != null)
                 {
                     hitEnemy = true;
@@ -148,26 +164,33 @@ public class FirstPersonMovement : MonoBehaviour
 
         if (clipToPlay != null)
         {
+            audioSource.clip = clipToPlay;
             audioSource.pitch = 1.5f;
-            audioSource.PlayOneShot(clipToPlay);
+
+            float offsetToUse = (slashChoice == 1) ? slash1AudioOffset : slash2AudioOffset;
+
+            if (offsetToUse < clipToPlay.length)
+            {
+                audioSource.time = offsetToUse;
+            }
+            else
+            {
+                audioSource.time = 0f;
+            }
+
+            // Play the clip
+            audioSource.Play();
             audioSource.pitch = 1.0f;
         }
     }
-
     void FixedUpdate()
     {
-        IsRunning = canRun && Input.GetKey(runningKey);
-
         float targetMovingSpeed = IsRunning ? runSpeed : speed;
         if (speedOverrides.Count > 0) targetMovingSpeed = speedOverrides[speedOverrides.Count - 1]();
 
-        float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
+        Vector2 targetVelocity = new Vector2(currentHorizontalInput * targetMovingSpeed, currentVerticalInput * targetMovingSpeed);
 
-        Vector2 targetVelocity = new Vector2(horizontalInput * targetMovingSpeed, verticalInput * targetMovingSpeed);
         rigidbody.linearVelocity = transform.rotation * new Vector3(targetVelocity.x, rigidbody.linearVelocity.y, targetVelocity.y);
-
-        UpdateAnimationStates(horizontalInput, verticalInput);
     }
 
     void UpdateAnimationStates(float horizontalInput, float verticalInput)

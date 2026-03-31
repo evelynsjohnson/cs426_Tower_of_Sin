@@ -39,11 +39,12 @@ public class NarratorController : MonoBehaviour
     {
         CheckAndPlayIntro(scene);
     }
+
     private void CheckAndPlayIntro(Scene scene)
     {
         int floorNumber = FloorTextController.floorNumber;
 
-        if (scene.name == "Prison_Scene" && (floorNumber <= 1))
+        if (scene.name == "Prison_Scene" && floorNumber == 0)
         {
             StopAllCoroutines();
             StartCoroutine(PlayIntroSequence());

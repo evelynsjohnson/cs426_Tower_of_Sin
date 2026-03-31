@@ -8,35 +8,37 @@ using System.Collections;
 [RequireComponent(typeof(AudioSource))]
 public class PrisonZombieAI : MonoBehaviour
 {
-    [Header("Stats")]
-    public float maxHealth = 100f;
-    private float currentHealth;
-    public float damageToPlayer = 10f;
 
-    [Header("UI & Health Bar")]
+    //public float maxHealth = 100f;
+    public float maxHealth = 100f + (FloorTextController.floorNumber * 5f); // +5 hp per floor
+    private float currentHealth;
+    public float damageToPlayer = 10f; 
+    
+    private bool hasMadeLowHealthDecision = false;
+    public bool isBlocking = false;
+    private bool isFleeing = false;
+    public float blockDuration = 1f; // How long the zombie holds the block
+
     public GameObject uiCanvasObject;
     public TMP_Text healthText;
     public Image healthBarFill;
     public float healthDrainSpeed = 5f;
     public float deathAnimationDuration = 2f;
 
-    [Header("Ranges & AI")]
     public float aggroRadius = 10f;
     public float attackRadius = 2f;
     public float maxLeashDistance = 20f;
     public float walkSpeed = 3.5f;
 
-    [Header("Attack Timing")]
     public float attackCooldown = 2f;
     public float attackDamageDelay = 0.5f;
 
-    [Header("Audio")]
     public AudioClip hitSound;
     public AudioClip missSound;
     public AudioClip idleSound;
     public AudioClip walkSound;
+    public AudioClip roarSound;
 
-    [Header("References")]
     public Animator animator;
     private Transform player;
     private Transform mainCamera;
@@ -54,7 +56,9 @@ public class PrisonZombieAI : MonoBehaviour
 
     private float nextAttackTime = 0f;
     private float idleAudioTimer = 0f;
-
+    private float lastDamageTime = 0f;
+    public float fleeSafeDistance = 5f;
+    public float healDelay = 5f;
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -105,14 +109,43 @@ public class PrisonZombieAI : MonoBehaviour
 
         if (isDead || player == null || isAttacking) return;
 
+        // hp regen
+        if (Time.time - lastDamageTime >= healDelay && currentHealth < maxHealth)
+        {
+            // +1/5th of max HP per sec
+            currentHealth += (maxHealth / 5f) * Time.deltaTime;
+            if (currentHealth > maxHealth) currentHealth = maxHealth;
+            UpdateHealthUI();
+        }
+
         // Calculate Horizontal (XZ) distance only
         Vector3 flatPlayerPos = new Vector3(player.position.x, transform.position.y, player.position.z);
         float flatDistanceToPlayer = Vector3.Distance(transform.position, flatPlayerPos);
 
+        // run away
+        if (isFleeing)
+        {
+            if (flatDistanceToPlayer < fleeSafeDistance)
+            {
+                Vector3 dirAwayFromPlayer = (transform.position - flatPlayerPos).normalized;
+                Vector3 fleePos = transform.position + (dirAwayFromPlayer * 2f);
+
+                agent.isStopped = false;
+                agent.SetDestination(fleePos);
+                animator.SetBool("isWalking", true);
+            }
+            else
+            {
+                agent.isStopped = true;
+                animator.SetBool("isWalking", false);
+            }
+            return;
+        }
+
         Vector3 flatSpawnPos = new Vector3(initialSpawnPosition.x, transform.position.y, initialSpawnPosition.z);
         float flatDistanceToSpawn = Vector3.Distance(transform.position, flatSpawnPos);
 
-        // Mute audio if vertical distance is > 2.5 meters (on another floor)
+        // Mute audio if vertical distance is > 2.5 meters (hard coded kinda)
         float verticalDistance = Mathf.Abs(player.position.y - transform.position.y);
         bool onSameFloor = verticalDistance < 2.5f;
         sfxAudioSource.mute = !onSameFloor;
@@ -152,7 +185,6 @@ public class PrisonZombieAI : MonoBehaviour
         }
 
         // Line of sight
-        // Potentially remove
         if (!hasSeenPlayer && flatDistanceToPlayer <= aggroRadius && onSameFloor)
         {
             Vector3 dirToPlayer = (player.position - transform.position).normalized;
@@ -206,6 +238,18 @@ public class PrisonZombieAI : MonoBehaviour
         {
             walkAudioSource.Pause();
         }
+
+        if (isFleeing)
+        {
+            // Calculate a point 5 units directly away from the player
+            Vector3 dirAwayFromPlayer = (transform.position - player.position).normalized;
+            Vector3 fleePos = transform.position + (dirAwayFromPlayer * 5f);
+
+            agent.isStopped = false;
+            agent.SetDestination(fleePos);
+            animator.SetBool("isWalking", true);
+            return;
+        }
     }
 
     void LateUpdate()
@@ -243,12 +287,19 @@ public class PrisonZombieAI : MonoBehaviour
         isAttacking = false;
     }
 
-    public void TakeDamage(float amount)
+    public void TakeDamage(float amount, int attackType = 0)
     {
         if (isDead) return;
 
-        // Wakes up zombie if hit from out of sight
+        // Reset the heal timer and wake up the zombie
+        lastDamageTime = Time.time;
         hasSeenPlayer = true;
+
+        // blocking
+        if (isBlocking && attackType == 1)
+        {
+            return;
+        }
 
         currentHealth -= amount;
         UpdateHealthUI();
@@ -256,6 +307,12 @@ public class PrisonZombieAI : MonoBehaviour
         if (currentHealth <= 0)
         {
             Die();
+        }
+        // probability trigger (once per enemy when hp < 25%)
+        else if (currentHealth <= maxHealth * 0.25f && !hasMadeLowHealthDecision)
+        {
+            hasMadeLowHealthDecision = true;
+            MakeLowHealthDecision();
         }
     }
 
@@ -292,4 +349,60 @@ public class PrisonZombieAI : MonoBehaviour
             uiCanvasObject.SetActive(false);
         }
     }
+
+    private void MakeLowHealthDecision()
+    {
+        float roll = Random.Range(0f, 100f);
+
+        if (roll < 5f) // 5% chance to take a block action
+        {
+            StartCoroutine(BlockRoutine());
+        }
+        else if (roll < 85f) // 80% chance to be enraged
+        {
+            StartCoroutine(EnrageRoutine());
+        }
+        else // Remaining 15% chance to walk away
+        {
+            isFleeing = true;
+        }
+    }
+
+    private IEnumerator BlockRoutine()
+    {
+        isBlocking = true;
+        animator.SetTrigger("block");
+        agent.isStopped = true;
+
+        yield return new WaitForSeconds(blockDuration);
+
+        isBlocking = false;
+        agent.isStopped = false;
+    }
+
+    // "rage" chance
+    private IEnumerator EnrageRoutine()
+    {
+        isAttacking = true;
+        animator.SetTrigger("roar");
+
+        if (roarSound != null)
+        {
+            sfxAudioSource.PlayOneShot(roarSound);
+        }
+
+        agent.isStopped = true;
+
+        yield return new WaitForSeconds(1.5f);
+
+        // Buff the zombie
+        damageToPlayer *= 2f;
+        attackCooldown /= 2f;
+        animator.speed = 2f;
+
+        isAttacking = false;
+        agent.isStopped = false;
+    }
+
+
 }

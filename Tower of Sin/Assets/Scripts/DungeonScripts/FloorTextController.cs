@@ -1,5 +1,4 @@
 using TMPro;
-using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -9,13 +8,19 @@ public class FloorTextController : MonoBehaviour
 
     public static int floorNumber = 0;
 
-    void Start()
+    void OnEnable()
     {
-        UnityEngine.SceneManagement.Scene currentScene = SceneManager.GetActiveScene();
-        string curSceneName = currentScene.name;
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
 
-        UpdateFloorText(curSceneName);
-        UpdateUI(curSceneName);
+    void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        UpdateFloorText(scene.name);
     }
 
     public void UpdateFloorText(string sceneName)
