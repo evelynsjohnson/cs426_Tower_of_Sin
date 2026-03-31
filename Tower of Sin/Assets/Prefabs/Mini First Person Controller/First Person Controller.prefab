@@ -341,7 +341,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   distanceThreshold: 0.15
-  isGrounded: 1
+  isGrounded: 0
 --- !u!1 &1593727746557118
 GameObject:
   m_ObjectHideFlags: 0
@@ -632,6 +632,9 @@ MonoBehaviour:
   crouchKey: 306
   jumpKey: 32
   slashKey: 323
+  slash1BaseDamage: 10
+  slash2BaseDamage: 20
+  critChance: 15
   attackRange: 2.5
   cameraTransform: {fileID: 0}
   slash1AnimDuration: 1

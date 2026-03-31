@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class RandomPlayerSpawner : MonoBehaviour
 {
@@ -6,20 +7,22 @@ public class RandomPlayerSpawner : MonoBehaviour
 
     void Start()
     {
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-
-        if (player != null && spawnPoints.Length > 0)
+        if (SceneManager.GetActiveScene().name == "Dungeon_Scene")
         {
-            int randomIndex = Random.Range(0, spawnPoints.Length);
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
 
-            CharacterController cc = player.GetComponent<CharacterController>();
-            if (cc != null) cc.enabled = false;
+            if (player != null && spawnPoints.Length > 0)
+            {
+                int randomIndex = Random.Range(0, spawnPoints.Length);
 
-            player.transform.position = spawnPoints[randomIndex].position;
+                CharacterController cc = player.GetComponent<CharacterController>();
+                if (cc != null) cc.enabled = false;
 
-            player.transform.rotation = spawnPoints[randomIndex].rotation;
+                player.transform.position = spawnPoints[randomIndex].position;
+                player.transform.rotation = spawnPoints[randomIndex].rotation;
 
-            if (cc != null) cc.enabled = true;
+                if (cc != null) cc.enabled = true;
+            }
         }
     }
 }

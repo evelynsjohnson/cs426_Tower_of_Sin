@@ -56,10 +56,10 @@ public class NarratorController : MonoBehaviour
         {
             yield break;
         }
-
+        yield return new WaitForSeconds(3);
         audioSource.PlayOneShot(ah_another_sinful_soul);
-        yield return new WaitForSeconds(ah_another_sinful_soul.length + 3);
 
+        yield return new WaitForSeconds(ah_another_sinful_soul.length + 3);
         if (cast_your_gaze != null)
         {
             audioSource.PlayOneShot(cast_your_gaze);

@@ -28393,7 +28393,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 2800000, guid: b4a7081d62ba0be4d847c86271234c74, type: 3}
+  m_Texture: {fileID: 2800000, guid: cf9c153d5eac15049b35cff045c8f7ce, type: 3}
   m_UVRect:
     serializedVersion: 2
     x: 0
@@ -28420,8 +28420,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f6a435309f9898c4da2ea30c55cf0134, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ButtonOnHover
-  normalTexture: {fileID: 2800000, guid: b4a7081d62ba0be4d847c86271234c74, type: 3}
-  redTexture: {fileID: 2800000, guid: 0e86a77ccde388945b4b52f602cf09aa, type: 3}
+  normalTexture: {fileID: 2800000, guid: cf9c153d5eac15049b35cff045c8f7ce, type: 3}
+  redTexture: {fileID: 2800000, guid: 8d9543b7f6b3734468ac51cc5e087e5d, type: 3}
 --- !u!114 &2084563028
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28436,7 +28436,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BackScript
   canvasToHide: {fileID: 1816956302}
   canvasToShow: {fileID: 283207774}
-  normalTexture: {fileID: 2800000, guid: b4a7081d62ba0be4d847c86271234c74, type: 3}
+  normalTexture: {fileID: 2800000, guid: cf9c153d5eac15049b35cff045c8f7ce, type: 3}
 --- !u!1 &2085180003
 GameObject:
   m_ObjectHideFlags: 0
