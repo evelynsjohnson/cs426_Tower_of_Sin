@@ -136,8 +136,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6b125e03b59c3f408ee505511d2dbda, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
-  maxHP: 100
-  currentHP: 0
+  maxHealth: 200
+  healthUIText: {fileID: 0}
+  healthBarFill: {fileID: 0}
+  drainSpeed: 5
 --- !u!1001 &414925580
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -665,7 +667,7 @@ MonoBehaviour:
   m_OverrideTileSize: 0
   m_TileSize: 256
   m_OverrideVoxelSize: 0
-  m_VoxelSize: 0.16666667
+  m_VoxelSize: 0.083333336
   m_MinRegionArea: 2
   m_NavMeshData: {fileID: 23800000, guid: 04ee45406adfeb4448f8f3b6b7d0e37e, type: 2}
   m_BuildHeightMesh: 0

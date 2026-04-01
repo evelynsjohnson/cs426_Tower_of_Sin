@@ -272,7 +272,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -634,6 +634,7 @@ MonoBehaviour:
   slashKey: 323
   slash1BaseDamage: 10
   slash2BaseDamage: 20
+  chargeTimeRequired: 0.5
   critChance: 15
   attackRange: 2.5
   cameraTransform: {fileID: 0}
@@ -645,6 +646,8 @@ MonoBehaviour:
   swordSwing2: {fileID: 0}
   swordWoosh1: {fileID: 0}
   swordWoosh2: {fileID: 0}
+  slash1AudioOffset: 0
+  slash2AudioOffset: 0.5
 --- !u!114 &114497868231759342
 MonoBehaviour:
   m_ObjectHideFlags: 0
