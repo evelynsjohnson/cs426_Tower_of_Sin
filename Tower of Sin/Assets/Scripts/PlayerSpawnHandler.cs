@@ -22,9 +22,5 @@ public class PlayerSpawnHandler : MonoBehaviour
                 cc.enabled = true;
             }
         }
-        else
-        {
-            Debug.LogWarning("PlayerSpawnHandler: Could not find an object tagged 'Player' in this scene!");
-        }
     }
 }

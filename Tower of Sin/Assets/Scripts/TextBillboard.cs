@@ -1,31 +1,32 @@
 using UnityEngine;
 
-public class TextBillboard : MonoBehaviour
+public class BillboardToPlayer : MonoBehaviour
 {
-    public Transform camTransform;
-    public bool lockYAxis = true;
+    public Transform playerTransform;
+    public bool lockVertical = true;
 
-    void Start()
+    void Awake()
     {
-        if (camTransform == null && Camera.main != null)
+        if (playerTransform == null)
         {
-            camTransform = Camera.main.transform;
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null) playerTransform = playerObj.transform;
         }
     }
 
     void LateUpdate()
     {
-        if (camTransform == null) return;
+        if (playerTransform == null) return;
 
-        if (lockYAxis)
+        Vector3 targetPosition = playerTransform.position;
+
+        if (lockVertical)
         {
-            Vector3 targetPosition = transform.position + camTransform.forward;
             targetPosition.y = transform.position.y;
-            transform.LookAt(targetPosition);
         }
-        else
-        {
-            transform.LookAt(transform.position + camTransform.forward);
-        }
+
+        transform.LookAt(targetPosition);
+
+        transform.Rotate(0, 180, 0);
     }
 }

@@ -24,6 +24,7 @@ public class PlayerHealth : MonoBehaviour
 
     void Update()
     {
+
         if (healthBarFill != null)
         {
             float targetFill = currentHealth / maxHealth;
@@ -37,7 +38,7 @@ public class PlayerHealth : MonoBehaviour
         currentHealth -= damage;
         if (currentHealth <= 0)
         {
-            currentHealth = 0;
+            currentHealth = maxHealth;
             FloorTextController.floorNumber = 1;
             UpdateUI();
             SceneManager.LoadScene("Death_Realm");

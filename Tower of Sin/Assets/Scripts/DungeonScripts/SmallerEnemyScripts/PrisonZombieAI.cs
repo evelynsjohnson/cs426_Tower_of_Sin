@@ -325,8 +325,14 @@ public class PrisonZombieAI : MonoBehaviour
     }
 
     void Die()
-    {   
+    {
+        if (isDead) return;
         isDead = true;
+
+        isAttacking = false;
+        isBlocking = false;
+        isFleeing = false;
+
         animator.SetTrigger("die");
 
         agent.enabled = false;
@@ -334,7 +340,7 @@ public class PrisonZombieAI : MonoBehaviour
 
         if (healthText != null) healthText.text = "";
         if (walkAudioSource != null) walkAudioSource.Stop();
-        if (sfxAudioSource != null) sfxAudioSource.Stop();      
+        if (sfxAudioSource != null) sfxAudioSource.Stop();
 
         StopAllCoroutines();
         StartCoroutine(HideUIAfterDeath());
