@@ -2139,6 +2139,7 @@ MonoBehaviour:
   animator: {fileID: 3485590404254087393}
   fleeSafeDistance: 5
   healDelay: 5
+  healthPotionPrefab: {fileID: 6127669787621279706, guid: 615c8ae40e540334fbbadaf3a7f13c30, type: 3}
 --- !u!195 &3612340838163911255
 NavMeshAgent:
   m_ObjectHideFlags: 0

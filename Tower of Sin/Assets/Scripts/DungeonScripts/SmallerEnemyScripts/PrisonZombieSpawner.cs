@@ -11,7 +11,7 @@ public class PrisonZombieScript : MonoBehaviour
         {
             // chance to spawn a zombie
             // 1.0f is 0%, 0.0f is 100% chance to spawn
-            if (Random.value >= 0.5f)
+            if (Random.value >= 0.4f)
             {
                 Instantiate(zombiePrefab, childSpawnPoint.position, childSpawnPoint.rotation);
             }

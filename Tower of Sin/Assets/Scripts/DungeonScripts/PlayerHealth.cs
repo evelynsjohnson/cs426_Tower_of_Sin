@@ -45,6 +45,20 @@ public class PlayerHealth : MonoBehaviour
         }
         UpdateUI();
     }
+    public bool IsFullHealth()
+    {
+        return currentHealth >= maxHealth;
+    }
+
+    public void Heal(float heal)
+    {
+        currentHealth += heal;
+        if (currentHealth >= maxHealth)
+        {
+            currentHealth = maxHealth;
+        }
+        UpdateUI();
+    }
 
     void UpdateUI()
     {
