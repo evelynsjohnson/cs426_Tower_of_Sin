@@ -3,10 +3,9 @@ using UnityEngine;
 public class PortalManager : MonoBehaviour
 {
     public Transform portalsContainer;
-
     private Portal_Controller[] dungeonPortals;
 
-    void Start()
+    public void RandomizePortals()
     {
         if (portalsContainer == null) return;
 

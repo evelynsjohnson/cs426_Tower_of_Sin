@@ -18,8 +18,8 @@ public class FirstPersonMovement : MonoBehaviour
     public KeyCode jumpKey = KeyCode.Space;
     public KeyCode slashKey = KeyCode.Mouse0;
 
-    public float slash1BaseDamage = 10f;
-    public float slash2BaseDamage = 20f;
+    public float slash1BaseDamage = 20f;
+    public float slash2BaseDamage = 40f;
     public float chargeTimeRequired = .5f;
 
     private float currentHorizontalInput = 0f;

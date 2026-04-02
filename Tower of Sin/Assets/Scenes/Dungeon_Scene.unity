@@ -22674,7 +22674,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &603928656
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -55171,6 +55171,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1443806331}
+  - component: {fileID: 1443806332}
   m_Layer: 0
   m_Name: PlayerSpawnpoints
   m_TagString: Untagged
@@ -55197,6 +55198,23 @@ Transform:
   - {fileID: 1166907328}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1443806332
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1443806330}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00fc3660f98607145bf2c2e772a29ece, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RandomPlayerSpawner
+  spawnPoints:
+  - {fileID: 1838569415}
+  - {fileID: 1165365390}
+  - {fileID: 1829034821}
+  - {fileID: 1166907328}
 --- !u!1 &1444461860 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 9119583665393248209, guid: c8f06426297d70b49a679bc058775930, type: 3}
@@ -64091,6 +64109,7 @@ GameObject:
   - component: {fileID: 1689935539}
   - component: {fileID: 1689935541}
   - component: {fileID: 1689935542}
+  - component: {fileID: 1689935543}
   m_Layer: 0
   m_Name: LevelManager
   m_TagString: Untagged
@@ -64157,6 +64176,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   chestsContainer: {fileID: 1699422841}
   spawnChance: 20
+--- !u!114 &1689935543
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689935538}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e02fee4844780804184d3d589f51f5c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonManager
+  randomPlayerSpawner: {fileID: 1443806332}
+  fixedPlayerSpawner: {fileID: 0}
+  portalManager: {fileID: 1689935541}
+  lootSpawner: {fileID: 1689935542}
+  zombieSpawner: {fileID: 948453042}
 --- !u!4 &1690799793 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4725356937742777146, guid: c559a22601843db4c927941c06a8b94b, type: 3}

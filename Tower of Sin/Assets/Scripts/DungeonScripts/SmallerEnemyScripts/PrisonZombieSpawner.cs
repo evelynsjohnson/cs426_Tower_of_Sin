@@ -1,19 +1,26 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class PrisonZombieScript : MonoBehaviour
 {
     public GameObject zombiePrefab;
 
-    void Start()
+    private List<GameObject> activeZombies = new List<GameObject>();
+
+    public void SpawnZombies()
     {
-        // Loop through all child objects attached to this spawner
+        foreach (GameObject z in activeZombies)
+        {
+            if (z != null) Destroy(z);
+        }
+        activeZombies.Clear();
+
         foreach (Transform childSpawnPoint in transform)
         {
-            // chance to spawn a zombie
-            // 1.0f is 0%, 0.0f is 100% chance to spawn
             if (Random.value >= 0.4f)
             {
-                Instantiate(zombiePrefab, childSpawnPoint.position, childSpawnPoint.rotation);
+                GameObject newZombie = Instantiate(zombiePrefab, childSpawnPoint.position, childSpawnPoint.rotation);
+                activeZombies.Add(newZombie);
             }
         }
     }

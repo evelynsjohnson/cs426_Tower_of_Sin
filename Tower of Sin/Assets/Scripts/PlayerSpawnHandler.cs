@@ -1,8 +1,9 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerSpawnHandler : MonoBehaviour
 {
-    private void Start()
+    public void SpawnPlayer()
     {
         GameObject player = GameObject.FindWithTag("Player");
 
@@ -20,6 +21,37 @@ public class PlayerSpawnHandler : MonoBehaviour
             if (cc != null)
             {
                 cc.enabled = true;
+            }
+        }
+    }
+
+    private void Start()
+    {
+        SpawnPlayer();
+    }
+
+    private void Update()
+    {
+
+        if (SceneManager.GetActiveScene().name == "Boss_Scene")
+        {
+            GameObject player = GameObject.FindWithTag("Player");
+
+            if (player != null)
+            {
+                CharacterController cc = player.GetComponent<CharacterController>();
+                if (cc != null)
+                {
+                    cc.enabled = false;
+                }
+
+                player.transform.position = transform.position;
+                player.transform.rotation = transform.rotation;
+
+                if (cc != null)
+                {
+                    cc.enabled = true;
+                }
             }
         }
     }

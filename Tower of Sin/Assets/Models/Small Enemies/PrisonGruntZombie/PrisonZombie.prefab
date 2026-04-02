@@ -2057,6 +2057,7 @@ GameObject:
   - component: {fileID: 3612340838163911255}
   - component: {fileID: 7086941692837415663}
   - component: {fileID: 6712989579775667449}
+  - component: {fileID: 7593704061240285775}
   m_Layer: 0
   m_Name: PrisonZombie
   m_TagString: Enemy
@@ -2116,10 +2117,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c47b463405100747a95bf8d1884dcdb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  currentState: 0
   maxHealth: 50
   damageToPlayer: 25
-  isBlocking: 0
-  blockDuration: 1
   uiCanvasObject: {fileID: 3979976454785301982}
   healthText: {fileID: 7180103447727898867}
   healthBarFill: {fileID: 3189913391675539088}
@@ -2129,17 +2129,24 @@ MonoBehaviour:
   attackRadius: 2
   maxLeashDistance: 15
   walkSpeed: 1
+  fleeSafeDistance: 5
   attackCooldown: 2
   attackDamageDelay: 1
+  blockDuration: 1
+  healDelay: 5
+  viewAngle: 90
+  viewDistance: 12
+  visionObstructionMask:
+    serializedVersion: 2
+    m_Bits: 0
   hitSound: {fileID: 8300000, guid: 936a255cbc328e7488ba493b99d03c13, type: 3}
   missSound: {fileID: 8300000, guid: 4cfb5552a88fbdd4182e1fdda954ee8b, type: 3}
   idleSound: {fileID: 8300000, guid: f6091eaa10572154187797879ab58a2c, type: 3}
   walkSound: {fileID: 8300000, guid: 9e0f535c8241b9148927c9c7071d2c62, type: 3}
   roarSound: {fileID: 8300000, guid: f88ba420508b30a42985ed7162528fa0, type: 3}
   animator: {fileID: 3485590404254087393}
-  fleeSafeDistance: 5
-  healDelay: 5
   healthPotionPrefab: {fileID: 6127669787621279706, guid: 615c8ae40e540334fbbadaf3a7f13c30, type: 3}
+  healthPotChance: 40
 --- !u!195 &3612340838163911255
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -2182,9 +2189,9 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.35025638
-  m_Height: 2.0945373
+  m_Height: 1.7
   m_Direction: 1
-  m_Center: {x: 0.04787224, y: 0.9357312, z: 0.26000005}
+  m_Center: {x: 0.04787224, y: 0.88, z: 0.26000005}
 --- !u!82 &6712989579775667449
 AudioSource:
   m_ObjectHideFlags: 0
@@ -2282,6 +2289,33 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!54 &7593704061240285775
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7923153878451664929}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 112
+  m_CollisionDetection: 0
 --- !u!1 &7940087159803829114
 GameObject:
   m_ObjectHideFlags: 0

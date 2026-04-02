@@ -5,11 +5,11 @@ public class HealthPotion : MonoBehaviour
     private Transform player;
     private PlayerHealth playerHealth;
 
-    public float healAmount = 50f;
+    private float healAmount;
     public float magnetismRadius = 2f;
     public float flySpeed = 12f;
     public float hoverSpeed = 2f;
-    public float hoverHeight = 0f;
+    public float hoverHeight = 0.2f;
     public float waitDelay = 2f;
 
     private bool isWaiting = false;
@@ -30,6 +30,10 @@ public class HealthPotion : MonoBehaviour
             if (playerHealth == null) playerHealth = pObj.GetComponentInChildren<PlayerHealth>();
             if (playerHealth == null) playerHealth = pObj.GetComponentInParent<PlayerHealth>();
         }
+
+        // heal amount should be 1/4 of the player's max health
+        // TBD might be more healed or less - also depends on the chances of dropping health potion, which is 50% chance right now, which is pretty high
+        healAmount = playerHealth != null ? playerHealth.maxHealth / 4f : 50f;
     }
 
     void Update()

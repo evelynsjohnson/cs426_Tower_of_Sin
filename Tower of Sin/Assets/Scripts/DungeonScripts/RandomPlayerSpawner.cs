@@ -5,7 +5,7 @@ public class RandomPlayerSpawner : MonoBehaviour
 {
     public Transform[] spawnPoints;
 
-    void Start()
+    public void SpawnPlayerRandomly()
     {
         if (SceneManager.GetActiveScene().name == "Dungeon_Scene")
         {
