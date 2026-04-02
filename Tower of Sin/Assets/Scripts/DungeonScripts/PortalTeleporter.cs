@@ -42,6 +42,7 @@ public class PortalTeleporter : MonoBehaviour
                 sceneToLoad = "Dungeon_Scene";
                 FloorTextController.floorNumber = 0;
             }
+            // sceneToLoad = "Boss_Scene"; //used this for testing boss room stuff
 
             SceneManager.LoadScene(sceneToLoad);
         }

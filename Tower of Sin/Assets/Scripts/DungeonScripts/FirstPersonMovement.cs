@@ -150,6 +150,8 @@ public class FirstPersonMovement : MonoBehaviour
                     hitEnemy = true;
                     PrisonZombieAI zombie = hitCol.GetComponentInParent<PrisonZombieAI>();
                     if (zombie != null) zombie.TakeDamage(finalDamage, slashChoice);
+                    GluttonyAI gluttony = hitCol.GetComponentInParent<GluttonyAI>();
+                    if (gluttony != null) gluttony.TakeDamage(finalDamage, slashChoice);
                 }
 
                 TargetDummy dummy = hitCol.GetComponentInParent<TargetDummy>();
