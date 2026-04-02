@@ -31,9 +31,9 @@ public class HealthPotion : MonoBehaviour
             if (playerHealth == null) playerHealth = pObj.GetComponentInParent<PlayerHealth>();
         }
 
-        // heal amount should be 1/4 of the player's max health
+        // heal amount should be 1/X of the player's max health
         // TBD might be more healed or less - also depends on the chances of dropping health potion, which is 50% chance right now, which is pretty high
-        healAmount = playerHealth != null ? playerHealth.maxHealth / 4f : 50f;
+        healAmount = playerHealth != null ? playerHealth.maxHealth / 5f : 50f;
     }
 
     void Update()
