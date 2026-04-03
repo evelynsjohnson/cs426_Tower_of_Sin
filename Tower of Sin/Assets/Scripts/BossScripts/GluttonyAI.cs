@@ -18,7 +18,7 @@ public class GluttonyAI : MonoBehaviour
     private bool rolledQuarter = false;
 
     public bool isBlocking = false;
-    private bool isFleeing = false;
+    // private bool isFleeing = false;
     public float blockDuration = 1f;
 
     public GameObject uiCanvasObject;
@@ -64,6 +64,10 @@ public class GluttonyAI : MonoBehaviour
 
     public float healthPotChance = 40f;
     public GameObject healthPotionPrefab;
+
+    private bool isJumping = false;
+    public float jumpHeight = 5f;
+    public float jumpDuration = 1f;
 
     void Start()
     {
@@ -115,46 +119,50 @@ public class GluttonyAI : MonoBehaviour
             healthBarFill.fillAmount = Mathf.Lerp(healthBarFill.fillAmount, targetFill, Time.deltaTime * healthDrainSpeed);
         }
 
-        if (isDead || player == null || isAttacking || isBlocking) return;
+        if (isDead || player == null || isAttacking || isBlocking || isJumping) return;
 
         // hp regen
-        if (Time.time - lastDamageTime >= healDelay && currentHealth < maxHealth)
-        {
-            currentHealth += (maxHealth / 5f) * Time.deltaTime;
-            if (currentHealth > maxHealth) currentHealth = maxHealth;
-            UpdateHealthUI();
-        }
+        // if (Time.time - lastDamageTime >= healDelay && currentHealth < maxHealth)
+        // {
+        //     currentHealth += (maxHealth / 5f) * Time.deltaTime;
+        //     if (currentHealth > maxHealth) currentHealth = maxHealth;
+        //     UpdateHealthUI();
+        // }
 
         Vector3 flatPlayerPos = new Vector3(player.position.x, transform.position.y, player.position.z);
         float flatDistanceToPlayer = Vector3.Distance(transform.position, flatPlayerPos);
 
         // run away
-        if (isFleeing)
-        {
-            if (flatDistanceToPlayer < fleeSafeDistance)
-            {
-                Vector3 dirAwayFromPlayer = (transform.position - flatPlayerPos).normalized;
-                Vector3 fleePos = transform.position + (dirAwayFromPlayer * 2f);
+        // if (isFleeing)
+        // {
+        //     if (flatDistanceToPlayer < fleeSafeDistance)
+        //     {
+        //         Vector3 dirAwayFromPlayer = (transform.position - flatPlayerPos).normalized;
+        //         Vector3 fleePos = transform.position + (dirAwayFromPlayer * 2f);
 
-                agent.isStopped = false;
-                agent.SetDestination(fleePos);
-                animator.SetBool("isWalking", true);
-            }
-            else
-            {
-                agent.isStopped = true;
-                animator.SetBool("isWalking", false);
-            }
-            return;
-        }
+        //         agent.isStopped = false;
+        //         agent.SetDestination(fleePos);
+        //         animator.SetBool("isWalking", true);
+        //     }
+        //     else
+        //     {
+        //         agent.isStopped = true;
+        //         animator.SetBool("isWalking", false);
+        //     }
+        //     return;
+        // }
 
-        Vector3 flatSpawnPos = new Vector3(initialSpawnPosition.x, transform.position.y, initialSpawnPosition.z);
-        float flatDistanceToSpawn = Vector3.Distance(transform.position, flatSpawnPos);
+
 
         float verticalDistance = Mathf.Abs(player.position.y - transform.position.y);
         bool onSameFloor = verticalDistance < 2.5f;
-        sfxAudioSource.mute = !onSameFloor;
-        walkAudioSource.mute = !onSameFloor;
+        if (!onSameFloor && !isJumping && hasSeenPlayer)
+        {
+            StartCoroutine(JumpDownRoutine());
+            return;
+        }
+        // sfxAudioSource.mute = !onSameFloor;
+        // walkAudioSource.mute = !onSameFloor;
 
         idleAudioTimer -= Time.deltaTime;
         if (idleAudioTimer <= 0f)
@@ -163,40 +171,43 @@ public class GluttonyAI : MonoBehaviour
             idleAudioTimer = Random.Range(2f, 5f);
         }
 
-        if (flatDistanceToSpawn > maxLeashDistance)
-        {
-            isReturning = true;
-        }
+        // Vector3 flatSpawnPos = new Vector3(initialSpawnPosition.x, transform.position.y, initialSpawnPosition.z);
+        // float flatDistanceToSpawn = Vector3.Distance(transform.position, flatSpawnPos);
 
-        if (isReturning)
-        {
-            agent.SetDestination(initialSpawnPosition);
-            animator.SetBool("isWalking", true);
+        // if (flatDistanceToSpawn > maxLeashDistance)
+        // {
+        //     isReturning = true;
+        // }
 
-            if (currentHealth < maxHealth)
-            {
-                currentHealth += 10f * Time.deltaTime;
-                if (currentHealth > maxHealth) currentHealth = maxHealth;
-                UpdateHealthUI();
-            }
+        // if (isReturning)
+        // {
+        //     agent.SetDestination(initialSpawnPosition);
+        //     animator.SetBool("isWalking", true);
 
-            if (flatDistanceToSpawn <= agent.stoppingDistance + 0.5f)
-            {
-                isReturning = false;
-                hasSeenPlayer = false;
-                animator.SetBool("isWalking", false);
-            }
-            return;
-        }
+        //     if (currentHealth < maxHealth)
+        //     {
+        //         currentHealth += 10f * Time.deltaTime;
+        //         if (currentHealth > maxHealth) currentHealth = maxHealth;
+        //         UpdateHealthUI();
+        //     }
+
+        //     if (flatDistanceToSpawn <= agent.stoppingDistance + 0.5f)
+        //     {
+        //         isReturning = false;
+        //         hasSeenPlayer = false;
+        //         animator.SetBool("isWalking", false);
+        //     }
+        //     return;
+        // }
 
         // Aggro trigger
-        if (!hasSeenPlayer && flatDistanceToPlayer <= aggroRadius && onSameFloor)
+        if (!hasSeenPlayer && flatDistanceToPlayer <= aggroRadius) //&& onSameFloor
         {
             hasSeenPlayer = true;
             CheckHealthThresholds();
         }
 
-        if (hasSeenPlayer && flatDistanceToPlayer <= aggroRadius)
+        if (hasSeenPlayer) //&& flatDistanceToPlayer <= aggroRadius
         {
             if (flatDistanceToPlayer <= attackRadius && Time.time >= nextAttackTime)
             {
@@ -355,10 +366,10 @@ public class GluttonyAI : MonoBehaviour
         {
             StartCoroutine(EnrageRoutine());
         }
-        else if (roll < blockChance + enrageChance + fleeChance)
-        {
-            isFleeing = true;
-        }
+        // else if (roll < blockChance + enrageChance + fleeChance)
+        // {
+        //     isFleeing = true;
+        // }
         // If it rolls into the remaining %, nothing is done differently
     }
 
@@ -377,7 +388,7 @@ public class GluttonyAI : MonoBehaviour
 
         isAttacking = false;
         isBlocking = false;
-        isFleeing = false;
+        // isFleeing = false;
 
         animator.SetTrigger("die");
 
@@ -446,5 +457,54 @@ public class GluttonyAI : MonoBehaviour
 
         isAttacking = false;
         if (agent.enabled) agent.isStopped = false;
+    }
+
+    private IEnumerator JumpDownRoutine()
+    {
+        isJumping = true;
+
+        // Disable NavMesh so it stops overriding movement
+        agent.enabled = false;
+
+        animator.SetTrigger("jump");
+
+        Vector3 startPos = transform.position;
+
+        // Get player's position (flattened for consistency)
+        Vector3 playerPos = player.position;
+
+        // Optional: stop slightly short so it doesn't overlap player
+        Vector3 direction = (playerPos - startPos).normalized;
+        float landingOffset = 1.5f; // tweak this
+        Vector3 targetPos = playerPos - direction * landingOffset;
+
+        float time = 0f;
+
+        while (time < jumpDuration)
+        {
+
+            float t = time / jumpDuration;
+
+            // Smooth horizontal movement
+            Vector3 horizontalPos = Vector3.Lerp(startPos, targetPos, t);
+
+            // Parabolic vertical arc
+            float height = 4f * jumpHeight * t * (1 - t);
+
+            transform.position = horizontalPos + Vector3.up * height;
+
+            time += Time.deltaTime;
+            yield return null;
+        }
+
+        transform.position = targetPos;
+
+        // Re-enable NavMesh AFTER landing
+        agent.enabled = true;
+
+        // IMPORTANT: warp agent to correct position
+        agent.Warp(transform.position);
+
+        isJumping = false;
     }
 }

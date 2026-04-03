@@ -32,6 +32,7 @@ public class PlayerSpawnHandler : MonoBehaviour
 
     private void Update()
     {
+        //This code was making player not move in boss scene so I commented it out while testing
 
         if (SceneManager.GetActiveScene().name == "Boss_Scene")
         {

@@ -1,13 +1,22 @@
 # CS 426 - Assignment 6 - Tower of Sin
+
 Group members: Evelyn Johnson, Mario Tinoco, Soham Hisabia
 
 ## Name: Mario Tinoco
 
+For Assignment 6 I created a basic boss enemy ai that uses a finite state machine to determine the boss movements.
+
+The boss AI has 5 states; Idle, walk, jump, death, and attack. At the start of the boss fight the boss idles atop a ledge and waits for the player to get close the distnace. Once the AI detects that the player is "close enough" (specific distance can be tweaked in Unity) it triggers the jump state where the boss jumps from the ledge towards the player. When the boss is level with the player it transitions into a walking state where the boss starts walking towards the player. If the player is ever within the boss' attack radius the boss transitions into an attack state. In the futur I plan to make it so that if the player is ever "too far" from the player it once again transitions into the jump state to close the distance. The boss continues to cycle between walk and attack until either the player dies or the boss' health reaches 0. At this point the boss enters it's death state.
+
+I animated the boss when it enters its 5 states using the in class turotial as a base line. The boss AI triggers the animator to perform the needed animations. Boss animations include idle, walking, jump, and attack.
+
+In the future I plan to implement multiple different types of attacks to create variety in the game. Ideally there are 2-3 different attack types/animations per boss (ideally 7, one for each sin). The AI is also a bit wonky at times (sometimes wonders off) so I plan to find the cause of these bugs and find fixes for them.
+
 ## Name: Soham Hisabia
 
-
 ## Name: Evelyn Johnson
-For Assignment 6, I created a zombie enemy AI that combines a finite state machine with probabilistic decision-making, and I later extended its movement with a grid-based A* pathfinding system. I also created an Eyebat trap enemy that uses waypoint-based graph navigation and shortest-path search to follow the player indirectly through the level.
+
+For Assignment 6, I created a zombie enemy AI that combines a finite state machine with probabilistic decision-making, and I later extended its movement with a grid-based A\* pathfinding system. I also created an Eyebat trap enemy that uses waypoint-based graph navigation and shortest-path search to follow the player indirectly through the level.
 
 The FSM controls things like if the player is detected and within aggro range, the zombie begins walking towards them (pursuing), if the player is close enough, the zombie attacks, if the zombie gets too far from its spawnpoint, it walks back, or if its health becomes low, it may flee, block, or become enraged. I also made a Bayesian-style probabilistic decision system called `BayesianBrain`. It computes probabilities for blocking, enraging, fleeing, or just not doing anything and continuing to attack like normal. These probabilities are based on the zombie’s current health, sort of inspired by "fight/flight" mechanics, where lower HP = less likely to block/run away, and more likely to "enrage".
 
@@ -17,7 +26,8 @@ I animated both the player movements/animations and the zombie animations. For t
 
 For physics/lights/textures, I implemented this in the prior assignment. Majority of objects that you'd assume would be movable in real life (books, glasses, chairs, small barrels) are moveable/pushable by the player. Larger objects like tables are not. There are many lights in the form of torches + the portals are lit up (particle system + lighting). And there are a ton of textures. I found pretty much all the models/animations used (except for the bosses), created the UI in Figma, and most of the current combat.
 
-I pretty much just watched a ton of youtube videos. One on NavMesh, one or two on waypoints, and most on A*. I didn't save most of them, but here are some:
+I pretty much just watched a ton of youtube videos. One on NavMesh, one or two on waypoints, and most on A\*. I didn't save most of them, but here are some:
+
 - https://www.youtube.com/watch?v=ji-f-74zfIQ
 - https://www.youtube.com/watch?v=UHnOW-OimLQ
 - https://www.youtube.com/watch?v=alU04hvz6L4

@@ -474,6 +474,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9f7194e95f2218e43ba781b66395cf51, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1719498859092276157}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9f7194e95f2218e43ba781b66395cf51, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6362724076009073290}
   m_SourcePrefab: {fileID: 100100000, guid: 9f7194e95f2218e43ba781b66395cf51, type: 3}
 --- !u!4 &3839637179810387819 stripped
 Transform:
@@ -647,7 +650,7 @@ MonoBehaviour:
   healthBarFill: {fileID: 6353916989295745340}
   healthDrainSpeed: 5
   deathAnimationDuration: 2
-  aggroRadius: 1000
+  aggroRadius: 20
   attackRadius: 2
   maxLeashDistance: 20
   walkSpeed: 1
@@ -663,6 +666,8 @@ MonoBehaviour:
   healDelay: 5
   healthPotChance: 40
   healthPotionPrefab: {fileID: 0}
+  jumpHeight: 5
+  jumpDuration: 1
 --- !u!136 &1719498859092276157
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -686,3 +691,30 @@ CapsuleCollider:
   m_Height: 1
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!54 &6362724076009073290
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4468398794321120721}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
