@@ -150,8 +150,12 @@ public class FirstPersonMovement : MonoBehaviour
                     hitEnemy = true;
                     PrisonZombieAI zombie = hitCol.GetComponentInParent<PrisonZombieAI>();
                     if (zombie != null) zombie.TakeDamage(finalDamage, slashChoice);
+
                     GluttonyAI gluttony = hitCol.GetComponentInParent<GluttonyAI>();
                     if (gluttony != null) gluttony.TakeDamage(finalDamage, slashChoice);
+
+                    EyebatTrapAI eye = hitCol.GetComponentInParent<EyebatTrapAI>();
+                    if (eye != null) eye.TakeDamage(1);
                 }
 
                 TargetDummy dummy = hitCol.GetComponentInParent<TargetDummy>();
@@ -160,6 +164,9 @@ public class FirstPersonMovement : MonoBehaviour
                     hitEnemy = true;
                     dummy.TakeDamage(finalDamage);
                 }
+
+
+
             }
         }
 
@@ -208,6 +215,7 @@ public class FirstPersonMovement : MonoBehaviour
         bool isStrafingRight = horizontalInput > 0.1f;
         bool isCrouching = Input.GetKey(crouchKey);
 
+
         animator.SetBool("isWalkingForward", isMovingForward && !IsRunning);
         animator.SetBool("isRunningForward", isMovingForward && IsRunning);
         animator.SetBool("isWalkingBackward", isMovingBackward && !IsRunning);
@@ -215,6 +223,5 @@ public class FirstPersonMovement : MonoBehaviour
         animator.SetBool("isStrafingLeft", isStrafingLeft);
         animator.SetBool("isStrafingRight", isStrafingRight);
         animator.SetBool("isCrouching", isCrouching);
-        animator.SetBool("IsRunning", IsRunning);
     }
 }

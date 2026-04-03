@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -36,8 +36,11 @@ public class PlayerHealth : MonoBehaviour
     public void TakeDamage(float damage)
     {
         currentHealth -= damage;
+        Debug.Log($"[PlayerHealth] HIT for {damage}. Current HP: {currentHealth}/{maxHealth}");
+
         if (currentHealth <= 0)
         {
+            Debug.Log("[PlayerHealth] PLAYER DIED");
             currentHealth = maxHealth;
             FloorTextController.floorNumber = 1;
             UpdateUI();
@@ -53,6 +56,7 @@ public class PlayerHealth : MonoBehaviour
     public void Heal(float heal)
     {
         currentHealth += heal;
+        Debug.Log($"[PlayerHealth] HEALED for {heal}. HP: {(currentHealth-= heal)} → {currentHealth}/{maxHealth}");
         if (currentHealth >= maxHealth)
         {
             currentHealth = maxHealth;

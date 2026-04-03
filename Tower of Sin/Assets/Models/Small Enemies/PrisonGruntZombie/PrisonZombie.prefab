@@ -2138,7 +2138,16 @@ MonoBehaviour:
   viewDistance: 12
   visionObstructionMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 8
+  pathObstacleMask:
+    serializedVersion: 2
+    m_Bits: 8
+  nodeRadius: 0.4
+  pathNodeHeightOffset: 0.5
+  pathPadding: 2
+  pathRecalculationInterval: 0.35
+  maxGridSizePerAxis: 40
+  waypointReachDistance: 0.25
   hitSound: {fileID: 8300000, guid: 936a255cbc328e7488ba493b99d03c13, type: 3}
   missSound: {fileID: 8300000, guid: 4cfb5552a88fbdd4182e1fdda954ee8b, type: 3}
   idleSound: {fileID: 8300000, guid: f6091eaa10572154187797879ab58a2c, type: 3}
