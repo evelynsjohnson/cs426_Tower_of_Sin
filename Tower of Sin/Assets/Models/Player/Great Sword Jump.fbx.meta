@@ -34,8 +34,8 @@ ModelImporter:
       name: PlayerJump
       takeName: mixamo.com
       internalID: -203655887218126122
-      firstFrame: 0
-      lastFrame: 29
+      firstFrame: 6.7
+      lastFrame: 21.9
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
