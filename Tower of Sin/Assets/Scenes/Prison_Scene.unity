@@ -2986,7 +2986,7 @@ GameObject:
   - component: {fileID: 127328562}
   - component: {fileID: 127328566}
   m_Layer: 5
-  m_Name: Canvas
+  m_Name: IntroSceneCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3068,6 +3068,9 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1033576986}
+  - {fileID: 1562080752}
+  - {fileID: 902806729}
+  - {fileID: 1674287112}
   - {fileID: 1575060523}
   - {fileID: 1966874097}
   - {fileID: 1607098432}
@@ -5814,7 +5817,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 24300002, guid: 37acf924d13abde49898458ba1054559, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: 133fc66c8712fbc4f95f389815d4c46f, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 0.198
   m_Pitch: 1
   Loop: 0
@@ -11838,32 +11841,6 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &487772501
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1773622908903619}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8b98ac074b86e14499be3d07766c1b96, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  ah_another_sinful_soul: {fileID: 8300000, guid: 80611c8a264dac64ea9051b696d2fd6d, type: 3}
-  cast_your_gaze: {fileID: 8300000, guid: c92d7639529389746b27e0d657edcd92, type: 3}
-  you_can_navigate: {fileID: 8300000, guid: 75114c4c55ec3094f86687627446f41c, type: 3}
-  subtitleCanvasGroup: {fileID: 127328566}
-  welcomeText: {fileID: 0}
-  titleText: {fileID: 0}
-  narratorText: {fileID: 1966874098}
-  introMonologue: Ah, another sinful soul. Welcome. I am the one who gathers those
-    who fall, to piece them back together. I am the one who guides lost sinners to
-    their second chance. I am the one who watches, but never interferes. I am known
-    as simply, the Keeper. If you truly wish it, you may yet escape your eternal
-    torment by proving your redemption. Climb the tower, overcome the weight of humanity's
-    greatest flaws, and cleanse your sins in the blood of the climb. Only then shall
-    you leave this place.
 --- !u!1 &488760993
 GameObject:
   m_ObjectHideFlags: 0
@@ -12439,7 +12416,6 @@ GameObject:
   m_Component:
   - component: {fileID: 519332975}
   - component: {fileID: 519332974}
-  - component: {fileID: 519332976}
   m_Layer: 0
   m_Name: NarratorController
   m_TagString: Untagged
@@ -12459,14 +12435,67 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b98ac074b86e14499be3d07766c1b96, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NarratorController
-  ah_another_sinful_soul: {fileID: 8300000, guid: 80611c8a264dac64ea9051b696d2fd6d, type: 3}
-  cast_your_gaze: {fileID: 8300000, guid: c92d7639529389746b27e0d657edcd92, type: 3}
-  you_can_navigate: {fileID: 8300000, guid: 75114c4c55ec3094f86687627446f41c, type: 3}
-  subtitleCanvasGroup: {fileID: 0}
-  welcomeText: {fileID: 0}
-  titleText: {fileID: 0}
-  narratorText: {fileID: 0}
-  introMonologue: 
+  targetSceneName: Prison_Scene
+  playOnlyOncePerSession: 1
+  voiceSource: {fileID: 1031490063144846818}
+  bgSource: {fileID: 1031490063144846818}
+  introBg: {fileID: 8300000, guid: 1f6b145ca8db9c543a6489bb5dc7bce9, type: 3}
+  logoSound: {fileID: 8300000, guid: 5860ed7b065ab4740917182715876f1d, type: 3}
+  sentenceSequence:
+  - sentence: Ah,
+    clip: {fileID: 8300000, guid: 8d1ce71a8f8ac634f8cd9574e3fff4de, type: 3}
+  - sentence: another sinful soul.
+    clip: {fileID: 8300000, guid: 9be4b42c3a5cf6843926f3e71f881e3e, type: 3}
+  - sentence: Welcome.
+    clip: {fileID: 8300000, guid: c5f34c6c275c4c346bef59bcf248f7e1, type: 3}
+  - sentence: I am the one who gathers those who fall,
+    clip: {fileID: 8300000, guid: 3ae41099da9f2444ea454a8d8ca3f377, type: 3}
+  - sentence: to piece them back together.
+    clip: {fileID: 8300000, guid: db22f05905583e74cb3340d1fb4e5736, type: 3}
+  - sentence: 'I am the one who guides lost sinners to their second chance. '
+    clip: {fileID: 8300000, guid: 548e56a4abf22b24bb5433a19ac98cbc, type: 3}
+  - sentence: I am the one who watches,
+    clip: {fileID: 8300000, guid: d16bb08d430246d4785ac52ff52688a8, type: 3}
+  - sentence: but never interferes.
+    clip: {fileID: 8300000, guid: d44df0716e03ded4e8916ee17881d8db, type: 3}
+  - sentence: I am known as simply,
+    clip: {fileID: 8300000, guid: b56617a5c0112aa4aa6008e42b84e888, type: 3}
+  - sentence: the Keeper.
+    clip: {fileID: 8300000, guid: 5a6d8c351892cbf4ab8574b3e3e50f4f, type: 3}
+  - sentence: If you truly wish it,
+    clip: {fileID: 8300000, guid: f2ae3509a2793eb4b91ced3e855869e9, type: 3}
+  - sentence: you may yet escape your eternal torment
+    clip: {fileID: 8300000, guid: fe907acc07feeb84698fa4cfcedcb106, type: 3}
+  - sentence: by proving your redemption.
+    clip: {fileID: 8300000, guid: fe66158b43964644f9644ac6fb8fd17f, type: 3}
+  - sentence: Climb the tower,
+    clip: {fileID: 8300000, guid: fca3bf1bf7d77c84ca1a6876829fa763, type: 3}
+  - sentence: overcome the weight of humanity's greatest flaws
+    clip: {fileID: 8300000, guid: 4d5f05537c2ca4f49850f4dbd3e9ffed, type: 3}
+  - sentence: and cleanse your sins
+    clip: {fileID: 8300000, guid: d95372489a2f400429930f4177c87998, type: 3}
+  - sentence: in the blood of the climb.
+    clip: {fileID: 8300000, guid: 148c2cf3117b6214fa5a34a60af80ba0, type: 3}
+  - sentence: Only then shall you leave this place.
+    clip: {fileID: 8300000, guid: ba5c247c70734e5418476255dbacc035, type: 3}
+  introCanvasGroup: {fileID: 127328566}
+  txt1: {fileID: 1562080753}
+  txt2: {fileID: 902806730}
+  txt3: {fileID: 1674287113}
+  logoImage: {fileID: 1575060524}
+  narratorText: {fileID: 1966874098}
+  skipText: {fileID: 1607098433}
+  initialBlackDelay: 2
+  fadeDuration: 1
+  betweenTitles: 0.25
+  gapBetweenSentences: 0.05
+  logoSoundVolume: 0.11
+  logoFadeDelayAfterSoundStarts: 0
+  logoHold: 0
+  introBgVolume: 0.345
+  spacePause: 0
+  wordSpeedMultiplier: 1.25
+  pauseGameplayDuringCutscene: 1
 --- !u!4 &519332975
 Transform:
   m_ObjectHideFlags: 0
@@ -12475,110 +12504,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 519332973}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.0020389052, y: 0.43314308, z: -0.0046686493, w: -0.9013108}
-  m_LocalPosition: {x: -5.8279333, y: 0.7714123, z: 15.221323}
+  m_LocalRotation: {x: -0, y: -0, z: 1.7462297e-10, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 4207293209181035}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!82 &519332976
-AudioSource:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 519332973}
-  m_Enabled: 1
-  serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 0}
-  m_PlayOnAwake: 1
-  m_Volume: 1
-  m_Pitch: 1
-  Loop: 0
-  Mute: 0
-  Spatialize: 0
-  SpatializePostEffects: 0
-  Priority: 128
-  DopplerLevel: 1
-  MinDistance: 1
-  MaxDistance: 500
-  Pan2D: 0
-  rolloffMode: 0
-  BypassEffects: 0
-  BypassListenerEffects: 0
-  BypassReverbZones: 0
-  rolloffCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 1
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  panLevelCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  spreadCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  reverbZoneMixCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
 --- !u!1 &524830324 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4601402560069699907, guid: c5bbeb82695369241958e411b793cd47, type: 3}
@@ -21425,6 +21357,144 @@ RectTransform:
   m_AnchoredPosition: {x: -310.5, y: -205.79088}
   m_SizeDelta: {x: 200, y: 109.79999}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &902806728
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 902806729}
+  - component: {fileID: 902806731}
+  - component: {fileID: 902806730}
+  m_Layer: 5
+  m_Name: txt2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &902806729
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 902806728}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 127328565}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: -100, y: -200}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &902806730
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 902806728}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: Inspired by the Christian concept of seven deadly sins and games like Baldurs
+    Gate 3 and Cult of the Lamb.
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: 5ef7c746b711b1544b968edfa597beeb, type: 2}
+  m_sharedMaterial: {fileID: -1178033181976060114, guid: 5ef7c746b711b1544b968edfa597beeb, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: -1183493901
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 30
+  m_fontSizeBase: 30
+  m_fontWeight: 400
+  m_enableAutoSizing: 0
+  m_fontSizeMin: 18
+  m_fontSizeMax: 72
+  m_fontStyle: 0
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_characterHorizontalScale: 1
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_TextWrappingMode: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 0
+  m_ActiveFontFeatures: 6e72656b
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_EmojiFallbackSupport: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!222 &902806731
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 902806728}
+  m_CullTransparentMesh: 1
 --- !u!1 &904355290
 GameObject:
   m_ObjectHideFlags: 0
@@ -32722,6 +32792,143 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5981562312196831680, guid: 9219eeec429c86b459f29c67fd3e5e05, type: 3}
   m_PrefabInstance: {fileID: 1554594290}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1562080751
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1562080752}
+  - component: {fileID: 1562080754}
+  - component: {fileID: 1562080753}
+  m_Layer: 5
+  m_Name: txt1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1562080752
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1562080751}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 127328565}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: -100, y: -200}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1562080753
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1562080751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: Game idea by Evelyn Johnson
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: 5ef7c746b711b1544b968edfa597beeb, type: 2}
+  m_sharedMaterial: {fileID: -1178033181976060114, guid: 5ef7c746b711b1544b968edfa597beeb, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: -1183493901
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 30
+  m_fontSizeBase: 30
+  m_fontWeight: 400
+  m_enableAutoSizing: 0
+  m_fontSizeMin: 18
+  m_fontSizeMax: 72
+  m_fontStyle: 0
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_characterHorizontalScale: 1
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_TextWrappingMode: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 0
+  m_ActiveFontFeatures: 6e72656b
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_EmojiFallbackSupport: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!222 &1562080754
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1562080751}
+  m_CullTransparentMesh: 1
 --- !u!1001 &1564471981
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -33038,13 +33245,14 @@ GameObject:
   - component: {fileID: 1575060523}
   - component: {fileID: 1575060525}
   - component: {fileID: 1575060524}
+  - component: {fileID: 1575060526}
   m_Layer: 5
   m_Name: logo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1575060523
 RectTransform:
   m_ObjectHideFlags: 0
@@ -33099,6 +33307,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1575060522}
   m_CullTransparentMesh: 1
+--- !u!225 &1575060526
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1575060522}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1001 &1579173343
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -33503,7 +33723,7 @@ GameObject:
   - component: {fileID: 1607098434}
   - component: {fileID: 1607098433}
   m_Layer: 5
-  m_Name: Text (TMP) (5)
+  m_Name: skip
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -34909,6 +35129,143 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1661181128}
+  m_CullTransparentMesh: 1
+--- !u!1 &1674287111
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1674287112}
+  - component: {fileID: 1674287114}
+  - component: {fileID: 1674287113}
+  m_Layer: 5
+  m_Name: txt3
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1674287112
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1674287111}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 127328565}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: -100, y: -200}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1674287113
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1674287111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: Presenting...
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: 5ef7c746b711b1544b968edfa597beeb, type: 2}
+  m_sharedMaterial: {fileID: -1178033181976060114, guid: 5ef7c746b711b1544b968edfa597beeb, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: -1183493901
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 30
+  m_fontSizeBase: 30
+  m_fontWeight: 400
+  m_enableAutoSizing: 0
+  m_fontSizeMin: 18
+  m_fontSizeMax: 72
+  m_fontStyle: 0
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_characterHorizontalScale: 1
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_TextWrappingMode: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 0
+  m_ActiveFontFeatures: 6e72656b
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_EmojiFallbackSupport: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!222 &1674287114
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1674287111}
   m_CullTransparentMesh: 1
 --- !u!1 &1679963099
 GameObject:
@@ -39598,7 +39955,7 @@ GameObject:
   - component: {fileID: 1966874099}
   - component: {fileID: 1966874098}
   m_Layer: 5
-  m_Name: Text (TMP) (4)
+  m_Name: narratorTxt
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -39651,8 +40008,8 @@ MonoBehaviour:
     flaws, and cleanse your sins in the blood of the climb. Only then shall you leave
     this place.
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 331ec03732aaf82448231be7ea651c35, type: 2}
-  m_sharedMaterial: {fileID: 3987468097576443900, guid: 331ec03732aaf82448231be7ea651c35, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 9de2ac25c00672549ad96a7ee1e3b40a, type: 2}
+  m_sharedMaterial: {fileID: -54032354767442851, guid: 9de2ac25c00672549ad96a7ee1e3b40a, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -39676,8 +40033,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 29.5
-  m_fontSizeBase: 29.5
+  m_fontSize: 40
+  m_fontSizeBase: 40
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -44090,7 +44447,6 @@ GameObject:
   - component: {fileID: 487772498}
   - component: {fileID: 487772497}
   - component: {fileID: 487772496}
-  - component: {fileID: 487772501}
   m_Layer: 0
   m_Name: First Person Controller
   m_TagString: Player
@@ -44117,7 +44473,6 @@ Transform:
   - {fileID: 4464630937568289}
   - {fileID: 4773208322017959}
   - {fileID: 904355293}
-  - {fileID: 519332975}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0.442, y: 51.334, z: -0.381}
 --- !u!4 &4464630937568289
@@ -47979,9 +48334,10 @@ SceneRoots:
   - {fileID: 4207293209181035}
   - {fileID: 1004075639}
   - {fileID: 2042132927}
-  - {fileID: 264677739}
   - {fileID: 1398450939}
   - {fileID: 50833979}
   - {fileID: 598540385}
   - {fileID: 1406613425}
+  - {fileID: 264677739}
+  - {fileID: 519332975}
   - {fileID: 127328565}
