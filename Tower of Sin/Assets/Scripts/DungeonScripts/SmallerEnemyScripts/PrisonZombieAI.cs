@@ -42,7 +42,7 @@ public class PrisonZombieAI : MonoBehaviour
     public float pathPadding = 2f;
     public float pathRecalculationInterval = 0.35f;
     public int maxGridSizePerAxis = 40;
-    public float waypointReachDistance = 0.25f;
+    public float waypointReachDistance = 0.5f;
 
     public AudioClip hitSound;
     public AudioClip missSound;
@@ -185,14 +185,35 @@ public class PrisonZombieAI : MonoBehaviour
 
         if (newPath != null && newPath.Count > 0)
         {
-            currentPath = newPath;
-            currentPathIndex = 0;
+            if (currentPath == null || currentPath.Count == 0 || currentPathIndex >= currentPath.Count)
+            {
+                currentPath = newPath;
+                currentPathIndex = 0;
+            }
+            else
+            {
+                float oldEndDist = Vector3.Distance(currentPath[currentPath.Count - 1], targetPos);
+                float newEndDist = Vector3.Distance(newPath[newPath.Count - 1], targetPos);
+
+                if (newEndDist <= oldEndDist + 0.5f)
+                {
+                    currentPath = newPath;
+                    currentPathIndex = 0;
+                }
+            }
         }
-        else
-        {
-            currentPath.Clear();
-            currentPathIndex = 0;
-        }
+    }
+
+    private bool HasClearPath(Vector3 from, Vector3 to)
+    {
+        Vector3 origin = from + Vector3.up * pathNodeHeightOffset;
+        Vector3 target = to + Vector3.up * pathNodeHeightOffset;
+        Vector3 dir = target - origin;
+        float dist = dir.magnitude;
+
+        if (dist <= 0.01f) return true;
+
+        return !Physics.SphereCast(origin, nodeRadius * 0.8f, dir.normalized, out _, dist, pathObstacleMask);
     }
 
     private void MoveAlongCurrentPath()
@@ -201,6 +222,18 @@ public class PrisonZombieAI : MonoBehaviour
         {
             rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
             return;
+        }
+
+        for (int i = currentPath.Count - 1; i > currentPathIndex; i--)
+        {
+            Vector3 testPoint = currentPath[i];
+            testPoint.y = transform.position.y;
+
+            if (HasClearPath(transform.position, testPoint))
+            {
+                currentPathIndex = i;
+                break;
+            }
         }
 
         while (currentPathIndex < currentPath.Count)
@@ -727,10 +760,21 @@ public class PrisonZombieAI : MonoBehaviour
                 int checkX = node.gridX + x;
                 int checkY = node.gridY + y;
 
-                if (checkX >= 0 && checkX < gridSizeX && checkY >= 0 && checkY < gridSizeY)
+                if (checkX < 0 || checkX >= gridSizeX || checkY < 0 || checkY >= gridSizeY)
+                    continue;
+
+                if (x != 0 && y != 0)
                 {
-                    neighbours.Add(grid[checkX, checkY]);
+                    int sideX = node.gridX + x;
+                    int sideY = node.gridY;
+                    int otherX = node.gridX;
+                    int otherY = node.gridY + y;
+
+                    if (!grid[sideX, sideY].walkable || !grid[otherX, otherY].walkable)
+                        continue;
                 }
+
+                neighbours.Add(grid[checkX, checkY]);
             }
         }
 
