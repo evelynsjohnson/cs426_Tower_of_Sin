@@ -102,7 +102,6 @@ public class FirstPersonMovement : MonoBehaviour
 
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
         {
-            holdTimer = 0f;
             return;
         }
 
