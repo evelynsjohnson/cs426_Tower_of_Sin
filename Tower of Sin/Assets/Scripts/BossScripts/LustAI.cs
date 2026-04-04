@@ -1,0 +1,433 @@
+using UnityEngine;
+using UnityEngine.AI;
+using TMPro;
+using UnityEngine.UI;
+using System.Collections;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LustAI — Lust Boss (Sin #6, final boss in the cycle, most dangerous)
+//
+// Sin mechanic: Lust corrupts the player's controls.
+//   Phase 1: High mobility. Fires homing charm projectiles that, on hit,
+//            INVERT the player's movement controls for 3 seconds.
+//   Phase 2 (below 50% HP): Desperate — teleports behind the player periodically.
+//   Throughout: Lowest HP of all bosses (compensated by control disruption).
+//
+// AI: FSM — Idle → Chase → Attack/Charm → Teleport (phase 2)
+//
+// Requires: FirstPersonMovement.invertControls  (public bool field added to FPM)
+// ─────────────────────────────────────────────────────────────────────────────
+
+[RequireComponent(typeof(NavMeshAgent))]
+[RequireComponent(typeof(AudioSource))]
+public class LustAI : MonoBehaviour
+{
+    // ── Health & Phase ────────────────────────────────────────────────────────
+    public float maxHealth          = 200f;   // 75% of typical — offset by mechanics
+    private float currentHealth;
+    private int   currentPhase      = 1;
+    private bool  phase2Triggered   = false;
+    public float  phase2Threshold   = 0.50f;
+
+    // ── Lust — Charm Projectile ───────────────────────────────────────────────
+    public GameObject charmProjectilePrefab;
+    public float      charmCooldown       = 4f;
+    public float      charmDamage         = 10f;
+    public float      charmInvertDuration = 3f;
+    public float      charmSpeed          = 8f;
+    private float     charmTimer          = 0f;
+
+    // ── Lust — Phase 2 Teleport ───────────────────────────────────────────────
+    public float teleportCooldown    = 6f;
+    public float teleportBehindDist  = 2f;
+    private float teleportTimer      = 0f;
+
+    // ── Damage ────────────────────────────────────────────────────────────────
+    public float  damageToPlayer    = 14f;
+    private float damageMultiplier  = 1f;
+
+    // ── UI ────────────────────────────────────────────────────────────────────
+    public GameObject  uiCanvasObject;
+    public TMP_Text    healthText;
+    public Image       healthBarFill;
+    public float       healthDrainSpeed       = 5f;
+    public float       deathAnimationDuration = 2.5f;
+
+    // ── Movement ──────────────────────────────────────────────────────────────
+    public float walkSpeed      = 6.0f;   // very fast
+    public float aggroRadius    = 18f;
+    public float attackRadius   = 2.5f;
+    public float attackCooldown = 1.8f;
+    public float attackDmgDelay = 0.35f;
+
+    // ── Audio ─────────────────────────────────────────────────────────────────
+    public AudioClip hitSound;
+    public AudioClip missSound;
+    public AudioClip idleSound;
+    public AudioClip walkSound;
+    public AudioClip roarSound;
+    public AudioClip teleportSound;
+
+    // ── Loot ──────────────────────────────────────────────────────────────────
+    public GameObject healthPotionPrefab;
+    public float      healthPotChance = 45f;
+
+    // ── Components ────────────────────────────────────────────────────────────
+    public Animator animator;
+
+    private Transform    player;
+    private Transform    mainCamera;
+    private NavMeshAgent agent;
+    private PlayerHealth playerHealthScript;
+    private FirstPersonMovement playerMovement;
+    private AudioSource  sfxSource;
+    private AudioSource  walkSource;
+
+    // ── State ─────────────────────────────────────────────────────────────────
+    private bool  isDead         = false;
+    private bool  isAttacking    = false;
+    private bool  hasSeenPlayer  = false;
+    private float nextAttackTime = 0f;
+    private float idleAudioTimer = 0f;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    void Start()
+    {
+        // Lust has 75% of base HP
+        maxHealth     = (300f * 0.75f) + ((FloorTextController.floorNumber - 1) * 12f);
+        currentHealth = maxHealth;
+
+        agent       = GetComponent<NavMeshAgent>();
+        agent.speed = walkSpeed;
+
+        sfxSource = GetComponent<AudioSource>();
+        sfxSource.spatialBlend = 1f;
+        sfxSource.rolloffMode  = AudioRolloffMode.Linear;
+        sfxSource.minDistance  = 2f;
+        sfxSource.maxDistance  = 12f;
+
+        walkSource = gameObject.AddComponent<AudioSource>();
+        walkSource.spatialBlend = 1f;
+        walkSource.rolloffMode  = AudioRolloffMode.Linear;
+        walkSource.minDistance  = 2f;
+        walkSource.maxDistance  = 18f;
+        walkSource.clip         = walkSound;
+        walkSource.loop         = true;
+
+        GameObject pObj = GameObject.FindGameObjectWithTag("Player");
+        if (pObj != null)
+        {
+            player             = pObj.transform;
+            playerHealthScript = pObj.GetComponent<PlayerHealth>();
+            playerMovement     = pObj.GetComponent<FirstPersonMovement>();
+            if (playerMovement == null) playerMovement = pObj.GetComponentInChildren<FirstPersonMovement>();
+        }
+
+        if (Camera.main != null) mainCamera = Camera.main.transform;
+        if (healthBarFill != null) healthBarFill.fillAmount = 1f;
+
+        idleAudioTimer = Random.Range(3f, 7f);
+        UpdateHealthUI();
+    }
+
+    void Update()
+    {
+        UpdateHealthBar();
+        if (isDead || player == null) return;
+
+        HandleAudio();
+
+        if (!hasSeenPlayer && FlatDist(transform.position, player.position) <= aggroRadius)
+            hasSeenPlayer = true;
+
+        if (!hasSeenPlayer) return;
+
+        if (!phase2Triggered && currentHealth / maxHealth <= phase2Threshold)
+            TriggerPhase2();
+
+        float dt = Time.deltaTime;
+
+        // Charm projectile — fires regardless of attack state
+        charmTimer += dt;
+        if (charmTimer >= charmCooldown) { charmTimer = 0f; FireCharm(); }
+
+        // Phase 2 teleport
+        if (currentPhase >= 2)
+        {
+            teleportTimer += dt;
+            if (teleportTimer >= teleportCooldown) { teleportTimer = 0f; TeleportBehindPlayer(); }
+        }
+
+        if (isAttacking) return;
+
+        float dist = FlatDist(transform.position, player.position);
+
+        if (dist <= aggroRadius)
+        {
+            FacePlayer();
+
+            if (dist <= attackRadius && Time.time >= nextAttackTime)
+                StartCoroutine(AttackRoutine());
+            else if (dist > attackRadius)
+            {
+                agent.isStopped = false;
+                agent.SetDestination(player.position);
+                animator?.SetBool("isWalking", true);
+                if (!walkSource.isPlaying) walkSource.Play();
+            }
+            else
+            {
+                agent.isStopped = true;
+                animator?.SetBool("isWalking", false);
+                walkSource.Pause();
+            }
+        }
+        else
+        {
+            agent.isStopped = true;
+            animator?.SetBool("isWalking", false);
+            walkSource.Pause();
+        }
+    }
+
+    void LateUpdate()
+    {
+        if (uiCanvasObject != null && mainCamera != null)
+            uiCanvasObject.transform.LookAt(uiCanvasObject.transform.position + mainCamera.forward);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  Phase 2
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private void TriggerPhase2()
+    {
+        phase2Triggered = true;
+        currentPhase    = 2;
+        teleportTimer   = 1f;              // first teleport comes quickly
+        attackCooldown *= 0.7f;            // attacks faster in desperation
+        damageMultiplier *= 1.2f;
+        animator?.SetTrigger("roar");
+        if (roarSound != null) sfxSource.PlayOneShot(roarSound);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  Charm projectile
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private void FireCharm()
+    {
+        if (charmProjectilePrefab == null || player == null) return;
+
+        Vector3 spawnPos = transform.position + Vector3.up * 1.2f;
+        Vector3 dir      = (player.position - spawnPos).normalized;
+
+        GameObject proj = Instantiate(charmProjectilePrefab, spawnPos, Quaternion.LookRotation(dir));
+
+        LustCharmProjectile cp = proj.AddComponent<LustCharmProjectile>();
+        cp.damage         = charmDamage;
+        cp.invertDuration = charmInvertDuration;
+        cp.speed          = charmSpeed;
+        cp.target         = player;
+        cp.playerMovement = playerMovement;
+
+        Destroy(proj, 6f);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  Teleport behind player (phase 2)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private void TeleportBehindPlayer()
+    {
+        if (player == null) return;
+
+        Vector3 behindPlayer = player.position - player.forward * teleportBehindDist;
+
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(behindPlayer, out hit, 5f, NavMesh.AllAreas))
+        {
+            transform.position = hit.position;
+            if (agent != null) agent.Warp(hit.position);
+        }
+
+        if (teleportSound != null) sfxSource.PlayOneShot(teleportSound);
+
+        FacePlayer();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  Melee attack
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private IEnumerator AttackRoutine()
+    {
+        isAttacking     = true;
+        agent.isStopped = true;
+        FacePlayer();
+
+        animator?.SetTrigger("attack");
+
+        yield return new WaitForSeconds(attackDmgDelay);
+
+        if (!isDead && player != null)
+        {
+            if (FlatDist(transform.position, player.position) <= attackRadius + 0.5f)
+            {
+                if (playerHealthScript != null)
+                    playerHealthScript.TakeDamage(damageToPlayer * damageMultiplier);
+                if (hitSound != null) sfxSource.PlayOneShot(hitSound);
+            }
+            else
+            {
+                if (missSound != null) sfxSource.PlayOneShot(missSound);
+            }
+        }
+
+        nextAttackTime = Time.time + (attackCooldown - attackDmgDelay);
+        isAttacking    = false;
+        if (agent != null) agent.isStopped = false;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  Damage
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public void TakeDamage(float amount)
+    {
+        if (isDead) return;
+
+        currentHealth -= amount;
+        currentHealth  = Mathf.Max(0f, currentHealth);
+        UpdateHealthUI();
+
+        if (currentHealth <= 0f) Die();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  Death — make sure controls are restored if she dies mid-inversion
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private void Die()
+    {
+        if (isDead) return;
+        isDead = true;
+
+        // Restore player controls if charm was active
+        if (playerMovement != null) playerMovement.invertControls = false;
+
+        StopAllCoroutines();
+        animator?.SetTrigger("die");
+        if (agent.enabled) agent.enabled = false;
+        GetComponent<Collider>().enabled  = false;
+
+        if (healthText != null) healthText.text = "";
+        walkSource?.Stop();
+        sfxSource?.Stop();
+
+        if (healthPotionPrefab != null && Random.Range(0f, 100f) < healthPotChance)
+            Instantiate(healthPotionPrefab, transform.position + Vector3.up * 0.2f, Quaternion.identity);
+
+        StartCoroutine(HideUIAfterDeath());
+    }
+
+    private IEnumerator HideUIAfterDeath()
+    {
+        yield return new WaitForSeconds(deathAnimationDuration);
+        if (uiCanvasObject != null) uiCanvasObject.SetActive(false);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  Helpers
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private void FacePlayer()
+    {
+        if (player == null) return;
+        Vector3 dir = player.position - transform.position;
+        dir.y = 0f;
+        if (dir != Vector3.zero)
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 10f);
+    }
+
+    private float FlatDist(Vector3 a, Vector3 b)
+        => Vector3.Distance(new Vector3(a.x, 0f, a.z), new Vector3(b.x, 0f, b.z));
+
+    private void HandleAudio()
+    {
+        float vertDist  = Mathf.Abs(player.position.y - transform.position.y);
+        bool  sameFloor = vertDist < 2.5f;
+        sfxSource.mute  = !sameFloor;
+        walkSource.mute = !sameFloor;
+
+        idleAudioTimer -= Time.deltaTime;
+        if (idleAudioTimer <= 0f)
+        {
+            if (idleSound != null && sameFloor) sfxSource.PlayOneShot(idleSound);
+            idleAudioTimer = Random.Range(4f, 8f);
+        }
+    }
+
+    private void UpdateHealthBar()
+    {
+        if (healthBarFill == null) return;
+        healthBarFill.fillAmount = Mathf.Lerp(
+            healthBarFill.fillAmount, currentHealth / maxHealth, Time.deltaTime * healthDrainSpeed);
+    }
+
+    private void UpdateHealthUI()
+    {
+        if (healthText != null) healthText.text = (int)currentHealth + "/" + (int)maxHealth;
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, aggroRadius);
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, attackRadius);
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LustCharmProjectile — homing projectile, inverts player movement on hit
+// Self-contained, spawned by LustAI.FireCharm()
+// ─────────────────────────────────────────────────────────────────────────────
+public class LustCharmProjectile : MonoBehaviour
+{
+    public float  damage;
+    public float  invertDuration;
+    public float  speed;
+    public Transform target;
+    public FirstPersonMovement playerMovement;
+
+    void Update()
+    {
+        if (target == null) { Destroy(gameObject); return; }
+
+        Vector3 dir = (target.position + Vector3.up * 1f - transform.position).normalized;
+        transform.position += dir * speed * Time.deltaTime;
+        transform.rotation  = Quaternion.LookRotation(dir);
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (!other.CompareTag("Player")) return;
+
+        PlayerHealth ph = other.GetComponent<PlayerHealth>();
+        if (ph == null) ph = other.GetComponentInParent<PlayerHealth>();
+        if (ph != null) ph.TakeDamage(damage);
+
+        if (playerMovement != null)
+            playerMovement.StartCoroutine(InvertRoutine());
+
+        Destroy(gameObject);
+    }
+
+    private System.Collections.IEnumerator InvertRoutine()
+    {
+        playerMovement.invertControls = true;
+        yield return new WaitForSeconds(invertDuration);
+        playerMovement.invertControls = false;
+    }
+}

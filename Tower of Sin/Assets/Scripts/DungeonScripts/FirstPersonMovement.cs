@@ -52,6 +52,9 @@ public class FirstPersonMovement : MonoBehaviour
 
     public List<System.Func<float>> speedOverrides = new List<System.Func<float>>();
 
+    // Set to true by LustAI charm projectile — inverts WASD for N seconds
+    public bool invertControls = false;
+
     [Header("Audio Offsets")]
     public float slash1AudioOffset = 0.2f;
     public float slash2AudioOffset = 0.5f; // Starts 0.5 seconds in
@@ -156,6 +159,24 @@ public class FirstPersonMovement : MonoBehaviour
 
                     EyebatTrapAI eye = hitCol.GetComponentInParent<EyebatTrapAI>();
                     if (eye != null) eye.TakeDamage(1);
+
+                    WrathAI wrath = hitCol.GetComponentInParent<WrathAI>();
+                    if (wrath != null) wrath.TakeDamage(finalDamage);
+
+                    EnvyAI envy = hitCol.GetComponentInParent<EnvyAI>();
+                    if (envy != null) envy.TakeDamage(finalDamage, slashChoice);
+
+                    PrideAI pride = hitCol.GetComponentInParent<PrideAI>();
+                    if (pride != null) pride.TakeDamage(finalDamage);
+
+                    SlothAI sloth = hitCol.GetComponentInParent<SlothAI>();
+                    if (sloth != null) sloth.TakeDamage(finalDamage);
+
+                    LustAI lust = hitCol.GetComponentInParent<LustAI>();
+                    if (lust != null) lust.TakeDamage(finalDamage);
+
+                    GreedAI greed = hitCol.GetComponentInParent<GreedAI>();
+                    if (greed != null) greed.TakeDamage(finalDamage);
                 }
 
                 TargetDummy dummy = hitCol.GetComponentInParent<TargetDummy>();
@@ -200,7 +221,10 @@ public class FirstPersonMovement : MonoBehaviour
         float targetMovingSpeed = IsRunning ? runSpeed : speed;
         if (speedOverrides.Count > 0) targetMovingSpeed = speedOverrides[speedOverrides.Count - 1]();
 
-        Vector2 targetVelocity = new Vector2(currentHorizontalInput * targetMovingSpeed, currentVerticalInput * targetMovingSpeed);
+        float hInput = invertControls ? -currentHorizontalInput : currentHorizontalInput;
+        float vInput = invertControls ? -currentVerticalInput   : currentVerticalInput;
+
+        Vector2 targetVelocity = new Vector2(hInput * targetMovingSpeed, vInput * targetMovingSpeed);
 
         rigidbody.linearVelocity = transform.rotation * new Vector3(targetVelocity.x, rigidbody.linearVelocity.y, targetVelocity.y);
     }
