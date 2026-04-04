@@ -339,9 +339,8 @@ GameObject:
   - component: {fileID: 1089547852}
   - component: {fileID: 1089547851}
   - component: {fileID: 1089547849}
-  - component: {fileID: 1089547848}
-  - component: {fileID: 1089547847}
-  - component: {fileID: 1089547846}
+  - component: {fileID: 1089547854}
+  - component: {fileID: 1089547853}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Enemy
@@ -349,52 +348,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1089547846
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1089547845}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 77a754f5263d62f47864d2d021bdfc8a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyAnimator
---- !u!114 &1089547847
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1089547845}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a9a78e1af7839354897f13f9a1adcf72, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SoldierEnemy
-  maxHP: 50
-  atk: 10
-  deathDelay: 2.5
-  aggroRange: 10
-  attackRange: 2
-  attackCooldown: 1.5
-  turnSpeed: 8
---- !u!114 &1089547848
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1089547845}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 96b3c73cab02993479c0859c81b32651, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Enemy
-  maxHP: 50
-  atk: 10
-  deathDelay: 2.5
 --- !u!136 &1089547849
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -456,9 +409,162 @@ Transform:
   - {fileID: 1338458474}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1089547853
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1089547845}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea4e570cc44d23746a904c1b814e09ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WrathAI
+  maxHealth: 300
+  phase2Threshold: 0.5
+  damageSwipe: 20
+  damagePunch: 25
+  damageSlam: 30
+  slamRadius: 4
+  slamVFXPrefab: {fileID: 0}
+  hitInvincibilityDuration: 0.3
+  uiCanvasObject: {fileID: 0}
+  healthText: {fileID: 0}
+  healthBarFill: {fileID: 0}
+  healthDrainSpeed: 5
+  deathAnimationDuration: 2.5
+  walkSpeed: 3
+  runSpeed: 5.5
+  aggroRadius: 18
+  attackRadius: 2.5
+  cdSwipe: 1.8
+  cdPunch: 2.2
+  cdSlam: 6
+  cdRoar: 999
+  attackDmgDelay: 0.45
+  wIdle: 0.1
+  wWalk: 1
+  wRun: 1.2
+  wSwipe: 2
+  wPunch: 1.8
+  wSlam: 1.6
+  wRoar: 3
+  momentumPenalty: 0.45
+  hitSound: {fileID: 0}
+  missSound: {fileID: 0}
+  idleSound: {fileID: 0}
+  walkSound: {fileID: 0}
+  roarSound: {fileID: 0}
+  slamSound: {fileID: 0}
+  healthPotionPrefab: {fileID: 0}
+  healthPotChance: 40
+  animator: {fileID: 1338458475}
+--- !u!82 &1089547854
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1089547845}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!4 &1338458474 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: df011565361b00e45be2c6a3c226152e, type: 3}
+  m_PrefabInstance: {fileID: 414925580}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &1338458475 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: df011565361b00e45be2c6a3c226152e, type: 3}
   m_PrefabInstance: {fileID: 414925580}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1552358977
