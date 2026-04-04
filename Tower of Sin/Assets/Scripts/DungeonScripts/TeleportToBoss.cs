@@ -7,9 +7,16 @@ public class TeleportToBoss : MonoBehaviour
     public void Teleport()
     {
         int currentFloor = FloorTextController.floorNumber;
-        FloorTextController.floorNumber = ((currentFloor / 5) + 1) * 5;
+        if (currentFloor == 0 )
+        {
+            FloorTextController.floorNumber = 4;
+        }
+        else
+        {
+            FloorTextController.floorNumber = ((currentFloor / 5) + 1) * 5 - 1;
+            // this formula isn't quite right because the floor num also gets updated somewhere else (?)
+        }
 
-        Debug.Log("Teleporting to Boss! New Floor Set To: " + FloorTextController.floorNumber);
 
         SceneManager.LoadScene(bossSceneName);
     }

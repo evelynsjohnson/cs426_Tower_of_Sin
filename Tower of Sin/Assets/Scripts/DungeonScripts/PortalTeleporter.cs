@@ -9,7 +9,6 @@ public class PortalTeleporter : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // <-- CHECK THE LOCK HERE
         if (other.CompareTag("Player") && !isTeleporting)
         {
             isTeleporting = true;

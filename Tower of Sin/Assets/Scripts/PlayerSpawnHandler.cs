@@ -3,6 +3,21 @@ using UnityEngine.SceneManagement;
 
 public class PlayerSpawnHandler : MonoBehaviour
 {
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        SpawnPlayer();
+    }
+
     public void SpawnPlayer()
     {
         GameObject player = GameObject.FindWithTag("Player");
@@ -10,6 +25,7 @@ public class PlayerSpawnHandler : MonoBehaviour
         if (player != null)
         {
             CharacterController cc = player.GetComponent<CharacterController>();
+
             if (cc != null)
             {
                 cc.enabled = false;
@@ -21,38 +37,6 @@ public class PlayerSpawnHandler : MonoBehaviour
             if (cc != null)
             {
                 cc.enabled = true;
-            }
-        }
-    }
-
-    private void Start()
-    {
-        SpawnPlayer();
-    }
-
-    private void Update()
-    {
-        //This code was making player not move in boss scene so I commented it out while testing
-
-        if (SceneManager.GetActiveScene().name == "Boss_Scene")
-        {
-            GameObject player = GameObject.FindWithTag("Player");
-
-            if (player != null)
-            {
-                CharacterController cc = player.GetComponent<CharacterController>();
-                if (cc != null)
-                {
-                    cc.enabled = false;
-                }
-
-                player.transform.position = transform.position;
-                player.transform.rotation = transform.rotation;
-
-                if (cc != null)
-                {
-                    cc.enabled = true;
-                }
             }
         }
     }

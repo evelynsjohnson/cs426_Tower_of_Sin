@@ -49207,6 +49207,7 @@ GameObject:
   - component: {fileID: 54063890457764325}
   - component: {fileID: 487772499}
   - component: {fileID: 1031490063144846818}
+  - component: {fileID: 1031490063144846819}
   m_Layer: 0
   m_Name: First Person Controller
   m_TagString: Player
@@ -49598,10 +49599,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.2898064
-  m_Height: 1.6096861
+  m_Radius: 0.27415872
+  m_Height: 1.6678483
   m_Direction: 1
-  m_Center: {x: 0.002420492, y: 0.81015134, z: -0.099999905}
+  m_Center: {x: 0.02744954, y: 0.8392107, z: 0.2}
 --- !u!1 &152878827392259658
 GameObject:
   m_ObjectHideFlags: 0
@@ -50097,6 +50098,18 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1031490063144846819
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1773622908903619}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90a7be02d1ae2aa48853717e2c158f3e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
 --- !u!4 &1031632035744516538
 Transform:
   m_ObjectHideFlags: 0
