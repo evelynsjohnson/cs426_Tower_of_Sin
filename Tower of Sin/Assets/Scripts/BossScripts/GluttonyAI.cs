@@ -3,6 +3,7 @@ using UnityEngine.AI;
 using TMPro;
 using UnityEngine.UI;
 using System.Collections;
+using System.Diagnostics;
 
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(AudioSource))]
@@ -158,6 +159,7 @@ public class GluttonyAI : MonoBehaviour
         bool onSameFloor = verticalDistance < 2.5f;
         if (!onSameFloor && !isJumping && hasSeenPlayer)
         {
+            print("Jump");
             StartCoroutine(JumpDownRoutine());
             return;
         }
@@ -207,7 +209,7 @@ public class GluttonyAI : MonoBehaviour
             CheckHealthThresholds();
         }
 
-        if (hasSeenPlayer) //&& flatDistanceToPlayer <= aggroRadius
+        if (hasSeenPlayer) // && flatDistanceToPlayer <= aggroRadius
         {
             if (flatDistanceToPlayer <= attackRadius && Time.time >= nextAttackTime)
             {
@@ -499,12 +501,25 @@ public class GluttonyAI : MonoBehaviour
 
         transform.position = targetPos;
 
-        // Re-enable NavMesh AFTER landing
         agent.enabled = true;
-
-        // IMPORTANT: warp agent to correct position
         agent.Warp(transform.position);
 
+        // Ensure valid navmesh position
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(transform.position, out hit, 2f, NavMesh.AllAreas))
+        {
+            agent.Warp(hit.position);
+        }
+
+        hasSeenPlayer = true;
+        agent.isStopped = false;
+        agent.SetDestination(player.position);
+        animator.SetBool("isWalking", true);
+
         isJumping = false;
+        UnityEngine.Debug.Log("On NavMesh: " + agent.isOnNavMesh);
+        UnityEngine.Debug.Log("Path Pending: " + agent.pathPending);
+        UnityEngine.Debug.Log("Has Path: " + agent.hasPath);
+        UnityEngine.Debug.Log("Velocity: " + agent.velocity);
     }
 }
