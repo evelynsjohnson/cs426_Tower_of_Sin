@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Collections;
+using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(AudioSource))]
 public class FirstPersonMovement : MonoBehaviour
 {
     public float speed = 5;
-
     public bool canRun = true;
     public bool IsRunning { get; private set; }
     public float runSpeed = 9;
@@ -36,6 +36,13 @@ public class FirstPersonMovement : MonoBehaviour
 
     public float slash2AnimDuration = 1.30f;
     public float slash2HitDelay = 0.30f;
+
+    public GroundCheck groundCheck;
+    public float jumpHeight = 2f;
+    public float jumpCooldown = 0.1f;
+
+    private bool jumpQueued = false;
+    private float lastJumpTime = -999f;
 
     public AudioClip swordSwing1;
     public AudioClip swordSwing2;
@@ -75,6 +82,18 @@ public class FirstPersonMovement : MonoBehaviour
         currentVerticalInput = Input.GetAxisRaw("Vertical");
         IsRunning = canRun && Input.GetKey(runningKey);
 
+        if (Input.GetKeyDown(jumpKey) &&
+            groundCheck != null &&
+            groundCheck.isGrounded &&
+            Time.time > lastJumpTime + jumpCooldown)
+        {
+            jumpQueued = true;
+            lastJumpTime = Time.time;
+
+            if (animator != null)
+                animator.SetTrigger("isJumping");
+        }
+
         UpdateAnimationStates(currentHorizontalInput, currentVerticalInput);
     }
 
@@ -82,7 +101,12 @@ public class FirstPersonMovement : MonoBehaviour
     {
         if (animator == null) return;
 
-        if (Input.GetKeyDown(jumpKey)) animator.SetTrigger("isJumping");
+        //if (Input.GetKeyDown(jumpKey)) animator.SetTrigger("isJumping");
+
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+        {
+            return;
+        }
 
         if (Time.time >= nextSlashTime)
         {
@@ -219,14 +243,34 @@ public class FirstPersonMovement : MonoBehaviour
     void FixedUpdate()
     {
         float targetMovingSpeed = IsRunning ? runSpeed : speed;
-        if (speedOverrides.Count > 0) targetMovingSpeed = speedOverrides[speedOverrides.Count - 1]();
+        if (speedOverrides.Count > 0)
+            targetMovingSpeed = speedOverrides[speedOverrides.Count - 1]();
 
-        float hInput = invertControls ? -currentHorizontalInput : currentHorizontalInput;
-        float vInput = invertControls ? -currentVerticalInput   : currentVerticalInput;
+        Vector3 forward = cameraTransform.forward;
+        Vector3 right = cameraTransform.right;
 
-        Vector2 targetVelocity = new Vector2(hInput * targetMovingSpeed, vInput * targetMovingSpeed);
+        forward.y = 0f;
+        right.y = 0f;
+        forward.Normalize();
+        right.Normalize();
 
-        rigidbody.linearVelocity = transform.rotation * new Vector3(targetVelocity.x, rigidbody.linearVelocity.y, targetVelocity.y);
+        Vector3 moveDir = (right * currentHorizontalInput + forward * currentVerticalInput).normalized;
+        Vector3 velocity = moveDir * targetMovingSpeed;
+
+        float yVelocity = rigidbody.linearVelocity.y;
+
+        if (jumpQueued)
+        {
+            float jumpVelocity = Mathf.Sqrt(2f * Physics.gravity.magnitude * jumpHeight);
+            yVelocity = jumpVelocity;
+            jumpQueued = false;
+        }
+
+        rigidbody.linearVelocity = new Vector3(
+            velocity.x,
+            yVelocity,
+            velocity.z
+        );
     }
 
     void UpdateAnimationStates(float horizontalInput, float verticalInput)

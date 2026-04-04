@@ -1,11 +1,13 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Audio;
 
 public class VolumeManager : MonoBehaviour
 {
+    public AudioMixer audioMixer;
     public Slider volumeSlider;
 
-    [Range(0f, 1f)]
+    [Range(0.0001f, 1f)]
     public float defaultVolume = 0.25f;
 
     void Start()
@@ -13,19 +15,17 @@ public class VolumeManager : MonoBehaviour
         if (volumeSlider != null)
         {
             volumeSlider.value = defaultVolume;
-        }
 
-        // Immediately apply
-        SetVolume(defaultVolume);
+            SetVolume(defaultVolume);
 
-        if (volumeSlider != null)
-        {
             volumeSlider.onValueChanged.AddListener(SetVolume);
         }
     }
 
-    public void SetVolume(float volume)
+    public void SetVolume(float value)
     {
-        AudioListener.volume = volume;
+        float clamped = Mathf.Clamp(value, 0.0001f, 1f);
+        float dB = Mathf.Log10(clamped) * 20f;
+        audioMixer.SetFloat("MasterVolume", dB);
     }
 }
