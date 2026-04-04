@@ -24625,7 +24625,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1004075635}
-  m_LocalRotation: {x: -0, y: -0, z: 1.7462297e-10, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
@@ -24637,7 +24637,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -2.7709408, y: -9.947157}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
 --- !u!4 &1004597217 stripped
@@ -49555,6 +49555,7 @@ MonoBehaviour:
   swordSwing2: {fileID: 8300000, guid: f66e36dccab7a1d4b93fc6dba655e772, type: 3}
   swordWoosh1: {fileID: 8300000, guid: 699622307d6c8084e9cf2c9ce6d38584, type: 3}
   swordWoosh2: {fileID: 8300000, guid: 0cd36dbbaa79a9d45a1c5d4555975871, type: 3}
+  invertControls: 0
   slash1AudioOffset: 0
   slash2AudioOffset: 0.62
 --- !u!124 &124991110401576831
