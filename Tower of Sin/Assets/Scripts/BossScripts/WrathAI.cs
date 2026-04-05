@@ -420,7 +420,7 @@ public class WrathAI : MonoBehaviour
             }
         }
 
-        yield return new WaitForSeconds(0.8f);
+        yield return new WaitForSeconds(2.667f - attackDmgDelay);
         isActing = false;
     }
 
@@ -449,7 +449,7 @@ public class WrathAI : MonoBehaviour
             }
         }
 
-        yield return new WaitForSeconds(1.0f);
+        yield return new WaitForSeconds(1.1f - (attackDmgDelay + 0.1f));
         isActing = false;
     }
 
@@ -460,10 +460,10 @@ public class WrathAI : MonoBehaviour
         agent.isStopped = true;
         FacePlayer();
 
-        animator.SetTrigger("roar");   // reuse roar anim as slam wind-up
+        animator.SetTrigger("slam");
         nextSlam = Time.time + cdSlam;
 
-        yield return new WaitForSeconds(0.7f);
+        yield return new WaitForSeconds(1.85f);  // ~halfway through jump attack = impact point
 
         // Spawn VFX at ground level
         if (slamVFXPrefab != null)
@@ -479,7 +479,7 @@ public class WrathAI : MonoBehaviour
                 playerHealthScript.TakeDamage(damageSlam * damageMultiplier);
         }
 
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(3.7f - 1.85f);
         isActing = false;
     }
 
@@ -494,7 +494,7 @@ public class WrathAI : MonoBehaviour
 
         if (roarSound != null) sfxSource.PlayOneShot(roarSound);
 
-        yield return new WaitForSeconds(1.8f);
+        yield return new WaitForSeconds(5.4f);
 
         // Permanent phase 2 enrage boosts
         damageMultiplier *= 1.8f;
