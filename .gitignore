@@ -97,3 +97,14 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+Tower of Sin/Outputs/
+Tower of Sin/Library/
+Tower of Sin/Logs/
+Tower of Sin/obj/
+Tower of Sin/.vs/
+
+Tower of Sin/*.csproj
+Tower of Sin/*.sln
+Tower of Sin/*.slnx
+Tower of Sin/.vscode/
