@@ -1,43 +1,39 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class PlayerSpawnHandler : MonoBehaviour
 {
-    private void OnEnable()
-    {
-        SceneManager.sceneLoaded += OnSceneLoaded;
-    }
-
-    private void OnDisable()
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-    }
-
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        SpawnPlayer();
-    }
+    public Transform spawnPoint;
 
     public void SpawnPlayer()
     {
         GameObject player = GameObject.FindWithTag("Player");
 
-        if (player != null)
+        if (player == null)
         {
-            CharacterController cc = player.GetComponent<CharacterController>();
-
-            if (cc != null)
-            {
-                cc.enabled = false;
-            }
-
-            player.transform.position = transform.position;
-            player.transform.rotation = transform.rotation;
-
-            if (cc != null)
-            {
-                cc.enabled = true;
-            }
+            Debug.LogWarning("No player found with tag Player");
+            return;
         }
+
+        if (spawnPoint == null)
+        {
+            Debug.LogWarning("Spawn point not assigned");
+            return;
+        }
+
+        CharacterController cc = player.GetComponent<CharacterController>();
+        if (cc != null)
+        {
+            cc.enabled = false;
+        }
+
+        player.transform.position = spawnPoint.position;
+        player.transform.rotation = Quaternion.Euler(0f, spawnPoint.eulerAngles.y, 0f);
+
+        if (cc != null)
+        {
+            cc.enabled = true;
+        }
+
+        Debug.Log("Spawned player at " + spawnPoint.name);
     }
 }

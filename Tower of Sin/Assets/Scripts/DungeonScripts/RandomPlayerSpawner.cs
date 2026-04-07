@@ -14,12 +14,13 @@ public class RandomPlayerSpawner : MonoBehaviour
             if (player != null && spawnPoints.Length > 0)
             {
                 int randomIndex = Random.Range(0, spawnPoints.Length);
+                Transform spawn = spawnPoints[randomIndex];
 
                 CharacterController cc = player.GetComponent<CharacterController>();
                 if (cc != null) cc.enabled = false;
 
-                player.transform.position = spawnPoints[randomIndex].position;
-                player.transform.rotation = spawnPoints[randomIndex].rotation;
+                player.transform.position = spawn.position;
+                // temporarily remove rotation line for debugging
 
                 if (cc != null) cc.enabled = true;
             }
