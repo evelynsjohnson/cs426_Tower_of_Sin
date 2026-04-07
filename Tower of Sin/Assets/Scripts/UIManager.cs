@@ -18,7 +18,8 @@ public class UIManager : MonoBehaviour
     {
         weapon = 0;
         numPotions = 0;
-        PotionsText.text = "" + numPotions + "/" + maxPotions;
+        if (PotionsText != null)
+            PotionsText.text = "" + numPotions + "/" + maxPotions;
     }
 
     // Update is called once per frame
@@ -27,13 +28,15 @@ public class UIManager : MonoBehaviour
         if (numPotions < maxPotions)
         {
             numPotions++;
-            PotionsText.text = "" + numPotions + "/" + maxPotions;
+            if (PotionsText != null)
+                PotionsText.text = "" + numPotions + "/" + maxPotions;
         }
     }
     void SubPotion()
     {
         numPotions--;
-        PotionsText.text = "" + numPotions + "/" + maxPotions;
+        if (PotionsText != null)
+            PotionsText.text = "" + numPotions + "/" + maxPotions;
     }
 
     void changeWeapon(int newWeapon)

@@ -103,7 +103,8 @@ public class OpenChest : MonoBehaviour
         }
         if (isOpen)
         {
-            playerUI.AddPotion();
+            if (playerUI != null)
+                playerUI.AddPotion();
             //todo: add random weapon to inventory
         }
 
