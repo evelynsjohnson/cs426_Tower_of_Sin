@@ -1166,7 +1166,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &50833977
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12795,7 +12795,7 @@ GameObject:
   - component: {fileID: 519332975}
   - component: {fileID: 519332974}
   m_Layer: 0
-  m_Name: NarratorController
+  m_Name: IntroController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -33108,7 +33108,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1398450937
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33345,7 +33345,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4246456775553503176, guid: 1ee08389b6160954fb765f1f492ad509, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -48991,7 +48991,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 1
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!64 &2143360437
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -49517,7 +49517,7 @@ MonoBehaviour:
   movement: {fileID: 114963312205644127}
   movementSpeed: 2
   headToLower: {fileID: 4490257813953675}
-  crouchYHeadPosition: 1
+  crouchYHeadPosition: 0.75
   colliderToLower: {fileID: 136877096852500177}
 --- !u!114 &114963312205644127
 MonoBehaviour:

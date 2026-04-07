@@ -6,7 +6,7 @@ public class ShowObj : MonoBehaviour
 
     void Update()
     {
-        bool shouldShow = (FloorTextController.floorNumber == 0);
+        bool shouldShow = (FloorTextController.floorNumber <= 4);
 
         if (shouldShow != lastState)
         {
@@ -22,6 +22,5 @@ public class ShowObj : MonoBehaviour
             child.gameObject.SetActive(state);
         }
 
-        Debug.Log("Floor is " + FloorTextController.floorNumber + ". Children set to: " + state);
     }
 }

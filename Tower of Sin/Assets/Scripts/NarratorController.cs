@@ -157,7 +157,9 @@ public class NarratorController : MonoBehaviour
         PlayVoice(logoSound, logoSoundVolume);
         if (skipRequested) { End(); yield break; }
 
-        yield return FadeLogo(0f, 3f, fadeDuration + 2f);
+        yield return Wait(.25f);
+
+        yield return FadeLogo(0f, 3f, 5f);
         if (skipRequested) { End(); yield break; }
 
         if (voiceSource != null)
@@ -169,7 +171,7 @@ public class NarratorController : MonoBehaviour
             }
         }
 
-        yield return FadeLogo(1f, 0f, fadeDuration - .5f);
+        yield return FadeLogo(3f, 0f, 1f);
         if (skipRequested) { End(); yield break; }
 
         if (narratorText != null)
