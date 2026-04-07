@@ -123,12 +123,12 @@ public class GluttonyAI : MonoBehaviour
         if (isDead || player == null || isAttacking || isBlocking || isJumping) return;
 
         // hp regen
-        // if (Time.time - lastDamageTime >= healDelay && currentHealth < maxHealth)
-        // {
-        //     currentHealth += (maxHealth / 5f) * Time.deltaTime;
-        //     if (currentHealth > maxHealth) currentHealth = maxHealth;
-        //     UpdateHealthUI();
-        // }
+        if (Time.time - lastDamageTime >= healDelay && currentHealth < maxHealth)
+        {
+            currentHealth += (maxHealth / 5f) * Time.deltaTime;
+            if (currentHealth > maxHealth) currentHealth = maxHealth;
+            UpdateHealthUI();
+        }
 
         Vector3 flatPlayerPos = new Vector3(player.position.x, transform.position.y, player.position.z);
         float flatDistanceToPlayer = Vector3.Distance(transform.position, flatPlayerPos);
@@ -517,9 +517,5 @@ public class GluttonyAI : MonoBehaviour
         animator.SetBool("isWalking", true);
 
         isJumping = false;
-        UnityEngine.Debug.Log("On NavMesh: " + agent.isOnNavMesh);
-        UnityEngine.Debug.Log("Path Pending: " + agent.pathPending);
-        UnityEngine.Debug.Log("Has Path: " + agent.hasPath);
-        UnityEngine.Debug.Log("Velocity: " + agent.velocity);
     }
 }

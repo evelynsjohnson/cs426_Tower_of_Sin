@@ -630,7 +630,7 @@ MonoBehaviour:
   runningKey: 304
   animator: {fileID: 0}
   crouchKey: 306
-  jumpKey: 32
+  jumpKey: 0
   slashKey: 323
   slash1BaseDamage: 10
   slash2BaseDamage: 20
@@ -642,10 +642,14 @@ MonoBehaviour:
   slash1HitDelay: 0.2
   slash2AnimDuration: 1
   slash2HitDelay: 0.3
+  groundCheck: {fileID: 0}
+  jumpHeight: 2
+  jumpCooldown: 0.1
   swordSwing1: {fileID: 0}
   swordSwing2: {fileID: 0}
   swordWoosh1: {fileID: 0}
   swordWoosh2: {fileID: 0}
+  invertControls: 0
   slash1AudioOffset: 0
   slash2AudioOffset: 0.5
 --- !u!114 &114497868231759342
