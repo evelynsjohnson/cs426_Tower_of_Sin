@@ -76,6 +76,8 @@ public class FirstPersonMovement : MonoBehaviour
 
     void Update()
     {
+        if (Time.timeScale == 0f) return;
+
         HandleInput();
 
         currentHorizontalInput = Input.GetAxisRaw("Horizontal");
