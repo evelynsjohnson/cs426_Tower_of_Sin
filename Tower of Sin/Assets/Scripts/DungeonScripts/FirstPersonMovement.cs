@@ -18,6 +18,9 @@ public class FirstPersonMovement : MonoBehaviour
     public KeyCode jumpKey = KeyCode.Space;
     public KeyCode slashKey = KeyCode.Mouse0;
 
+    public KeyCode toggleCursorKey = KeyCode.Escape;
+    public bool uiMode = false;
+
     public float slash1BaseDamage = 20f;
     public float slash2BaseDamage = 40f;
     public float chargeTimeRequired = .5f;
@@ -52,19 +55,17 @@ public class FirstPersonMovement : MonoBehaviour
     Rigidbody rigidbody;
     AudioSource audioSource;
 
-    // Combat tracking
     private float nextSlashTime = 0f;
     private float holdTimer = 0f;
     private bool isCharging = false;
 
     public List<System.Func<float>> speedOverrides = new List<System.Func<float>>();
 
-    // Set to true by LustAI charm projectile — inverts WASD for N seconds
     public bool invertControls = false;
 
-    [Header("Audio Offsets")]
     public float slash1AudioOffset = 0.2f;
-    public float slash2AudioOffset = 0.5f; // Starts 0.5 seconds in
+    public float slash2AudioOffset = 0.5f;
+
     void Awake()
     {
         rigidbody = GetComponent<Rigidbody>();
@@ -74,9 +75,29 @@ public class FirstPersonMovement : MonoBehaviour
         if (cameraTransform == null && Camera.main != null) cameraTransform = Camera.main.transform;
     }
 
+    void Start()
+    {
+        SetUIMode(false); // start in gameplay mode
+    }
+
     void Update()
     {
+        if (Input.GetKeyDown(toggleCursorKey))
+        {
+            SetUIMode(!uiMode);
+        }
+
         if (Time.timeScale == 0f) return;
+
+        if (uiMode)
+        {
+            currentHorizontalInput = 0f;
+            currentVerticalInput = 0f;
+            IsRunning = false;
+            holdTimer = 0f;
+            UpdateAnimationStates(0f, 0f);
+            return;
+        }
 
         HandleInput();
 
@@ -99,11 +120,17 @@ public class FirstPersonMovement : MonoBehaviour
         UpdateAnimationStates(currentHorizontalInput, currentVerticalInput);
     }
 
+    void SetUIMode(bool enabled)
+    {
+        uiMode = enabled;
+        Cursor.lockState = enabled ? CursorLockMode.None : CursorLockMode.Locked;
+        Cursor.visible = enabled;
+        Time.timeScale = enabled ? 0f : 1f;
+    }
+
     void HandleInput()
     {
         if (animator == null) return;
-
-        //if (Input.GetKeyDown(jumpKey)) animator.SetTrigger("isJumping");
 
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
         {
@@ -166,8 +193,6 @@ public class FirstPersonMovement : MonoBehaviour
         if (cameraTransform != null)
         {
             Vector3 hitCenter = cameraTransform.position + (cameraTransform.forward * (attackRange * 0.5f));
-
-            // Make hit bubble
             float hitRadius = (slashChoice == 1) ? 1.0f : 1.5f;
 
             Collider[] hitColliders = Physics.OverlapSphere(hitCenter, hitRadius);
@@ -177,6 +202,7 @@ public class FirstPersonMovement : MonoBehaviour
                 if (hitCol.CompareTag("Enemy"))
                 {
                     hitEnemy = true;
+
                     PrisonZombieAI zombie = hitCol.GetComponentInParent<PrisonZombieAI>();
                     if (zombie != null) zombie.TakeDamage(finalDamage, slashChoice);
 
@@ -204,7 +230,6 @@ public class FirstPersonMovement : MonoBehaviour
                     GreedAI greed = hitCol.GetComponentInParent<GreedAI>();
                     if (greed != null) greed.TakeDamage(finalDamage);
 
-
                     AngelBossAI angelBoss = hitCol.GetComponentInParent<AngelBossAI>();
                     if (angelBoss != null) angelBoss.TakeDamage(finalDamage, slashChoice);
                 }
@@ -215,9 +240,6 @@ public class FirstPersonMovement : MonoBehaviour
                     hitEnemy = true;
                     dummy.TakeDamage(finalDamage);
                 }
-
-
-
             }
         }
 
@@ -231,23 +253,21 @@ public class FirstPersonMovement : MonoBehaviour
             audioSource.pitch = 1.5f;
 
             float offsetToUse = (slashChoice == 1) ? slash1AudioOffset : slash2AudioOffset;
+            audioSource.time = (offsetToUse < clipToPlay.length) ? offsetToUse : 0f;
 
-            if (offsetToUse < clipToPlay.length)
-            {
-                audioSource.time = offsetToUse;
-            }
-            else
-            {
-                audioSource.time = 0f;
-            }
-
-            // Play the clip
             audioSource.Play();
             audioSource.pitch = 1.0f;
         }
     }
+
     void FixedUpdate()
     {
+        if (uiMode)
+        {
+            rigidbody.linearVelocity = new Vector3(0f, rigidbody.linearVelocity.y, 0f);
+            return;
+        }
+
         float targetMovingSpeed = IsRunning ? runSpeed : speed;
         if (speedOverrides.Count > 0)
             targetMovingSpeed = speedOverrides[speedOverrides.Count - 1]();
@@ -272,11 +292,7 @@ public class FirstPersonMovement : MonoBehaviour
             jumpQueued = false;
         }
 
-        rigidbody.linearVelocity = new Vector3(
-            velocity.x,
-            yVelocity,
-            velocity.z
-        );
+        rigidbody.linearVelocity = new Vector3(velocity.x, yVelocity, velocity.z);
     }
 
     void UpdateAnimationStates(float horizontalInput, float verticalInput)
@@ -287,8 +303,7 @@ public class FirstPersonMovement : MonoBehaviour
         bool isMovingBackward = verticalInput < -0.1f;
         bool isStrafingLeft = horizontalInput < -0.1f;
         bool isStrafingRight = horizontalInput > 0.1f;
-        bool isCrouching = Input.GetKey(crouchKey);
-
+        bool isCrouching = Input.GetKey(crouchKey) && !uiMode;
 
         animator.SetBool("isWalkingForward", isMovingForward && !IsRunning);
         animator.SetBool("isRunningForward", isMovingForward && IsRunning);

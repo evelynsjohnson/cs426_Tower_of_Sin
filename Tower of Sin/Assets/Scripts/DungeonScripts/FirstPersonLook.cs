@@ -2,40 +2,58 @@
 
 public class FirstPersonLook : MonoBehaviour
 {
-    [SerializeField]
-    Transform character;
-    public float sensitivity = 2;
+    [SerializeField] Transform character;
+    public float sensitivity = 2f;
     public float smoothing = 1.5f;
 
     Vector2 velocity;
     Vector2 frameVelocity;
 
+    FirstPersonMovement movement;
 
     void Reset()
     {
-        // Get the character from the FirstPersonMovement in parents.
-        character = GetComponentInParent<FirstPersonMovement>().transform;
+        FirstPersonMovement fpm = GetComponentInParent<FirstPersonMovement>();
+        if (fpm != null)
+            character = fpm.transform;
+    }
+
+    void Awake()
+    {
+        movement = GetComponentInParent<FirstPersonMovement>();
+
+        if (character == null && movement != null)
+            character = movement.transform;
     }
 
     void Start()
     {
-        // Lock the mouse cursor to the game screen.
         Cursor.lockState = CursorLockMode.Locked;
-        velocity.x = character.localRotation.eulerAngles.y;
+        Cursor.visible = false;
+
+        if (character != null)
+            velocity.x = character.localRotation.eulerAngles.y;
     }
 
     void Update()
     {
+        if (movement != null && movement.uiMode)
+        {
+            frameVelocity = Vector2.zero;
+            return;
+        }
+
         if (Time.timeScale == 0f) return;
-        // Get smooth velocity.
+
         Vector2 mouseDelta = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
         Vector2 rawFrameVelocity = Vector2.Scale(mouseDelta, Vector2.one * sensitivity);
-        frameVelocity = Vector2.Lerp(frameVelocity, rawFrameVelocity, 1 / smoothing);
+        frameVelocity = Vector2.Lerp(frameVelocity, rawFrameVelocity, 1f / smoothing);
         velocity += frameVelocity;
-        velocity.y = Mathf.Clamp(velocity.y, -90, 90);
+        velocity.y = Mathf.Clamp(velocity.y, -90f, 90f);
 
-        // Rotate camera up-down and controller left-right from velocity.
         transform.localRotation = Quaternion.AngleAxis(-velocity.y, Vector3.right);
-        character.localRotation = Quaternion.AngleAxis(velocity.x, Vector3.up);
+
+        if (character != null)
+            character.localRotation = Quaternion.AngleAxis(velocity.x, Vector3.up);
     }
 }
