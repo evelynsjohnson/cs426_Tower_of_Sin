@@ -203,6 +203,10 @@ public class FirstPersonMovement : MonoBehaviour
 
                     GreedAI greed = hitCol.GetComponentInParent<GreedAI>();
                     if (greed != null) greed.TakeDamage(finalDamage);
+
+
+                    AngelBossAI angelBoss = hitCol.GetComponentInParent<AngelBossAI>();
+                    if (angelBoss != null) angelBoss.TakeDamage(finalDamage, slashChoice);
                 }
 
                 TargetDummy dummy = hitCol.GetComponentInParent<TargetDummy>();
