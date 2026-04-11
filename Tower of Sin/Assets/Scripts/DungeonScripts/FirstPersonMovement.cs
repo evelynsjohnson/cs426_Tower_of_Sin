@@ -19,7 +19,7 @@ public class FirstPersonMovement : MonoBehaviour
     public KeyCode slashKey = KeyCode.Mouse0;
 
     public KeyCode toggleCursorKey = KeyCode.Escape;
-    public bool uiMode = false;
+    public bool uiMode = true;
 
     public float slash1BaseDamage = 20f;
     public float slash2BaseDamage = 40f;
