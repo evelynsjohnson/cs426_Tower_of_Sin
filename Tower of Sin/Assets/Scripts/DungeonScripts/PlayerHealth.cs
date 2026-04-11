@@ -5,8 +5,13 @@ using UnityEngine.UI;
 
 public class PlayerHealth : MonoBehaviour
 {
-    public float maxHealth = 200f;
+    public float baseHealth = 200f;
+
+    public float maxHealth;
     private float currentHealth;
+    public TextMeshProUGUI baseHealthText; //Inv UI base health text
+    public TextMeshProUGUI healthBonusText; //Inv UI health bonus text
+    public TextMeshProUGUI finalHealthText; //Inv UI final health text
 
     public TextMeshProUGUI healthUIText;
     public Image healthBarFill;
@@ -24,6 +29,10 @@ public class PlayerHealth : MonoBehaviour
 
     void Start()
     {
+        float bonus = float.Parse(healthBonusText.text);
+        maxHealth = baseHealth + bonus;
+        finalHealthText.text = maxHealth.ToString();
+        baseHealthText.text = "+" + baseHealth.ToString();
         currentHealth = maxHealth;
 
         if (healthBarFill != null)
