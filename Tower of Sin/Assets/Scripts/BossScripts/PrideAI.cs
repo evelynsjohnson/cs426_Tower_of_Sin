@@ -58,7 +58,7 @@ public class PrideAI : MonoBehaviour
     public float walkSpeed      = 3.5f;
     public float aggroRadius    = 18f;
     public float attackRadius   = 2.5f;
-    public float attackCooldown = 2.2f;
+    public float attackCooldown = 3.2f;  // >= attack anim length (3.0s Thrust Slash)
     public float attackDmgDelay = 0.45f;
 
     // ── Audio ─────────────────────────────────────────────────────────────────
