@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class AchievementController : MonoBehaviour
 {
@@ -8,23 +8,19 @@ public class AchievementController : MonoBehaviour
 
     void Start()
     {
-        // Ensure the canvas is hidden when the game starts
         if (achievementCanvas != null)
         {
             achievementCanvas.SetActive(false);
         }
     }
 
-    void Update()
+    // 🔥 This gets called by the UI button
+    public void OnAchievementButtonClicked()
     {
-        if (Time.timeScale == 0f && !isCanvasOpen) return; // other UI is open
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            ToggleAchievements();
-        }
+        ToggleAchievements();
     }
 
-    private void ToggleAchievements()
+    public void ToggleAchievements()
     {
         isCanvasOpen = !isCanvasOpen;
 

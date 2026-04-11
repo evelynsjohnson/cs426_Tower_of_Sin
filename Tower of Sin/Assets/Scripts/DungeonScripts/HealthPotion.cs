@@ -32,8 +32,8 @@ public class HealthPotion : MonoBehaviour
         }
 
         // heal amount should be 1/X of the player's max health
-        // TBD might be more healed or less - also depends on the chances of dropping health potion, which is 50% chance right now, which is pretty high
-        healAmount = playerHealth != null ? playerHealth.maxHealth / 5f : 50f;
+        healAmount = playerHealth != null ? playerHealth.maxHealth / 6f : 50f;
+        //healAmount = 50f;
     }
 
     void Update()

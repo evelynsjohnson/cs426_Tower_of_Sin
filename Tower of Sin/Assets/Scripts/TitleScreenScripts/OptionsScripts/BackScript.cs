@@ -10,7 +10,6 @@ public class BackScript : MonoBehaviour, IPointerClickHandler
     public Texture normalTexture;
     private RawImage rawImage;
 
-    // THE FIX: Grab the RawImage component when the script loads!
     void Awake()
     {
         rawImage = GetComponent<RawImage>();
