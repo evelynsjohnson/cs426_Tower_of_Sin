@@ -102,6 +102,7 @@ public class PlayerHealth : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+        currentHealth = baseHealth;
     }
 
     private IEnumerator FadeBetweenUI(CanvasGroup fromUI, CanvasGroup toUI, float duration)

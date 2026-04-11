@@ -4,6 +4,11 @@ public class PlayerSpawnHandler : MonoBehaviour
 {
     public Transform spawnPoint;
 
+    void Start()
+    {
+        SpawnPlayer();
+    }
+
     public void SpawnPlayer()
     {
         GameObject player = GameObject.FindWithTag("Player");

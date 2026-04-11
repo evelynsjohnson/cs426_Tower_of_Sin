@@ -2132,6 +2132,7 @@ MonoBehaviour:
   fleeSafeDistance: 5
   attackCooldown: 2
   attackDamageDelay: 1
+  attackRecoveryTime: 1
   blockDuration: 1
   healDelay: 5
   viewAngle: 90
@@ -2306,7 +2307,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7923153878451664929}
   serializedVersion: 5
-  m_Mass: 1
+  m_Mass: 10
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}

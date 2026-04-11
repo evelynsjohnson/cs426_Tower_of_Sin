@@ -20,17 +20,12 @@ public class FloorTextController : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        UpdateFloorText(scene.name);
+        UpdateUI(scene.name);
     }
 
-    public void UpdateFloorText(string sceneName)
+    public void RefreshFloorText()
     {
-        if (sceneName.Contains("Dungeon_Scene") || sceneName.Contains("Boss_Scene"))
-        {
-            floorNumber++;
-        }
-
-        UpdateUI(sceneName);
+        UpdateUI(SceneManager.GetActiveScene().name);
     }
 
     private void UpdateUI(string sceneName)

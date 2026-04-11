@@ -11,16 +11,19 @@ public class PrisonZombieAI : MonoBehaviour
     public enum ZombieState { Idle, Returning, Pursuing, Fleeing, Attacking, Blocking, Enraged, Dead }
     public ZombieState currentState = ZombieState.Idle;
 
+    [Header("Stats")]
     public float maxHealth = 100f;
     private float currentHealth;
     public float damageToPlayer = 10f;
 
+    [Header("UI")]
     public GameObject uiCanvasObject;
     public TMP_Text healthText;
     public Image healthBarFill;
     public float healthDrainSpeed = 5f;
     public float deathAnimationDuration = 2f;
 
+    [Header("Combat / Movement")]
     public float aggroRadius = 10f;
     public float attackRadius = 2f;
     public float maxLeashDistance = 20f;
@@ -28,9 +31,11 @@ public class PrisonZombieAI : MonoBehaviour
     public float fleeSafeDistance = 5f;
     public float attackCooldown = 2f;
     public float attackDamageDelay = 0.5f;
+    public float attackRecoveryTime = 1.0f;
     public float blockDuration = 1f;
     public float healDelay = 5f;
 
+    [Header("Vision")]
     public float viewAngle = 90f;
     public float viewDistance = 12f;
     public LayerMask visionObstructionMask;
@@ -44,12 +49,14 @@ public class PrisonZombieAI : MonoBehaviour
     public int maxGridSizePerAxis = 40;
     public float waypointReachDistance = 0.5f;
 
+    [Header("Audio")]
     public AudioClip hitSound;
     public AudioClip missSound;
     public AudioClip idleSound;
     public AudioClip walkSound;
     public AudioClip roarSound;
 
+    [Header("References")]
     public Animator animator;
     public GameObject healthPotionPrefab;
     public float healthPotChance = 50f;
@@ -74,11 +81,24 @@ public class PrisonZombieAI : MonoBehaviour
     private int currentPathIndex = 0;
     private float nextPathRecalcTime = 0f;
 
+    // Action state safety
+    private Coroutine attackRoutine;
+    private Coroutine blockRoutine;
+    private Coroutine enrageRoutine;
+    private bool isDying = false;
+
+    // Base values so enrage does not permanently stack weirdly
+    private float baseDamageToPlayer;
+    private float baseAttackCooldown;
+
     void Start()
     {
         maxHealth = 100f + ((FloorTextController.floorNumber - 1) * 5f);
         currentHealth = maxHealth;
         initialSpawnPosition = transform.position;
+
+        baseDamageToPlayer = damageToPlayer;
+        baseAttackCooldown = attackCooldown;
 
         rb = GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
@@ -105,8 +125,11 @@ public class PrisonZombieAI : MonoBehaviour
             playerHealthScript = playerObj.GetComponent<PlayerHealth>();
         }
 
-        if (Camera.main != null) mainCamera = Camera.main.transform;
-        if (healthBarFill != null) healthBarFill.fillAmount = 1f;
+        if (Camera.main != null)
+            mainCamera = Camera.main.transform;
+
+        if (healthBarFill != null)
+            healthBarFill.fillAmount = 1f;
 
         idleAudioTimer = Random.Range(2f, 5f);
         UpdateHealthUI();
@@ -116,7 +139,8 @@ public class PrisonZombieAI : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (currentState == ZombieState.Dead || player == null) return;
+        if (currentState == ZombieState.Dead || isDying || player == null)
+            return;
 
         switch (currentState)
         {
@@ -145,7 +169,8 @@ public class PrisonZombieAI : MonoBehaviour
     {
         UpdateUIElements();
 
-        if (currentState == ZombieState.Dead || player == null) return;
+        if (currentState == ZombieState.Dead || isDying || player == null)
+            return;
 
         HandleHealthRegen();
         HandleAudioAndAggro();
@@ -317,21 +342,20 @@ public class PrisonZombieAI : MonoBehaviour
     {
         if (player == null) return false;
 
-        Vector3 directionToPlayer = (player.position - transform.position).normalized;
-        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+        Vector3 eyePos = transform.position + Vector3.up * 1.5f;
+        Vector3 playerCenter = player.position + Vector3.up * 1f;
+        Vector3 directionToPlayer = (playerCenter - eyePos).normalized;
+        float distanceToPlayer = Vector3.Distance(eyePos, playerCenter);
 
         if (distanceToPlayer > viewDistance) return false;
 
         float angle = Vector3.Angle(transform.forward, directionToPlayer);
         if (angle > viewAngle / 2f) return false;
 
-        Ray ray = new Ray(transform.position + Vector3.up * 1.5f, directionToPlayer);
-        if (Physics.Raycast(ray, out RaycastHit hit, viewDistance, ~0))
+        if (Physics.Raycast(eyePos, directionToPlayer, out RaycastHit hit, viewDistance, ~0, QueryTriggerInteraction.Ignore))
         {
-            if (hit.transform == player)
-            {
+            if (hit.transform == player || hit.transform.IsChildOf(player))
                 return true;
-            }
         }
 
         return false;
@@ -348,6 +372,7 @@ public class PrisonZombieAI : MonoBehaviour
 
         if (distanceToSpawn > maxLeashDistance)
         {
+            CancelCurrentAction();
             ClearPath();
             currentState = ZombieState.Returning;
             return;
@@ -360,22 +385,29 @@ public class PrisonZombieAI : MonoBehaviour
 
         if (hasSeenPlayer && distanceToPlayer <= aggroRadius)
         {
-            if (distanceToPlayer <= attackRadius && Time.time >= nextAttackTime)
+            if (distanceToPlayer <= attackRadius &&
+                Time.time >= nextAttackTime &&
+                currentState != ZombieState.Attacking &&
+                attackRoutine == null)
             {
                 ClearPath();
-                StartCoroutine(AttackRoutine());
+                CancelCurrentAction();
+                attackRoutine = StartCoroutine(AttackRoutine());
             }
             else if (distanceToPlayer > attackRadius)
             {
-                currentState = ZombieState.Pursuing;
+                if (!IsBusyState())
+                    currentState = ZombieState.Pursuing;
             }
             else
             {
                 ClearPath();
-                currentState = ZombieState.Idle;
+
+                if (!IsBusyState())
+                    currentState = ZombieState.Idle;
 
                 Vector3 lookPos = player.position - transform.position;
-                lookPos.y = 0;
+                lookPos.y = 0f;
                 if (lookPos != Vector3.zero)
                 {
                     transform.rotation = Quaternion.Slerp(
@@ -388,76 +420,103 @@ public class PrisonZombieAI : MonoBehaviour
         }
         else
         {
-            ClearPath();
-            currentState = ZombieState.Idle;
+            if (!IsBusyState())
+            {
+                ClearPath();
+                currentState = ZombieState.Idle;
+            }
         }
     }
 
     public void TakeDamage(float amount, int attackType = 0)
     {
-        if (currentState == ZombieState.Dead) return;
+        if (currentState == ZombieState.Dead || isDying)
+            return;
 
         lastDamageTime = Time.time;
         hasSeenPlayer = true;
 
-        if (currentState == ZombieState.Blocking && attackType == 1) return;
+        // Light attack can be blocked
+        if (currentState == ZombieState.Blocking && attackType == 1)
+            return;
 
         currentHealth -= amount;
+        if (currentHealth < 0f) currentHealth = 0f;
         UpdateHealthUI();
 
-        if (currentHealth <= 0)
+        if (currentHealth <= 0f)
         {
             Die();
             return;
         }
-        else
-        {
-            EvaluateBayesianState();
-        }
+
+        EvaluateBayesianState();
     }
 
     private void EvaluateBayesianState()
     {
+        if (currentState == ZombieState.Dead || isDying)
+            return;
+
         if (currentState == ZombieState.Attacking ||
             currentState == ZombieState.Blocking ||
-            currentState == ZombieState.Enraged) return;
+            currentState == ZombieState.Enraged)
+            return;
 
         float healthPercentage = currentHealth / maxHealth;
         ZombieState nextState = bayesianBrain.DecideNextState(healthPercentage);
 
         if (nextState == ZombieState.Blocking)
         {
+            CancelCurrentAction();
             ClearPath();
-            StartCoroutine(BlockRoutine());
+            blockRoutine = StartCoroutine(BlockRoutine());
         }
         else if (nextState == ZombieState.Enraged)
         {
+            CancelCurrentAction();
             ClearPath();
-            StartCoroutine(EnrageRoutine());
+            enrageRoutine = StartCoroutine(EnrageRoutine());
         }
         else if (nextState == ZombieState.Fleeing)
         {
+            CancelCurrentAction();
             ClearPath();
             currentState = ZombieState.Fleeing;
+        }
+        else
+        {
+            if (!IsBusyState())
+                currentState = ZombieState.Pursuing;
         }
     }
 
     private IEnumerator AttackRoutine()
     {
-        nextAttackTime = Time.time + attackCooldown;
+        if (currentState == ZombieState.Dead || isDying)
+        {
+            attackRoutine = null;
+            yield break;
+        }
 
+        nextAttackTime = Time.time + attackCooldown;
         currentState = ZombieState.Attacking;
+
+        ResetCombatTriggers();
+        animator.SetBool("isWalking", false);
         animator.SetTrigger("attack");
 
         yield return new WaitForSeconds(attackDamageDelay);
 
-        if (currentState == ZombieState.Dead) yield break;
+        if (currentState != ZombieState.Attacking || isDying || currentState == ZombieState.Dead)
+        {
+            attackRoutine = null;
+            yield break;
+        }
 
         if (player != null)
         {
             Vector3 flatPlayerPos = new Vector3(player.position.x, transform.position.y, player.position.z);
-
-            if (currentState == ZombieState.Dead) yield break;
 
             if (Vector3.Distance(transform.position, flatPlayerPos) <= attackRadius + 0.5f)
             {
@@ -474,53 +533,88 @@ public class PrisonZombieAI : MonoBehaviour
             }
         }
 
-        yield return new WaitForSeconds(1.0f);
+        yield return new WaitForSeconds(attackRecoveryTime);
 
-        if (currentState != ZombieState.Dead)
+        if (!isDying && currentState == ZombieState.Attacking)
             currentState = ZombieState.Pursuing;
+
+        attackRoutine = null;
     }
 
     private IEnumerator BlockRoutine()
     {
+        if (currentState == ZombieState.Dead || isDying)
+        {
+            blockRoutine = null;
+            yield break;
+        }
+
         currentState = ZombieState.Blocking;
+
+        ResetCombatTriggers();
+        animator.SetBool("isWalking", false);
         animator.SetTrigger("block");
 
         yield return new WaitForSeconds(blockDuration);
 
-        if (currentState != ZombieState.Dead)
+        if (!isDying && currentState == ZombieState.Blocking)
         {
             currentState = ZombieState.Pursuing;
-            EvaluateBayesianState();
         }
+
+        blockRoutine = null;
     }
 
     private IEnumerator EnrageRoutine()
     {
+        if (currentState == ZombieState.Dead || isDying)
+        {
+            enrageRoutine = null;
+            yield break;
+        }
+
         currentState = ZombieState.Enraged;
+
+        ResetCombatTriggers();
+        animator.SetBool("isWalking", false);
         animator.SetTrigger("roar");
 
-        if (roarSound != null) sfxAudioSource.PlayOneShot(roarSound);
+        if (roarSound != null)
+            sfxAudioSource.PlayOneShot(roarSound);
 
         yield return new WaitForSeconds(1.5f);
 
-        damageToPlayer *= 1.5f;
-        attackCooldown /= 1.5f;
+        if (isDying || currentState != ZombieState.Enraged || currentState == ZombieState.Dead)
+        {
+            enrageRoutine = null;
+            yield break;
+        }
+
+        damageToPlayer = baseDamageToPlayer * 1.5f;
+        attackCooldown = baseAttackCooldown / 1.5f;
         animator.speed = 1.5f;
 
-        if (currentState != ZombieState.Dead)
-            currentState = ZombieState.Pursuing;
+        currentState = ZombieState.Pursuing;
+        enrageRoutine = null;
     }
 
-    void Die()
+    private void Die()
     {
-        if (currentState == ZombieState.Dead) return;
+        if (currentState == ZombieState.Dead || isDying)
+            return;
 
+        isDying = true;
         currentState = ZombieState.Dead;
+
+        CancelCurrentAction();
         ClearPath();
 
         damageToPlayer = 0f;
         attackRadius = 0f;
+        animator.speed = 1f;
 
+        ResetCombatTriggers();
+        animator.SetBool("isWalking", false);
         animator.SetTrigger("die");
 
         if (rb != null)
@@ -530,18 +624,23 @@ public class PrisonZombieAI : MonoBehaviour
         }
 
         Collider col = GetComponent<Collider>();
-        if (col != null) col.enabled = false;
+        if (col != null)
+            col.enabled = false;
 
-        if (healthText != null) healthText.text = "";
-        if (walkAudioSource != null) walkAudioSource.Stop();
-        if (sfxAudioSource != null) sfxAudioSource.Stop();
+        if (healthText != null)
+            healthText.text = "";
+
+        if (walkAudioSource != null)
+            walkAudioSource.Stop();
+
+        if (sfxAudioSource != null)
+            sfxAudioSource.Stop();
 
         if (healthPotionPrefab != null && Random.Range(0f, 100f) < healthPotChance)
         {
             Instantiate(healthPotionPrefab, transform.position + Vector3.up * 0.2f, Quaternion.identity);
         }
 
-        StopAllCoroutines();
         StartCoroutine(HideUIAfterDeath());
     }
 
@@ -566,7 +665,7 @@ public class PrisonZombieAI : MonoBehaviour
         idleAudioTimer -= Time.deltaTime;
         if (idleAudioTimer <= 0f)
         {
-            if (idleSound != null && onSameFloor)
+            if (idleSound != null && onSameFloor && currentState != ZombieState.Dead && !isDying)
                 sfxAudioSource.PlayOneShot(idleSound);
 
             idleAudioTimer = Random.Range(2f, 5f);
@@ -581,8 +680,10 @@ public class PrisonZombieAI : MonoBehaviour
 
         animator.SetBool("isWalking", isWalking);
 
-        if (isWalking && !walkAudioSource.isPlaying) walkAudioSource.Play();
-        else if (!isWalking && walkAudioSource.isPlaying) walkAudioSource.Pause();
+        if (isWalking && !walkAudioSource.isPlaying)
+            walkAudioSource.Play();
+        else if (!isWalking && walkAudioSource.isPlaying)
+            walkAudioSource.Pause();
     }
 
     private void UpdateHealthUI()
@@ -607,13 +708,53 @@ public class PrisonZombieAI : MonoBehaviour
     private IEnumerator HideUIAfterDeath()
     {
         yield return new WaitForSeconds(deathAnimationDuration);
-        if (uiCanvasObject != null) uiCanvasObject.SetActive(false);
+
+        if (uiCanvasObject != null)
+            uiCanvasObject.SetActive(false);
     }
 
     private void ClearPath()
     {
         currentPath.Clear();
         currentPathIndex = 0;
+    }
+
+    private void ResetCombatTriggers()
+    {
+        animator.ResetTrigger("attack");
+        animator.ResetTrigger("block");
+        animator.ResetTrigger("roar");
+        animator.ResetTrigger("die");
+    }
+
+    private void CancelCurrentAction()
+    {
+        if (attackRoutine != null)
+        {
+            StopCoroutine(attackRoutine);
+            attackRoutine = null;
+        }
+
+        if (blockRoutine != null)
+        {
+            StopCoroutine(blockRoutine);
+            blockRoutine = null;
+        }
+
+        if (enrageRoutine != null)
+        {
+            StopCoroutine(enrageRoutine);
+            enrageRoutine = null;
+        }
+    }
+
+    private bool IsBusyState()
+    {
+        return currentState == ZombieState.Attacking ||
+               currentState == ZombieState.Blocking ||
+               currentState == ZombieState.Enraged ||
+               currentState == ZombieState.Dead ||
+               isDying;
     }
 
     private List<Vector3> FindPath(Vector3 startWorld, Vector3 targetWorld)
@@ -643,10 +784,14 @@ public class PrisonZombieAI : MonoBehaviour
         PathNode startNode = NodeFromWorldPoint(startWorld, grid, gridCenter, gridSizeX, gridSizeY, nodeDiameter);
         PathNode targetNode = NodeFromWorldPoint(targetWorld, grid, gridCenter, gridSizeX, gridSizeY, nodeDiameter);
 
-        if (startNode == null || targetNode == null) return null;
+        if (startNode == null || targetNode == null)
+            return null;
 
         startNode.walkable = true;
         targetNode.walkable = true;
+        startNode.gCost = 0;
+        startNode.hCost = GetDistance(startNode, targetNode);
+        startNode.parent = null;
 
         List<PathNode> openSet = new List<PathNode>();
         HashSet<PathNode> closedSet = new HashSet<PathNode>();
@@ -715,7 +860,7 @@ public class PrisonZombieAI : MonoBehaviour
 
                 worldPoint.y = transform.position.y + pathNodeHeightOffset;
 
-                bool walkable = !Physics.CheckSphere(worldPoint, nodeRadius, pathObstacleMask);
+                bool walkable = !Physics.CheckSphere(worldPoint, nodeRadius, pathObstacleMask, QueryTriggerInteraction.Ignore);
                 grid[x, y] = new PathNode(walkable, worldPoint, x, y);
             }
         }
@@ -869,7 +1014,7 @@ public class BayesianBrain
         float blockProb = CalculateBlockProbability(healthPercentage);
         float enrageProb = CalculateEnrageProbability(healthPercentage);
         float fleeProb = CalculateFleeProbability(healthPercentage);
-        float pursueProb = 100f - (blockProb + enrageProb + fleeProb);
+        float pursueProb = Mathf.Max(0f, 100f - (blockProb + enrageProb + fleeProb));
 
         float roll = Random.Range(0f, 100f);
 
