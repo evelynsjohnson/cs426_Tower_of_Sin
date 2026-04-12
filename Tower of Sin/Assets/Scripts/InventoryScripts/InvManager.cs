@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Runtime.Serialization;
 using System.Security.AccessControl;
+using TMPro;
 
 
 public class InvManager : MonoBehaviour
@@ -33,6 +34,13 @@ public class InvManager : MonoBehaviour
     public Texture weaponBase;
     public Texture neckBase;
     public Texture ringBase;
+
+    public TextMeshProUGUI attackBonusText; //Inv UI attack bonus text
+    public TextMeshProUGUI defenseBonusText; //Inv UI defense bonus text
+    public TextMeshProUGUI healthBonusText; //Inv UI health bonus text
+    public TextMeshProUGUI finalAttackText; //Inv UI final attack text
+    public TextMeshProUGUI finalDefenseText; //Inv UI final defense text
+    public TextMeshProUGUI finalHealthText; //Inv UI final health text
 
     void OnEnable()
     {
@@ -80,7 +88,7 @@ public class InvManager : MonoBehaviour
         switch (item.type)
         {
             case ItemType.Helmet:
-                if (helmet.texture.Equals(item.icon))
+                if (helmet.texture.Equals(item.icon)) //uneqip items
                 {
                     helmet.texture = helmetBase;
                 }
@@ -88,6 +96,7 @@ public class InvManager : MonoBehaviour
                 {
                     helmet.texture = item.icon;
                 }
+                updateStats(item, helmet.texture.Equals(item.icon));
                 break;
             case ItemType.Chest:
                 if (chest.texture.Equals(item.icon))
@@ -98,6 +107,7 @@ public class InvManager : MonoBehaviour
                 {
                     chest.texture = item.icon;
                 }
+                updateStats(item, chest.texture.Equals(item.icon));
                 break;
             case ItemType.Pant:
                 if (pant.texture.Equals(item.icon))
@@ -108,6 +118,7 @@ public class InvManager : MonoBehaviour
                 {
                     pant.texture = item.icon;
                 }
+                updateStats(item, pant.texture.Equals(item.icon));
                 break;
             case ItemType.Boot:
                 if (boot.texture.Equals(item.icon))
@@ -118,6 +129,7 @@ public class InvManager : MonoBehaviour
                 {
                     boot.texture = item.icon;
                 }
+                updateStats(item, boot.texture.Equals(item.icon));
                 break;
             case ItemType.Weapon:
                 if (weapon.texture.Equals(item.icon))
@@ -128,6 +140,7 @@ public class InvManager : MonoBehaviour
                 {
                     weapon.texture = item.icon;
                 }
+                updateStats(item, weapon.texture.Equals(item.icon));
                 break;
             case ItemType.Neck:
                 if (neck.texture.Equals(item.icon))
@@ -138,6 +151,7 @@ public class InvManager : MonoBehaviour
                 {
                     neck.texture = item.icon;
                 }
+                updateStats(item, neck.texture.Equals(item.icon));
                 break;
             case ItemType.Ring:
                 if (ring1.texture.Equals(item.icon))
@@ -148,7 +162,33 @@ public class InvManager : MonoBehaviour
                 {
                     ring1.texture = item.icon;
                 }
+                updateStats(item, ring1.texture.Equals(item.icon));
                 break;
         }
+    }
+
+    private void updateStats(ItemData item, bool add)
+    {
+        if (!add)
+        {
+            attackBonusText.text = "+" + (float.Parse(attackBonusText.text) - item.damage).ToString();
+            defenseBonusText.text = "+" + (float.Parse(defenseBonusText.text) - item.defense).ToString();
+            healthBonusText.text = "+" + (float.Parse(healthBonusText.text) - item.health).ToString();
+
+            finalAttackText.text = "+" + (float.Parse(finalAttackText.text) - item.damage).ToString();
+            finalDefenseText.text = "+" + (float.Parse(finalDefenseText.text) - item.defense).ToString();
+            finalHealthText.text = "+" + (float.Parse(finalHealthText.text) - item.health).ToString();
+        }
+        else
+        {
+            attackBonusText.text = "+" + (float.Parse(attackBonusText.text) + item.damage).ToString();
+            defenseBonusText.text = "+" + (float.Parse(defenseBonusText.text) + item.defense).ToString();
+            healthBonusText.text = "+" + (float.Parse(healthBonusText.text) + item.health).ToString();
+
+            finalAttackText.text = "+" + (float.Parse(finalAttackText.text) + item.damage).ToString();
+            finalDefenseText.text = "+" + (float.Parse(finalDefenseText.text) + item.defense).ToString();
+            finalHealthText.text = "+" + (float.Parse(finalHealthText.text) + item.health).ToString();
+        }
+
     }
 }
