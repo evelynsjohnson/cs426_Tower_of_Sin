@@ -1,43 +1,47 @@
 ﻿using UnityEngine;
 
-[ExecuteInEditMode]
 public class GroundCheck : MonoBehaviour
 {
     [Tooltip("Maximum distance from the ground.")]
-    public float distanceThreshold = .3f;
+    public float distanceThreshold = 0.5f;
+
+    [Tooltip("Layers counted as ground.")]
+    public LayerMask groundMask = ~0;
 
     [Tooltip("Whether this transform is grounded now.")]
     public bool isGrounded = true;
-    /// <summary>
-    /// Called when the ground is touched again.
-    /// </summary>
+
     public event System.Action Grounded;
 
-    const float OriginOffset = .001f;
+    private const float OriginOffset = 0.01f;
+
     Vector3 RaycastOrigin => transform.position + Vector3.up * OriginOffset;
     float RaycastDistance => distanceThreshold + OriginOffset;
 
-
-    void LateUpdate()
+    void Update()
     {
-        // Check if we are grounded now.
-        bool isGroundedNow = Physics.Raycast(RaycastOrigin, Vector3.down, distanceThreshold * 2);
-        //Debug.Log($"GroundCheck: isGrounded={isGrounded}");
+        bool wasGrounded = isGrounded;
 
-        // Call event if we were in the air and we are now touching the ground.
-        if (isGroundedNow && !isGrounded)
+        bool isGroundedNow = Physics.Raycast(
+            RaycastOrigin,
+            Vector3.down,
+            out RaycastHit hit,
+            RaycastDistance,
+            groundMask,
+            QueryTriggerInteraction.Ignore
+        );
+
+        if (isGroundedNow && !wasGrounded)
         {
             Grounded?.Invoke();
         }
 
-        // Update isGrounded.
         isGrounded = isGroundedNow;
-
     }
 
     void OnDrawGizmosSelected()
     {
-        // Draw a line in the Editor to show whether we are touching the ground.
-        Debug.DrawLine(RaycastOrigin, RaycastOrigin + Vector3.down * RaycastDistance, isGrounded ? Color.white : Color.red);
+        Gizmos.color = isGrounded ? Color.white : Color.red;
+        Gizmos.DrawLine(RaycastOrigin, RaycastOrigin + Vector3.down * RaycastDistance);
     }
 }

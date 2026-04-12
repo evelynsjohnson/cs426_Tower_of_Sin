@@ -49827,7 +49827,7 @@ Transform:
   m_GameObject: {fileID: 2042132926}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.20079334, z: -0, w: 0.9796336}
-  m_LocalPosition: {x: -11.452, y: 10.078, z: -12.74}
+  m_LocalPosition: {x: -11.452, y: 9.929, z: -12.74}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -52801,7 +52801,7 @@ Transform:
   m_GameObject: {fileID: 1773622908903619}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.43314, z: 0, w: 0.90132666}
-  m_LocalPosition: {x: -11.193, y: 10.057, z: -12.59}
+  m_LocalPosition: {x: -11.193, y: 9.95, z: -12.59}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -52840,7 +52840,7 @@ Transform:
   m_GameObject: {fileID: 1593727963436535}
   serializedVersion: 2
   m_LocalRotation: {x: -0.0434844, y: -0.13636634, z: -0.0049290187, w: 0.9896914}
-  m_LocalPosition: {x: -0.002, y: 0.523, z: 0.215}
+  m_LocalPosition: {x: -0.0020001344, y: 0.52299994, z: 0.21500023}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -52993,7 +52993,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1773622908903619}
   serializedVersion: 5
-  m_Mass: 1
+  m_Mass: 10
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -53048,7 +53048,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f977f53412d81140ab13b3fca57cca2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  jumpStrength: 2
+  jumpStrength: 1
   groundCheck: {fileID: 114503055392356803}
 --- !u!114 &114503055392356803
 MonoBehaviour:
@@ -53063,7 +53063,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   distanceThreshold: 0.15
-  isGrounded: 1
+  isGrounded: 0
 --- !u!114 &114657890407471637
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -53119,6 +53119,12 @@ MonoBehaviour:
   slashKey: 323
   toggleCursorKey: 27
   uiMode: 0
+  enableDebugLogs: 0
+  enableContinuousPositionLogs: 0
+  positionLogInterval: 0.5
+  maxAllowedJumpVelocity: 8
+  minAllowedYBeforeReset: -50
+  emergencyResetPosition: {x: 0, y: 3, z: 0}
   slash1BaseDamage: 10
   slash2BaseDamage: 20
   chargeTimeRequired: 0.25
