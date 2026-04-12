@@ -1,4 +1,4 @@
-# CS 426 - Assignment 6 - Tower of Sin
+# CS 426 - Assignment 7 - Tower of Sin
 
 Group members: Evelyn Johnson, Mario Tinoco, Soham Hisabia
 
