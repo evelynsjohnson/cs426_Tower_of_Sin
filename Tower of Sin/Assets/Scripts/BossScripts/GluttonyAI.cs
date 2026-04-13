@@ -9,7 +9,7 @@ using System.Diagnostics;
 [RequireComponent(typeof(AudioSource))]
 public class GluttonyAI : MonoBehaviour
 {
-    public float maxHealth = 100f;
+    public float maxHealth = 500f;
     private float currentHealth;
     public float damageToPlayer = 10f;
 
@@ -72,7 +72,7 @@ public class GluttonyAI : MonoBehaviour
 
     void Start()
     {
-        maxHealth = 100f + ((FloorTextController.floorNumber - 1) * 5f);
+        maxHealth = 1000f + ((FloorTextController.floorNumber - 5) * 5f);
 
         agent = GetComponent<NavMeshAgent>();
 

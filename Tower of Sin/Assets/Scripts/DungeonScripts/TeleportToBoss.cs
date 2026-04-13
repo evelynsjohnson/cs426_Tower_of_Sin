@@ -9,12 +9,11 @@ public class TeleportToBoss : MonoBehaviour
         int currentFloor = FloorTextController.floorNumber;
         if (currentFloor == 0 )
         {
-            FloorTextController.floorNumber = 4;
+            FloorTextController.floorNumber = 5;
         }
         else
         {
-            FloorTextController.floorNumber = ((currentFloor / 5) + 1) * 5 - 1;
-            // this formula isn't quite right because the floor num also gets updated somewhere else (?)
+            FloorTextController.floorNumber = ((currentFloor / 5) + 1) * 5;
         }
 
 

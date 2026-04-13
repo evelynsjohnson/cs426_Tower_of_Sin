@@ -613,7 +613,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7323286858182524270, guid: c18611346c4c58945a94163404f2e1e2, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -11.804
+      value: -10.88
       objectReference: {fileID: 0}
     - target: {fileID: 7323286858182524270, guid: c18611346c4c58945a94163404f2e1e2, type: 3}
       propertyPath: m_LocalRotation.w
@@ -3969,7 +3969,7 @@ Transform:
   m_GameObject: {fileID: 543289512}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 33.52, y: 5.19, z: -12.9504}
+  m_LocalPosition: {x: 33.89, y: 5.002, z: -14.03}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3990,8 +3990,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BossSpawner
   bossPrefabs:
   - {fileID: 4468398794321120721, guid: bd7559afbf25f6540a683c465aba1392, type: 3}
-  - {fileID: 7767833351647437530, guid: c4e800597e41d1e4c8ad7f4d4cd63ba6, type: 3}
-  - {fileID: 9060477573423771446, guid: 363f5c164a4dd8949a6a57f987008940, type: 3}
 --- !u!1001 &543942838
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7527,7 +7525,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8284203263779054585, guid: 8b2ac275d28767a4bbd00fec5cb82b8b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -16.251
+      value: -17.1
       objectReference: {fileID: 0}
     - target: {fileID: 8284203263779054585, guid: 8b2ac275d28767a4bbd00fec5cb82b8b, type: 3}
       propertyPath: m_LocalRotation.w
@@ -8816,7 +8814,7 @@ Transform:
   m_GameObject: {fileID: 1215559006}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.0900002, y: -0.17000008, z: -0.8295994}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

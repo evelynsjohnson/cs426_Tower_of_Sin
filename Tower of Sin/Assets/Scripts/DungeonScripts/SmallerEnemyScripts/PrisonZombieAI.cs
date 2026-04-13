@@ -446,6 +446,7 @@ public class PrisonZombieAI : MonoBehaviour
 
         if (currentHealth <= 0f)
         {
+            damageToPlayer = 0f;
             Die();
             return;
         }

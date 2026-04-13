@@ -397,6 +397,18 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 9f7194e95f2218e43ba781b66395cf51, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9f7194e95f2218e43ba781b66395cf51, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9f7194e95f2218e43ba781b66395cf51, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9f7194e95f2218e43ba781b66395cf51, type: 3}
       propertyPath: m_LocalPosition.x
       value: 23.37578
       objectReference: {fileID: 0}
@@ -435,6 +447,10 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 9f7194e95f2218e43ba781b66395cf51, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9f7194e95f2218e43ba781b66395cf51, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 9f7194e95f2218e43ba781b66395cf51, type: 3}
       propertyPath: m_Name
@@ -638,7 +654,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17c7f7596c3074e44b6fe232f68d4a05, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GluttonyAI
-  maxHealth: 200
+  maxHealth: 500
   damageToPlayer: 50
   isBlocking: 0
   blockDuration: 1
