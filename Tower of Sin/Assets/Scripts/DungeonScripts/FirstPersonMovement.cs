@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Collections;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(AudioSource))]
@@ -20,6 +21,14 @@ public class FirstPersonMovement : MonoBehaviour
 
     public KeyCode toggleCursorKey = KeyCode.Escape;
     public bool uiMode = true;
+
+    [Header("Debug / Safety")]
+    public bool enableDebugLogs = true;
+    public bool enableContinuousPositionLogs = false;
+    public float positionLogInterval = 0.5f;
+    public float maxAllowedJumpVelocity = 8f;
+    public float minAllowedYBeforeReset = -50f;
+    public Vector3 emergencyResetPosition = new Vector3(0f, 3f, 0f);
 
     public float slash1BaseDamage = 20f;
     public float slash2BaseDamage = 40f;
@@ -52,12 +61,11 @@ public class FirstPersonMovement : MonoBehaviour
     public AudioClip swordWoosh1;
     public AudioClip swordWoosh2;
 
-    Rigidbody rigidbody;
-    AudioSource audioSource;
+    private Rigidbody rigidbody;
+    private AudioSource audioSource;
 
     private float nextSlashTime = 0f;
     private float holdTimer = 0f;
-    private bool isCharging = false;
 
     public List<System.Func<float>> speedOverrides = new List<System.Func<float>>();
 
@@ -65,6 +73,9 @@ public class FirstPersonMovement : MonoBehaviour
 
     public float slash1AudioOffset = 0.2f;
     public float slash2AudioOffset = 0.5f;
+
+    private float nextPositionLogTime = 0f;
+    private bool hasLoggedBlueScreenHint = false;
 
     void Awake()
     {
@@ -77,7 +88,15 @@ public class FirstPersonMovement : MonoBehaviour
 
     void Start()
     {
-        SetUIMode(false); // start in gameplay mode
+        SetUIMode(false);
+
+        if (enableDebugLogs)
+        {
+            Debug.Log($"[FPM] Start scene={SceneManager.GetActiveScene().name}");
+            Debug.Log($"[FPM] Player start pos={transform.position}");
+            if (cameraTransform != null)
+                Debug.Log($"[FPM] Camera start pos={cameraTransform.position}");
+        }
     }
 
     void Update()
@@ -85,7 +104,18 @@ public class FirstPersonMovement : MonoBehaviour
         if (Input.GetKeyDown(toggleCursorKey))
         {
             SetUIMode(!uiMode);
+
+            if (enableDebugLogs)
+                Debug.Log($"[FPM] UI mode toggled. uiMode={uiMode}, timeScale={Time.timeScale}");
         }
+
+        if (enableContinuousPositionLogs && Time.time >= nextPositionLogTime)
+        {
+            nextPositionLogTime = Time.time + positionLogInterval;
+            DebugPosition("Periodic");
+        }
+
+        CheckForInvalidState();
 
         if (Time.timeScale == 0f) return;
 
@@ -113,8 +143,19 @@ public class FirstPersonMovement : MonoBehaviour
             jumpQueued = true;
             lastJumpTime = Time.time;
 
-            if (animator != null)
-                animator.SetTrigger("isJumping");
+            if (enableDebugLogs)
+            {
+                Debug.Log("[FPM] JUMP QUEUED");
+                Debug.Log($"[FPM] Scene={SceneManager.GetActiveScene().name}");
+                Debug.Log($"[FPM] Player pos={transform.position}");
+                if (cameraTransform != null)
+                    Debug.Log($"[FPM] Camera pos={cameraTransform.position}");
+                Debug.Log($"[FPM] Rigidbody vel before jump={rigidbody.linearVelocity}");
+                Debug.Log($"[FPM] grounded={(groundCheck != null ? groundCheck.isGrounded.ToString() : "null groundCheck")}");
+            }
+
+            // if (animator != null)
+            //     animator.SetTrigger("isJumping");
         }
 
         UpdateAnimationStates(currentHorizontalInput, currentVerticalInput);
@@ -284,15 +325,31 @@ public class FirstPersonMovement : MonoBehaviour
         Vector3 velocity = moveDir * targetMovingSpeed;
 
         float yVelocity = rigidbody.linearVelocity.y;
+        Physics.gravity = new Vector3(0, -20f, 0);
 
         if (jumpQueued)
         {
             float jumpVelocity = Mathf.Sqrt(2f * Physics.gravity.magnitude * jumpHeight);
+            jumpVelocity = Mathf.Min(jumpVelocity, maxAllowedJumpVelocity);
             yVelocity = jumpVelocity;
             jumpQueued = false;
+
+            if (enableDebugLogs)
+            {
+                Debug.Log($"[FPM] Applying jump velocity={jumpVelocity}");
+                Debug.Log($"[FPM] Rigidbody vel pre-apply={rigidbody.linearVelocity}");
+                DebugPosition("JumpApply");
+            }
         }
 
         rigidbody.linearVelocity = new Vector3(velocity.x, yVelocity, velocity.z);
+
+        if (enableDebugLogs && (float.IsNaN(rigidbody.linearVelocity.x) ||
+                                float.IsNaN(rigidbody.linearVelocity.y) ||
+                                float.IsNaN(rigidbody.linearVelocity.z)))
+        {
+            Debug.LogError("[FPM] Rigidbody velocity became NaN!");
+        }
     }
 
     void UpdateAnimationStates(float horizontalInput, float verticalInput)
@@ -312,5 +369,65 @@ public class FirstPersonMovement : MonoBehaviour
         animator.SetBool("isStrafingLeft", isStrafingLeft);
         animator.SetBool("isStrafingRight", isStrafingRight);
         animator.SetBool("isCrouching", isCrouching);
+    }
+
+    private void CheckForInvalidState()
+    {
+        if (transform.position.y < minAllowedYBeforeReset)
+        {
+            Debug.LogError($"[FPM] Player fell below safe Y ({transform.position.y}). Resetting to {emergencyResetPosition}");
+            EmergencyReset();
+            return;
+        }
+
+        if (HasInvalidVector(transform.position))
+        {
+            Debug.LogError("[FPM] Player position became invalid. Resetting.");
+            EmergencyReset();
+            return;
+        }
+
+        if (cameraTransform != null && HasInvalidVector(cameraTransform.position))
+        {
+            Debug.LogError("[FPM] Camera position became invalid. Resetting player.");
+            EmergencyReset();
+            return;
+        }
+
+        if (!hasLoggedBlueScreenHint && cameraTransform != null)
+        {
+            Vector3 vp = Camera.main != null ? Camera.main.WorldToViewportPoint(transform.position) : Vector3.zero;
+            if (vp.z < 0f)
+            {
+                hasLoggedBlueScreenHint = true;
+                Debug.LogWarning("[FPM] Player is behind the active camera. This can break UI/world-to-screen calculations.");
+                DebugPosition("BehindCamera");
+            }
+        }
+    }
+
+    private void EmergencyReset()
+    {
+        rigidbody.linearVelocity = Vector3.zero;
+        transform.position = emergencyResetPosition;
+
+        if (cameraTransform != null)
+        {
+            Debug.Log($"[FPM] After reset player pos={transform.position}, camera pos={cameraTransform.position}");
+        }
+    }
+
+    private bool HasInvalidVector(Vector3 v)
+    {
+        return float.IsNaN(v.x) || float.IsNaN(v.y) || float.IsNaN(v.z) ||
+               float.IsInfinity(v.x) || float.IsInfinity(v.y) || float.IsInfinity(v.z);
+    }
+
+    private void DebugPosition(string label)
+    {
+        if (!enableDebugLogs) return;
+
+        string camPos = cameraTransform != null ? cameraTransform.position.ToString() : "null";
+        Debug.Log($"[FPM:{label}] scene={SceneManager.GetActiveScene().name} playerPos={transform.position} camPos={camPos} vel={rigidbody.linearVelocity}");
     }
 }
