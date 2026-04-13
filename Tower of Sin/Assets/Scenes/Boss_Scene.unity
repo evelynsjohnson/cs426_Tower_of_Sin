@@ -3988,7 +3988,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7ca5093cfd035e4fb58ebc37ca892ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossSpawner
-  bossPrefab: {fileID: 4468398794321120721, guid: bd7559afbf25f6540a683c465aba1392, type: 3}
+  bossPrefabs:
+  - {fileID: 4468398794321120721, guid: bd7559afbf25f6540a683c465aba1392, type: 3}
+  - {fileID: 7767833351647437530, guid: c4e800597e41d1e4c8ad7f4d4cd63ba6, type: 3}
+  - {fileID: 9060477573423771446, guid: 363f5c164a4dd8949a6a57f987008940, type: 3}
 --- !u!1001 &543942838
 PrefabInstance:
   m_ObjectHideFlags: 0

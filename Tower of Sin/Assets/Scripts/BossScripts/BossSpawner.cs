@@ -2,15 +2,21 @@ using UnityEngine;
 
 public class BossSpawner : MonoBehaviour
 {
-    public GameObject bossPrefab;
+    public GameObject[] bossPrefabs;
 
     void Start()
     {
-        // Loop through all child objects attached to this spawner
-        foreach (Transform bossSpawnPoint in transform)
+        if (bossPrefabs == null || bossPrefabs.Length == 0)
         {
-            Instantiate(bossPrefab, bossSpawnPoint.position, bossSpawnPoint.rotation);
+            Debug.LogWarning("BossSpawner: no boss prefabs assigned.");
+            return;
         }
 
+        GameObject chosen = bossPrefabs[Random.Range(0, bossPrefabs.Length)];
+
+        foreach (Transform spawnPoint in transform)
+        {
+            Instantiate(chosen, spawnPoint.position, spawnPoint.rotation);
+        }
     }
 }

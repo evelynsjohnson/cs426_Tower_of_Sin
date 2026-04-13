@@ -91,6 +91,7 @@ public class WrathAI : MonoBehaviour
     public float momentumPenalty    = 0.45f;
 
     // ── Audio ─────────────────────────────────────────────────────────────────
+    public AudioClip bossMusic;
     public AudioClip hitSound;
     public AudioClip missSound;
     public AudioClip idleSound;
@@ -111,6 +112,7 @@ public class WrathAI : MonoBehaviour
     private PlayerHealth playerHealthScript;
     private AudioSource  sfxSource;
     private AudioSource  walkSource;
+    private AudioSource  musicSource;
 
     // ── Runtime state ─────────────────────────────────────────────────────────
     private bool       isDead            = false;
@@ -158,6 +160,16 @@ public class WrathAI : MonoBehaviour
 
         if (Camera.main != null) mainCamera = Camera.main.transform;
         if (healthBarFill != null) healthBarFill.fillAmount = 1f;
+
+        if (bossMusic != null)
+        {
+            musicSource = gameObject.AddComponent<AudioSource>();
+            musicSource.clip        = bossMusic;
+            musicSource.loop        = true;
+            musicSource.spatialBlend = 0f;  // 2D so it's heard everywhere
+            musicSource.volume      = 0.6f;
+            musicSource.Play();
+        }
 
         idleAudioTimer = Random.Range(3f, 7f);
         UpdateHealthUI();

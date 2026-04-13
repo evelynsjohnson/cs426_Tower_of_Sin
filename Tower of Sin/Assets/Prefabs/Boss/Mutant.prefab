@@ -666,6 +666,7 @@ MonoBehaviour:
   wSlam: 1.6
   wRoar: 3
   momentumPenalty: 0.45
+  bossMusic: {fileID: 8300000, guid: 2a077b926c8b0d54c8abacf9e8a76ff5, type: 3}
   hitSound: {fileID: 0}
   missSound: {fileID: 0}
   idleSound: {fileID: 0}

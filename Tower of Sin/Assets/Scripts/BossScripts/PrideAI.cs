@@ -62,6 +62,7 @@ public class PrideAI : MonoBehaviour
     public float attackDmgDelay = 0.45f;
 
     // ── Audio ─────────────────────────────────────────────────────────────────
+    public AudioClip bossMusic;
     public AudioClip hitSound;
     public AudioClip missSound;
     public AudioClip idleSound;
@@ -82,6 +83,7 @@ public class PrideAI : MonoBehaviour
     private PlayerHealth playerHealthScript;
     private AudioSource  sfxSource;
     private AudioSource  walkSource;
+    private AudioSource  musicSource;
 
     // ── State ─────────────────────────────────────────────────────────────────
     private bool  isDead         = false;
@@ -122,6 +124,16 @@ public class PrideAI : MonoBehaviour
 
         if (Camera.main != null) mainCamera = Camera.main.transform;
         if (healthBarFill != null) healthBarFill.fillAmount = 1f;
+
+        if (bossMusic != null)
+        {
+            musicSource = gameObject.AddComponent<AudioSource>();
+            musicSource.clip         = bossMusic;
+            musicSource.loop         = true;
+            musicSource.spatialBlend = 0f;
+            musicSource.volume       = 0.6f;
+            musicSource.Play();
+        }
 
         shieldActive   = true;
         idleAudioTimer = Random.Range(3f, 7f);
