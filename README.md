@@ -32,7 +32,7 @@ Can **YOU** prove your redemption?
 ## Tools and Resources
 
 * GitHub for version control and bug trackers.
-* Tab within the Design Doc for Due Date Calendar + Outlook Calendar dates.
+* Tab within the Design Doc (https://docs.google.com/document/d/1ctL3tTgzknVl5fRTv7HqBv6YSek7ZBOikL-WV76BQhs/edit?usp=sharing) for Due Date Calendar + Outlook Calendar dates.
 * Google Drive shared folder for pending assets/other docs: Tower of Sin.
 * Figma for game asset design and layout prototypes.
 * Discord for communication and a list of frequently used links pinned.
