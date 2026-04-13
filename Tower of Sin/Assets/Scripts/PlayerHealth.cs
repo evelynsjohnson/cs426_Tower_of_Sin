@@ -177,4 +177,15 @@ public class PlayerHealth : MonoBehaviour
             healthUIText.text = (int)currentHealth + "/" + (int)maxHealth;
         }
     }
+
+    public void UpdateHealth()
+    {
+        float bonus = float.Parse(healthBonusText.text);
+        maxHealth = baseHealth + bonus;
+        finalHealthText.text = maxHealth.ToString();
+        baseHealthText.text = "+" + baseHealth.ToString();
+        currentHealth = maxHealth;
+
+        UpdateUI();
+    }
 }

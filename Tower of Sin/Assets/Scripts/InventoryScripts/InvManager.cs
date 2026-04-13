@@ -42,6 +42,8 @@ public class InvManager : MonoBehaviour
     public TextMeshProUGUI finalDefenseText; //Inv UI final defense text
     public TextMeshProUGUI finalHealthText; //Inv UI final health text
 
+    private PlayerHealth healthManager;
+
     void OnEnable()
     {
         if (playerMovementScript != null) playerMovementScript.enabled = false;
@@ -165,6 +167,8 @@ public class InvManager : MonoBehaviour
                 updateStats(item, ring1.texture.Equals(item.icon));
                 break;
         }
+        healthManager = GetComponentInParent<PlayerHealth>();
+        healthManager.UpdateHealth();
     }
 
     private void updateStats(ItemData item, bool add)

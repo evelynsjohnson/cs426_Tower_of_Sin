@@ -430,4 +430,9 @@ public class FirstPersonMovement : MonoBehaviour
         string camPos = cameraTransform != null ? cameraTransform.position.ToString() : "null";
         Debug.Log($"[FPM:{label}] scene={SceneManager.GetActiveScene().name} playerPos={transform.position} camPos={camPos} vel={rigidbody.linearVelocity}");
     }
+
+    public void updateStats()
+    {
+
+    }
 }
