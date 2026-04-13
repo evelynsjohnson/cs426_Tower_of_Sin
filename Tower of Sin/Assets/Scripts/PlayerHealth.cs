@@ -69,7 +69,7 @@ public class PlayerHealth : MonoBehaviour
     {
         if (isDead) return;
 
-        currentHealth -= damage * (defense * (float)0.01);
+        currentHealth -= damage - (defense * (float)0.25);
         //Debug.Log($"[PlayerHealth] HIT for {damage}. Current HP: {currentHealth}/{maxHealth}");
 
         if (currentHealth <= 0)
