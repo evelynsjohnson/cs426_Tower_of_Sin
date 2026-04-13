@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(AudioSource))]
@@ -76,6 +77,8 @@ public class FirstPersonMovement : MonoBehaviour
 
     private float nextPositionLogTime = 0f;
     private bool hasLoggedBlueScreenHint = false;
+
+    public TextMeshProUGUI finalAttackText;
 
     void Awake()
     {
@@ -431,8 +434,11 @@ public class FirstPersonMovement : MonoBehaviour
         Debug.Log($"[FPM:{label}] scene={SceneManager.GetActiveScene().name} playerPos={transform.position} camPos={camPos} vel={rigidbody.linearVelocity}");
     }
 
-    public void updateStats()
+    public void UpdateAttack()
     {
+        float damage = float.Parse(finalAttackText.text);
+        slash1BaseDamage = damage;
+        slash2BaseDamage = damage * (float)1.5;
 
     }
 }

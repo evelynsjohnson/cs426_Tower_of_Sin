@@ -646,9 +646,9 @@ MonoBehaviour:
   item:
     type: 4
     icon: {fileID: 2800000, guid: a9cc9399cf2d7764784c622ac648a546, type: 3}
-    health: 5
-    damage: 30
-    defense: 5
+    health: 2
+    damage: 5
+    defense: 2
 --- !u!1001 &17369334
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1017,9 +1017,9 @@ MonoBehaviour:
   item:
     type: 2
     icon: {fileID: 2800000, guid: 63d2c8ff542298e4ab186ad033508ecf, type: 3}
-    health: 5
-    damage: 5
-    defense: 30
+    health: 2
+    damage: 2
+    defense: 5
 --- !u!114 &25475860
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12618,6 +12618,7 @@ MonoBehaviour:
   gameplayUICanvasGroup: {fileID: 1461959565}
   deathScreenCanvasGroup: {fileID: 1461959565}
   uiFadeDuration: 1.5
+  finalDefenseText: {fileID: 681168871}
 --- !u!114 &487772498
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -24038,9 +24039,9 @@ MonoBehaviour:
   item:
     type: 5
     icon: {fileID: 2800000, guid: 4eaa258acbb581347a5b8bc114ef87ad, type: 3}
-    health: 40
-    damage: 5
-    defense: 5
+    health: 4
+    damage: 2
+    defense: 2
 --- !u!114 &892573723
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25008,9 +25009,9 @@ MonoBehaviour:
   item:
     type: 0
     icon: {fileID: 2800000, guid: 5665f2b3d7618214db7ca5edcb269323, type: 3}
-    health: 5
-    damage: 5
-    defense: 15
+    health: 2
+    damage: 1
+    defense: 4
 --- !u!114 &953945686
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28420,9 +28421,9 @@ MonoBehaviour:
   item:
     type: 6
     icon: {fileID: 2800000, guid: 53053904747d5b446bee489c4fe02019, type: 3}
-    health: 30
-    damage: 5
-    defense: 15
+    health: 3
+    damage: 2
+    defense: 2
 --- !u!114 &1076561789
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -39746,9 +39747,9 @@ MonoBehaviour:
   item:
     type: 1
     icon: {fileID: 2800000, guid: de09b729e1f33fa44ad667525d429c99, type: 3}
-    health: 5
-    damage: 5
-    defense: 40
+    health: 2
+    damage: 2
+    defense: 6
 --- !u!114 &1594769935
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -49438,9 +49439,9 @@ MonoBehaviour:
   item:
     type: 3
     icon: {fileID: 2800000, guid: 170998785ff7af041bbabb8563474fba, type: 3}
-    health: 5
-    damage: 5
-    defense: 10
+    health: 1
+    damage: 1
+    defense: 2
 --- !u!114 &2040186410
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -53063,6 +53064,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   distanceThreshold: 0.15
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
   isGrounded: 0
 --- !u!114 &114657890407471637
 MonoBehaviour:
@@ -53145,6 +53149,7 @@ MonoBehaviour:
   invertControls: 0
   slash1AudioOffset: 0
   slash2AudioOffset: 0.62
+  finalAttackText: {fileID: 1700159364}
 --- !u!124 &124991110401576831
 Behaviour:
   m_ObjectHideFlags: 0

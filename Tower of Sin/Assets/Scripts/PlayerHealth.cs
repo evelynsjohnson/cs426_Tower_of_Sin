@@ -27,6 +27,10 @@ public class PlayerHealth : MonoBehaviour
 
     private bool isDead = false;
 
+    private float defense = 0;
+
+    public TextMeshProUGUI finalDefenseText;
+
     void Start()
     {
         float bonus = float.Parse(healthBonusText.text);
@@ -65,7 +69,7 @@ public class PlayerHealth : MonoBehaviour
     {
         if (isDead) return;
 
-        currentHealth -= damage;
+        currentHealth -= damage * (defense * (float)0.01);
         //Debug.Log($"[PlayerHealth] HIT for {damage}. Current HP: {currentHealth}/{maxHealth}");
 
         if (currentHealth <= 0)
@@ -182,9 +186,10 @@ public class PlayerHealth : MonoBehaviour
     {
         float bonus = float.Parse(healthBonusText.text);
         maxHealth = baseHealth + bonus;
-        finalHealthText.text = maxHealth.ToString();
-        baseHealthText.text = "+" + baseHealth.ToString();
         currentHealth = maxHealth;
+
+        defense = float.Parse(finalDefenseText.text);
+
 
         UpdateUI();
     }

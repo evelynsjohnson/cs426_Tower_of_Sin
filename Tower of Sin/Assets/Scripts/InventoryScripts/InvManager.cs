@@ -44,6 +44,8 @@ public class InvManager : MonoBehaviour
 
     private PlayerHealth healthManager;
 
+    private FirstPersonMovement attackManager;
+
     void OnEnable()
     {
         if (playerMovementScript != null) playerMovementScript.enabled = false;
@@ -169,6 +171,9 @@ public class InvManager : MonoBehaviour
         }
         healthManager = GetComponentInParent<PlayerHealth>();
         healthManager.UpdateHealth();
+
+        attackManager = GetComponentInParent<FirstPersonMovement>();
+        attackManager.UpdateAttack();
     }
 
     private void updateStats(ItemData item, bool add)
