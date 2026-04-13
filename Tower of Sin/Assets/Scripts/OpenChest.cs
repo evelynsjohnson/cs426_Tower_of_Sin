@@ -1,5 +1,8 @@
 using System.Collections;
 using UnityEngine;
+using System.Collections.Generic;
+
+
 
 [RequireComponent(typeof(AudioSource))]
 public class OpenChest : MonoBehaviour
@@ -33,6 +36,14 @@ public class OpenChest : MonoBehaviour
     private AudioSource audioSource;
     private Transform playerTransform;
 
+    private InvManager inventory;
+
+    private bool spawnedItem = false;
+    private int itmeToSpawn;
+    public int minIndex;
+    public int maxIndex;
+    public List<ItemData> lootItems = new List<ItemData>();
+
     void Start()
     {
         closedPosition = transform.position;
@@ -49,6 +60,8 @@ public class OpenChest : MonoBehaviour
         {
             playerTransform = player.transform;
         }
+
+        itmeToSpawn = Random.Range(minIndex, maxIndex + 1);
     }
 
     void Update()
@@ -101,11 +114,16 @@ public class OpenChest : MonoBehaviour
             elapsedTime += Time.deltaTime;
             yield return null;
         }
-        if (isOpen)
+        if (!spawnedItem)
         {
-            if (playerUI != null)
-                playerUI.AddPotion();
-            //todo: add random weapon to inventory
+            spawnedItem = true;
+            ItemData item = lootItems[itmeToSpawn];
+
+            inventory = playerTransform.GetComponent<InvManager>();
+
+            inventory.AddItem(item);
+            playerUI = FindObjectOfType<UIManager>();
+            playerUI.ShowPickup("Found: " + item.name);
         }
 
         transform.position = endPosition;

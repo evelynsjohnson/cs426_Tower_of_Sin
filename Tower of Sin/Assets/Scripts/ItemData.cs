@@ -1,0 +1,22 @@
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using System.Runtime.Serialization;
+using System.Security.AccessControl;
+using System;
+
+[System.Serializable]
+public class ItemData
+{
+    public ItemType type;
+    public Texture icon;
+    public int health;
+    public int damage;
+    public int defense;
+    public string name;
+}
+
+public enum ItemType
+{
+    Helmet, Chest, Pant, Boot, Weapon, Neck, Ring
+}

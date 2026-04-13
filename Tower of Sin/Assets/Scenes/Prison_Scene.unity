@@ -649,6 +649,7 @@ MonoBehaviour:
     health: 2
     damage: 5
     defense: 2
+    name: 
 --- !u!1001 &17369334
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1020,6 +1021,7 @@ MonoBehaviour:
     health: 2
     damage: 2
     defense: 5
+    name: 
 --- !u!114 &25475860
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4775,6 +4777,143 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!1 &176263649
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 176263650}
+  - component: {fileID: 176263652}
+  - component: {fileID: 176263651}
+  m_Layer: 5
+  m_Name: PickupText
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &176263650
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 176263649}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -0.0000038146973}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1112397089}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0.5}
+  m_AnchorMax: {x: 0, y: 0.5}
+  m_AnchoredPosition: {x: 50, y: -0.000015258789}
+  m_SizeDelta: {x: 200, y: 50}
+  m_Pivot: {x: 0, y: 0.5}
+--- !u!114 &176263651
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 176263649}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: he
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: -1183493901
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 36
+  m_fontSizeBase: 36
+  m_fontWeight: 400
+  m_enableAutoSizing: 0
+  m_fontSizeMin: 18
+  m_fontSizeMax: 72
+  m_fontStyle: 0
+  m_HorizontalAlignment: 1
+  m_VerticalAlignment: 256
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_characterHorizontalScale: 1
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_TextWrappingMode: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 0
+  m_ActiveFontFeatures: 6e72656b
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_EmojiFallbackSupport: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!222 &176263652
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 176263649}
+  m_CullTransparentMesh: 1
 --- !u!1 &176847431 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 113386648, guid: c559a22601843db4c927941c06a8b94b, type: 3}
@@ -24042,6 +24181,7 @@ MonoBehaviour:
     health: 4
     damage: 2
     defense: 2
+    name: 
 --- !u!114 &892573723
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25012,6 +25152,7 @@ MonoBehaviour:
     health: 2
     damage: 1
     defense: 4
+    name: 
 --- !u!114 &953945686
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28424,6 +28565,7 @@ MonoBehaviour:
     health: 3
     damage: 2
     defense: 2
+    name: 
 --- !u!114 &1076561789
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28884,6 +29026,7 @@ RectTransform:
   - {fileID: 2007330135}
   - {fileID: 2062678703}
   - {fileID: 1839147658}
+  - {fileID: 176263650}
   m_Father: {fileID: 4207293209181035}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -28906,6 +29049,7 @@ MonoBehaviour:
   weapon: 0
   PotionsText: {fileID: 347420473}
   maxPotions: 0
+  pickupText: {fileID: 176263651}
 --- !u!114 &1112397091
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -39750,6 +39894,7 @@ MonoBehaviour:
     health: 2
     damage: 2
     defense: 6
+    name: 
 --- !u!114 &1594769935
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -49442,6 +49587,7 @@ MonoBehaviour:
     health: 1
     damage: 1
     defense: 2
+    name: 
 --- !u!114 &2040186410
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -52096,7 +52242,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2124053627
 RectTransform:
   m_ObjectHideFlags: 0
@@ -52153,6 +52299,7 @@ MonoBehaviour:
   finalAttackText: {fileID: 1700159364}
   finalDefenseText: {fileID: 681168871}
   finalHealthText: {fileID: 179827297}
+  inventory: []
 --- !u!1 &2124962824
 GameObject:
   m_ObjectHideFlags: 0
@@ -52786,6 +52933,7 @@ GameObject:
   - component: {fileID: 487772499}
   - component: {fileID: 1031490063144846818}
   - component: {fileID: 1031490063144846819}
+  - component: {fileID: 1031490063144846820}
   m_Layer: 0
   m_Name: First Person Controller
   m_TagString: Player
@@ -53703,6 +53851,44 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90a7be02d1ae2aa48853717e2c158f3e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+--- !u!114 &1031490063144846820
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1773622908903619}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e46559fc6a250c34aaf0d3270a83e9ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InvManager
+  playerMovementScript: {fileID: 0}
+  cameraMovementScript: {fileID: 0}
+  playerRigidbody: {fileID: 0}
+  playerAnimator: {fileID: 0}
+  helmet: {fileID: 304955467}
+  chest: {fileID: 1851401365}
+  pant: {fileID: 908974059}
+  boot: {fileID: 867556860}
+  weapon: {fileID: 879063639}
+  neck: {fileID: 1239421568}
+  ring1: {fileID: 541107712}
+  ring2: {fileID: 1256417128}
+  helmetBase: {fileID: 2800000, guid: dcab762e2b9df4342975cd14c3e20c1e, type: 3}
+  chestBase: {fileID: 2800000, guid: b72eb72c80389a64bafb03f4fa80e7a8, type: 3}
+  pantBase: {fileID: 2800000, guid: b143ff7d0305d004383a95b873bf9842, type: 3}
+  bootBase: {fileID: 2800000, guid: beeec06077bb30440aff71e902343a95, type: 3}
+  weaponBase: {fileID: 2800000, guid: 8c297309eccc6df4bbdc7ec86cbf70f3, type: 3}
+  neckBase: {fileID: 2800000, guid: fcd326c18681a87489585398c50f5d14, type: 3}
+  ringBase: {fileID: 2800000, guid: 5cb6fda7aeef08845b838465a5da45b1, type: 3}
+  attackBonusText: {fileID: 343064899}
+  defenseBonusText: {fileID: 1125068015}
+  healthBonusText: {fileID: 621754704}
+  finalAttackText: {fileID: 1700159364}
+  finalDefenseText: {fileID: 681168871}
+  finalHealthText: {fileID: 179827297}
+  inventory: []
 --- !u!4 &1031632035744516538
 Transform:
   m_ObjectHideFlags: 0

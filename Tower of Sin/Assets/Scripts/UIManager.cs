@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 // access the Text Mesh Pro namespace
 using TMPro;
@@ -13,6 +14,8 @@ public class UIManager : MonoBehaviour
 
     public int maxPotions;
     private int numPotions;
+
+    public TextMeshProUGUI pickupText;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -42,5 +45,20 @@ public class UIManager : MonoBehaviour
     void changeWeapon(int newWeapon)
     {
         weapon = newWeapon;
+    }
+
+    public void ShowPickup(string message)
+    {
+        StartCoroutine(ShowPickupCoroutine(message));
+    }
+
+    private IEnumerator ShowPickupCoroutine(string message)
+    {
+        pickupText.text = message;
+        pickupText.alpha = 1;
+
+        yield return new WaitForSeconds(2f);
+
+        pickupText.alpha = 0;
     }
 }

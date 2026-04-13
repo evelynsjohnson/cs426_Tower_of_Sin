@@ -9,6 +9,7 @@ using System.Security.AccessControl;
 using TMPro;
 
 
+
 public class InvManager : MonoBehaviour
 {
     public MonoBehaviour playerMovementScript;
@@ -45,6 +46,8 @@ public class InvManager : MonoBehaviour
     private PlayerHealth healthManager;
 
     private FirstPersonMovement attackManager;
+
+    public List<ItemData> inventory = new List<ItemData>();
 
     void OnEnable()
     {
@@ -199,5 +202,10 @@ public class InvManager : MonoBehaviour
             finalHealthText.text = "+" + (float.Parse(finalHealthText.text) + item.health).ToString();
         }
 
+    }
+
+    public void AddItem(ItemData item)
+    {
+        inventory.Add(item);
     }
 }

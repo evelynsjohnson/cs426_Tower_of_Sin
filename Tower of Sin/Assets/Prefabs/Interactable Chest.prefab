@@ -345,6 +345,51 @@ MonoBehaviour:
   chestOpenSound: {fileID: 8300000, guid: 1b7772875660ed1459140d9c8c8e5f23, type: 3}
   chestCloseSound: {fileID: 8300000, guid: 1b7772875660ed1459140d9c8c8e5f23, type: 3}
   playerUI: {fileID: 0}
+  minIndex: 0
+  maxIndex: 5
+  lootItems:
+  - type: 0
+    icon: {fileID: 2800000, guid: 5665f2b3d7618214db7ca5edcb269323, type: 3}
+    health: 0
+    damage: 0
+    defense: 0
+    name: testing helmet
+  - type: 1
+    icon: {fileID: 2800000, guid: de09b729e1f33fa44ad667525d429c99, type: 3}
+    health: 0
+    damage: 0
+    defense: 0
+    name: testing chest
+  - type: 2
+    icon: {fileID: 2800000, guid: 63d2c8ff542298e4ab186ad033508ecf, type: 3}
+    health: 0
+    damage: 0
+    defense: 0
+    name: testing pant
+  - type: 3
+    icon: {fileID: 2800000, guid: 170998785ff7af041bbabb8563474fba, type: 3}
+    health: 0
+    damage: 0
+    defense: 0
+    name: testing boot
+  - type: 4
+    icon: {fileID: 2800000, guid: a9cc9399cf2d7764784c622ac648a546, type: 3}
+    health: 0
+    damage: 0
+    defense: 0
+    name: testing sword
+  - type: 4
+    icon: {fileID: 2800000, guid: a9cc9399cf2d7764784c622ac648a546, type: 3}
+    health: 0
+    damage: 0
+    defense: 0
+    name: testing sword
+  - type: 6
+    icon: {fileID: 2800000, guid: 53053904747d5b446bee489c4fe02019, type: 3}
+    health: 0
+    damage: 0
+    defense: 0
+    name: testing ring
 --- !u!4 &2120743830538816199 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 4ad289074c1d9c2469c5bea23e1b3704, type: 3}
