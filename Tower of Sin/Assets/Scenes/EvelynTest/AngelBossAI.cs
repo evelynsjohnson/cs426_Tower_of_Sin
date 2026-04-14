@@ -13,64 +13,68 @@ public class AngelBossAI : MonoBehaviour
         Dead
     }
 
-    [Header("Boss Stats")]
+    [SerializeField] private Color alivePointLightColor = Color.green;
+    [SerializeField] private Color deadPointLightColor = Color.white;
     [SerializeField] private float baseMaxHealth = 650f;
     [SerializeField] private float currentHealth;
     [SerializeField] private float maxHealth;
     [SerializeField] private BossPhase currentPhase = BossPhase.Phase1;
     [SerializeField] private int currentFloor = 5;
 
-    [Header("Circle Damage")]
-    [SerializeField] private float circleDelayBeforeHit = 1.25f;
-    [SerializeField] private float circleDamageRadius = 3f;
-    [SerializeField] private float circleDamage = 25f;
-    [SerializeField] private float circleLifetime = 2.5f;
 
-    [Header("References")]
     [SerializeField] private Animator animator;
     [SerializeField] private NavMeshAgent agent;
     [SerializeField] private GameObject envycirclePrefab;
     [SerializeField] private Transform player;
+    [SerializeField] private Light controlledPointLight;
 
-    [Header("UI")]
     [SerializeField] private Image bossHealthBarFill;
     [SerializeField] private TMP_Text bossHealthText;
     [SerializeField] private GameObject bossHealthUIRoot;
 
-    [Header("Player Search")]
     [SerializeField] private string playerTag = "Player";
-
-    [Header("Teleport")]
     [SerializeField] private float teleportSearchRadius = 25f;
     [SerializeField] private float navMeshSampleDistance = 8f;
     [SerializeField] private int teleportAttempts = 20;
 
-    [Header("Attack Timing")]
     [SerializeField] private float delayAfterTeleport = 3f;
     [SerializeField] private string attackTriggerName = "attack1";
-
-    [Header("Circle Spawn")]
     [SerializeField] private Vector3 circleSpawnOffset = Vector3.zero;
 
-    [Header("Phase Behavior")]
     [SerializeField] private float engageRange = 15f;
     [SerializeField] private float attackCooldown = 15f;
     [SerializeField] private float phase1DelayAfterEachCircleEnds = 2f;
     [SerializeField] private float phase2DelayBetweenSpawns = 1f;
     [SerializeField] private float phase2DelayAfterLastCircleEnds = 2f;
 
-    [Header("Debug")]
+    [SerializeField] private GameObject bossChestPrefab;
+    [SerializeField] private Transform bossChestSpawnPoint;
+    [SerializeField] private Transform basementDoorLeft;
+    [SerializeField] private Transform basementDoorRight;
+    [SerializeField] private float doorMoveDistanceZ = 1f;
+    [SerializeField] private float doorMoveDuration = 1f;
+    [SerializeField] private AudioSource gateAudioSource;
+    [SerializeField] private AudioClip largeGateClip;
+
     [SerializeField] private bool drawDebugRange = true;
+
+    [Header("Circle Damage")]
+    [SerializeField] private float circleDelayBeforeHit = 1.5f;
+    [SerializeField] private float circleDamageRadius = 3f;
+    [SerializeField] private float circleDamage = 25f;
+    [SerializeField] private float circleLifetime = 2.5f;
 
     private float nextAttackTime = 0f;
     private bool isBusy = false;
     private bool phase2Started = false;
     private bool isDead = false;
+    private bool deathHandled = false;
     private Coroutine aiLoopRoutine;
 
     public float CurrentHealth => currentHealth;
     public float MaxHealth => maxHealth;
     public bool IsDead => isDead;
+    public Color AlivePointLightColor => alivePointLightColor;
 
     private void Reset()
     {
@@ -93,6 +97,7 @@ public class AngelBossAI : MonoBehaviour
     {
         SetupHealthForFloor(currentFloor);
         UpdateBossUI();
+        ApplyAliveLightColor();
 
         if (bossHealthUIRoot != null)
             bossHealthUIRoot.SetActive(true);
@@ -101,6 +106,28 @@ public class AngelBossAI : MonoBehaviour
             StopCoroutine(aiLoopRoutine);
 
         aiLoopRoutine = StartCoroutine(BossLoop());
+    }
+
+    public void SetControlledPointLight(Light lightToControl)
+    {
+        controlledPointLight = lightToControl;
+
+        if (controlledPointLight != null)
+        {
+            controlledPointLight.color = isDead ? deadPointLightColor : alivePointLightColor;
+        }
+    }
+
+    private void ApplyAliveLightColor()
+    {
+        if (controlledPointLight != null)
+            controlledPointLight.color = alivePointLightColor;
+    }
+
+    private void ApplyDeadLightColor()
+    {
+        if (controlledPointLight != null)
+            controlledPointLight.color = deadPointLightColor;
     }
 
     private IEnumerator BossLoop()
@@ -147,6 +174,7 @@ public class AngelBossAI : MonoBehaviour
         currentPhase = BossPhase.Phase1;
         phase2Started = false;
         isDead = false;
+        deathHandled = false;
     }
 
     private float GetScaledHealthForFloor(int floor)
@@ -185,7 +213,7 @@ public class AngelBossAI : MonoBehaviour
     {
         phase2Started = true;
         currentPhase = BossPhase.Phase2;
-        Debug.Log("AngelBossAI: Entered Phase 2");
+        Debug.Log($"{name}: Entered Phase 2");
     }
 
     private void Die()
@@ -203,7 +231,65 @@ public class AngelBossAI : MonoBehaviour
         }
 
         UpdateBossUI();
-        Debug.Log("AngelBossAI: Boss defeated.");
+        ApplyDeadLightColor();
+
+        if (!deathHandled)
+            StartCoroutine(HandleDeathSequence());
+    }
+
+    private IEnumerator HandleDeathSequence()
+    {
+        deathHandled = true;
+
+        if (gateAudioSource != null)
+        {
+            if (largeGateClip != null)
+                gateAudioSource.PlayOneShot(largeGateClip);
+            else
+                gateAudioSource.Play();
+        }
+
+        Vector3 leftStart = basementDoorLeft != null ? basementDoorLeft.localPosition : Vector3.zero;
+        Vector3 rightStart = basementDoorRight != null ? basementDoorRight.localPosition : Vector3.zero;
+
+        Vector3 leftEnd = leftStart + new Vector3(0f, 0f, doorMoveDistanceZ);
+        Vector3 rightEnd = rightStart + new Vector3(0f, 0f, -doorMoveDistanceZ);
+
+        float elapsed = 0f;
+
+        while (elapsed < doorMoveDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / Mathf.Max(0.0001f, doorMoveDuration));
+            float eased = Mathf.SmoothStep(0f, 1f, t);
+
+            if (basementDoorLeft != null)
+                basementDoorLeft.localPosition = Vector3.Lerp(leftStart, leftEnd, eased);
+
+            if (basementDoorRight != null)
+                basementDoorRight.localPosition = Vector3.Lerp(rightStart, rightEnd, eased);
+
+            yield return null;
+        }
+
+        if (basementDoorLeft != null)
+            basementDoorLeft.localPosition = leftEnd;
+
+        if (basementDoorRight != null)
+            basementDoorRight.localPosition = rightEnd;
+
+        SpawnBossChest();
+    }
+
+    private void SpawnBossChest()
+    {
+        if (bossChestPrefab == null)
+            return;
+
+        Vector3 spawnPos = bossChestSpawnPoint != null ? bossChestSpawnPoint.position : transform.position;
+        Quaternion spawnRot = bossChestSpawnPoint != null ? bossChestSpawnPoint.rotation : Quaternion.identity;
+
+        Instantiate(bossChestPrefab, spawnPos, spawnRot);
     }
 
     private void UpdateBossUI()
@@ -233,7 +319,7 @@ public class AngelBossAI : MonoBehaviour
 
         if (player == null)
         {
-            Debug.LogWarning("AngelBossAI: Player not found.");
+            Debug.LogWarning($"{name}: Player not found.");
             isBusy = false;
             yield break;
         }
@@ -245,19 +331,15 @@ public class AngelBossAI : MonoBehaviour
 
         if (envycirclePrefab == null)
         {
-            Debug.LogError("AngelBossAI: envycirclePrefab is not assigned.");
+            Debug.LogError($"{name}: envycirclePrefab is not assigned.");
             isBusy = false;
             yield break;
         }
 
         if (currentPhase == BossPhase.Phase1)
-        {
             yield return StartCoroutine(DoPhase1CircleAttack());
-        }
         else if (currentPhase == BossPhase.Phase2)
-        {
             yield return StartCoroutine(DoPhase2CircleAttack());
-        }
 
         isBusy = false;
     }
@@ -271,14 +353,10 @@ public class AngelBossAI : MonoBehaviour
             GameObject circle = SpawnCircleAtCurrentPlayerPosition();
 
             if (circle != null)
-            {
                 yield return StartCoroutine(HandleCircleDamage(circle));
-            }
 
             if (i < circleCount - 1)
-            {
                 yield return new WaitForSeconds(phase1DelayAfterEachCircleEnds);
-            }
         }
     }
 
@@ -292,14 +370,10 @@ public class AngelBossAI : MonoBehaviour
             GameObject circle = SpawnCircleAtCurrentPlayerPosition();
 
             if (circle != null)
-            {
                 StartCoroutine(HandleCircleDamage(circle));
-            }
 
             if (i < circleCount - 1)
-            {
                 yield return new WaitForSeconds(phase2DelayBetweenSpawns);
-            }
         }
 
         yield return new WaitForSeconds(totalCircleDuration + phase2DelayAfterLastCircleEnds);
@@ -342,13 +416,9 @@ public class AngelBossAI : MonoBehaviour
                 if (ph == null) ph = player.GetComponentInParent<PlayerHealth>();
 
                 if (ph != null)
-                {
                     ph.TakeDamage(circleDamage);
-                }
                 else
-                {
-                    Debug.LogWarning("AngelBossAI: Could not find PlayerHealth on player.");
-                }
+                    Debug.LogWarning($"{name}: Could not find PlayerHealth on player.");
             }
         }
 

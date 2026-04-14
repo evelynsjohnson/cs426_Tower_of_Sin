@@ -9567,9 +9567,9 @@ GameObject:
   m_Component:
   - component: {fileID: 5541147574579425936}
   - component: {fileID: 7727423031859224629}
-  - component: {fileID: 4025323002099135464}
   - component: {fileID: 9222652192110072588}
   - component: {fileID: 4949696863614643423}
+  - component: {fileID: -5986220008828569501}
   m_Layer: 0
   m_Name: envyBoss
   m_TagString: Enemy
@@ -9626,47 +9626,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &4025323002099135464
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2275824099207907018}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c3006afcae1222e46b6cf0dd92fd5221, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AngelBossAI
-  baseMaxHealth: 650
-  currentHealth: 0
-  maxHealth: 0
-  currentPhase: 0
-  currentFloor: 5
-  circleDelayBeforeHit: 1.25
-  circleDamageRadius: 5
-  circleDamage: 25
-  circleLifetime: 2.5
-  animator: {fileID: 7727423031859224629}
-  agent: {fileID: 9222652192110072588}
-  envycirclePrefab: {fileID: 8764552555477813996, guid: b550eb20c69709342b808c358532ebc6, type: 3}
-  player: {fileID: 0}
-  bossHealthBarFill: {fileID: 4505282011708993677}
-  bossHealthText: {fileID: 4129297550933087265}
-  bossHealthUIRoot: {fileID: 3566514607643644339}
-  playerTag: Player
-  teleportSearchRadius: 25
-  navMeshSampleDistance: 8
-  teleportAttempts: 20
-  delayAfterTeleport: 3
-  attackTriggerName: attack1
-  circleSpawnOffset: {x: 0, y: 0, z: 0}
-  engageRange: 15
-  attackCooldown: 15
-  phase1DelayAfterEachCircleEnds: 2
-  phase2DelayBetweenSpawns: 1
-  phase2DelayAfterLastCircleEnds: 2
-  drawDebugRange: 1
 --- !u!195 &9222652192110072588
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -9712,6 +9671,58 @@ CapsuleCollider:
   m_Height: 4.48
   m_Direction: 1
   m_Center: {x: 0, y: 2.34, z: 0}
+--- !u!114 &-5986220008828569501
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2275824099207907018}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3006afcae1222e46b6cf0dd92fd5221, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AngelBossAI
+  alivePointLightColor: {r: 0, g: 1, b: 0, a: 1}
+  deadPointLightColor: {r: 1, g: 1, b: 1, a: 1}
+  baseMaxHealth: 650
+  currentHealth: 0
+  maxHealth: 0
+  currentPhase: 0
+  currentFloor: 5
+  animator: {fileID: 7727423031859224629}
+  agent: {fileID: 9222652192110072588}
+  envycirclePrefab: {fileID: 0}
+  player: {fileID: 0}
+  controlledPointLightObject: {fileID: 0}
+  basementDoorLeftObject: {fileID: 0}
+  basementDoorRightObject: {fileID: 0}
+  gateAudioObject: {fileID: 0}
+  bossHealthBarFill: {fileID: 0}
+  bossHealthText: {fileID: 0}
+  bossHealthUIRoot: {fileID: 0}
+  playerTag: Player
+  teleportSearchRadius: 25
+  navMeshSampleDistance: 8
+  teleportAttempts: 20
+  delayAfterTeleport: 3
+  attackTriggerName: attack1
+  circleSpawnOffset: {x: 0, y: 0, z: 0}
+  engageRange: 15
+  attackCooldown: 15
+  phase1DelayAfterEachCircleEnds: 2
+  phase2DelayBetweenSpawns: 1
+  phase2DelayAfterLastCircleEnds: 2
+  bossChestPrefab: {fileID: 0}
+  bossChestSpawnPoint: {fileID: 0}
+  doorMoveDistanceZ: 1
+  doorMoveDuration: 1
+  largeGateClip: {fileID: 0}
+  circleDelayBeforeHit: 1.5
+  circleDamageRadius: 3
+  circleDamage: 25
+  circleLifetime: 2.5
+  drawDebugRange: 1
 --- !u!1 &2300200509507823584
 GameObject:
   m_ObjectHideFlags: 0
