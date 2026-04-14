@@ -15678,15 +15678,15 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c3006afcae1222e46b6cf0dd92fd5221, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: '::'
+  m_EditorClassIdentifier: Assembly-CSharp::AngelBossAI
   baseMaxHealth: 650
-  currentHealth: 650
-  maxHealth: 650
+  currentHealth: 0
+  maxHealth: 0
   currentPhase: 0
   currentFloor: 5
-  circleDelayBeforeHit: 1.5
-  circleDamageRadius: 3
-  circleDamage: 50
+  circleDelayBeforeHit: 1.25
+  circleDamageRadius: 5
+  circleDamage: 25
   circleLifetime: 2.5
   animator: {fileID: 1621611137}
   agent: {fileID: 1621611139}
@@ -15696,36 +15696,18 @@ MonoBehaviour:
   bossHealthText: {fileID: 35666363}
   bossHealthUIRoot: {fileID: 1884269322}
   playerTag: Player
-  phase1TeleportInterval: 10
   teleportSearchRadius: 25
-  navMeshSampleDistance: 10
+  navMeshSampleDistance: 8
   teleportAttempts: 20
-  delayAfterTeleport: 0
+  delayAfterTeleport: 3
   attackTriggerName: attack1
-  bossAttackAnimationDuration: 3
-  circleSpawnOffset: {x: 0, y: -4, z: 0}
-  circleSpawnRadius: 4
-  phase1CircleCount: 1
-  phase2CircleCount: 3
-  circleSpawnAttempts: 12
-  visualAnimDuration: 2.25
-  handsStartLocalZ: -5
-  handsEndLocalZ: 0
-  handsRiseDuration: 2.25
-  canvasZRotateSpeed: 45
-  canvasRotationPerSecond: {x: 0, y: 90, z: 0}
-  spotlightMoveAmount: 0.4
-  spotlightPulseDuration: 1
-  sinkDuration: 2.5
-  minSinkSpeed: 0.35
-  maxSinkSpeed: 1.2
-  canvasChildName: Canvas
-  handsParentName: Hands
-  autoCollectHandsIfNoParentFound: 1
+  circleSpawnOffset: {x: 0, y: 0, z: 0}
   engageRange: 15
   attackCooldown: 15
+  phase1DelayAfterEachCircleEnds: 2
+  phase2DelayBetweenSpawns: 1
+  phase2DelayAfterLastCircleEnds: 2
   drawDebugRange: 1
-  circleRotationEuler: {x: -90, y: 0, z: 0}
 --- !u!195 &1621611139
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -27382,7 +27364,7 @@ RectTransform:
   - {fileID: 866779730}
   - {fileID: 149276326}
   - {fileID: 35666362}
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 543450652078683541}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -27690,7 +27672,7 @@ GameObject:
   - component: {fileID: 1957119088}
   - component: {fileID: 1957119087}
   m_Layer: 0
-  m_Name: Cube
+  m_Name: NavMeshCube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -30187,6 +30169,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1884269326}
   - {fileID: 2114649923529191116}
   - {fileID: 4098182669223709923}
   - {fileID: 6432185034924232137}
@@ -47495,10 +47478,9 @@ SceneRoots:
   - {fileID: 2023803416}
   - {fileID: 1705691079}
   - {fileID: 1483164887}
-  - {fileID: 32922028}
-  - {fileID: 1957119090}
   - {fileID: 186172157}
   - {fileID: 686579833}
   - {fileID: 1820974014}
-  - {fileID: 1884269326}
+  - {fileID: 32922028}
+  - {fileID: 1957119090}
   - {fileID: 543450652078683541}

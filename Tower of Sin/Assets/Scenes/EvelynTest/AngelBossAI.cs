@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
@@ -14,66 +13,56 @@ public class AngelBossAI : MonoBehaviour
         Dead
     }
 
+    [Header("Boss Stats")]
     [SerializeField] private float baseMaxHealth = 650f;
     [SerializeField] private float currentHealth;
     [SerializeField] private float maxHealth;
     [SerializeField] private BossPhase currentPhase = BossPhase.Phase1;
     [SerializeField] private int currentFloor = 5;
 
-    [SerializeField] private float circleDelayBeforeHit = 1.5f;
+    [Header("Circle Damage")]
+    [SerializeField] private float circleDelayBeforeHit = 1.25f;
     [SerializeField] private float circleDamageRadius = 3f;
     [SerializeField] private float circleDamage = 25f;
     [SerializeField] private float circleLifetime = 2.5f;
 
+    [Header("References")]
     [SerializeField] private Animator animator;
     [SerializeField] private NavMeshAgent agent;
     [SerializeField] private GameObject envycirclePrefab;
     [SerializeField] private Transform player;
 
+    [Header("UI")]
     [SerializeField] private Image bossHealthBarFill;
     [SerializeField] private TMP_Text bossHealthText;
     [SerializeField] private GameObject bossHealthUIRoot;
 
+    [Header("Player Search")]
     [SerializeField] private string playerTag = "Player";
-    [SerializeField] private float phase1TeleportInterval = 15f;
+
+    [Header("Teleport")]
     [SerializeField] private float teleportSearchRadius = 25f;
     [SerializeField] private float navMeshSampleDistance = 8f;
     [SerializeField] private int teleportAttempts = 20;
 
+    [Header("Attack Timing")]
     [SerializeField] private float delayAfterTeleport = 3f;
     [SerializeField] private string attackTriggerName = "attack1";
-    [SerializeField] private float bossAttackAnimationDuration = 3f;
 
-    [SerializeField] private Vector3 circleSpawnOffset = new Vector3(0f, -4f, 0f);
-    [SerializeField] private float circleSpawnRadius = 4f;
-    [SerializeField] private int phase1CircleCount = 1;
-    [SerializeField] private int phase2CircleCount = 3;
-    [SerializeField] private int circleSpawnAttempts = 12;
+    [Header("Circle Spawn")]
+    [SerializeField] private Vector3 circleSpawnOffset = Vector3.zero;
 
-    [SerializeField] private float visualAnimDuration = 2.25f;
-    [SerializeField] private float handsStartLocalZ = -5f;
-    [SerializeField] private float handsEndLocalZ = 0f;
-    [SerializeField] private float handsRiseDuration = 2.25f;
-    [SerializeField] private float canvasZRotateSpeed = 45f;
-    [SerializeField] private Vector3 canvasRotationPerSecond = new Vector3(0f, 90f, 0f);
-
-    [SerializeField] private float spotlightMoveAmount = 0.4f;
-    [SerializeField] private float spotlightPulseDuration = 1f;
-
-    [SerializeField] private float sinkDuration = 2.5f;
-    [SerializeField] private float minSinkSpeed = 0.35f;
-    [SerializeField] private float maxSinkSpeed = 1.2f;
-
-    [SerializeField] private string canvasChildName = "Canvas";
-    [SerializeField] private string handsParentName = "Hands";
-    [SerializeField] private bool autoCollectHandsIfNoParentFound = true;
-
+    [Header("Phase Behavior")]
     [SerializeField] private float engageRange = 15f;
     [SerializeField] private float attackCooldown = 15f;
-    [SerializeField] private bool drawDebugRange = true;
-    [SerializeField] private Vector3 circleRotationEuler = new Vector3(0f, 0f, 0f);
-    private float nextAttackTime = 0f;
+    [SerializeField] private float phase1DelayAfterEachCircleEnds = 2f;
+    [SerializeField] private float phase2DelayBetweenSpawns = 1f;
+    [SerializeField] private float phase2DelayAfterLastCircleEnds = 2f;
 
+    [Header("Debug")]
+    [SerializeField] private bool drawDebugRange = true;
+
+    private float nextAttackTime = 0f;
     private bool isBusy = false;
     private bool phase2Started = false;
     private bool isDead = false;
@@ -97,12 +86,7 @@ public class AngelBossAI : MonoBehaviour
         if (agent == null)
             agent = GetComponent<NavMeshAgent>();
 
-        if (player == null)
-        {
-            GameObject p = GameObject.FindGameObjectWithTag(playerTag);
-            if (p != null)
-                player = p.transform;
-        }
+        FindPlayerIfNeeded();
     }
 
     private void Start()
@@ -123,12 +107,7 @@ public class AngelBossAI : MonoBehaviour
     {
         while (!isDead)
         {
-            if (player == null)
-            {
-                GameObject p = GameObject.FindGameObjectWithTag(playerTag);
-                if (p != null)
-                    player = p.transform;
-            }
+            FindPlayerIfNeeded();
 
             if (player != null && !isBusy)
             {
@@ -143,6 +122,15 @@ public class AngelBossAI : MonoBehaviour
 
             yield return null;
         }
+    }
+
+    private void FindPlayerIfNeeded()
+    {
+        if (player != null) return;
+
+        GameObject p = GameObject.FindGameObjectWithTag(playerTag);
+        if (p != null)
+            player = p.transform;
     }
 
     public void SetFloor(int floor)
@@ -174,13 +162,11 @@ public class AngelBossAI : MonoBehaviour
 
     public void TakeDamage(float damage, int slashChoice)
     {
-        if (isDead) return;
-        if (damage <= 0f) return;
+        if (isDead || damage <= 0f)
+            return;
 
         currentHealth -= damage;
         currentHealth = Mathf.Clamp(currentHealth, 0f, maxHealth);
-
-        Debug.Log($"AngelBossAI took {damage} damage. HP: {currentHealth}/{maxHealth}");
 
         UpdateBossUI();
 
@@ -199,42 +185,7 @@ public class AngelBossAI : MonoBehaviour
     {
         phase2Started = true;
         currentPhase = BossPhase.Phase2;
-
         Debug.Log("AngelBossAI: Entered Phase 2");
-
-        if (!isBusy && !isDead)
-            StartCoroutine(SpawnPhase2CirclesNow());
-    }
-    private IEnumerator SpawnPhase2CirclesNow()
-    {
-        yield return null;
-
-        if (player == null)
-        {
-            GameObject p = GameObject.FindGameObjectWithTag(playerTag);
-            if (p != null)
-                player = p.transform;
-        }
-
-        if (player == null)
-        {
-            Debug.LogWarning("AngelBossAI: Player not found for phase 2 circles.");
-            yield break;
-        }
-
-        if (envycirclePrefab == null)
-        {
-            Debug.LogError("AngelBossAI: envycirclePrefab is not assigned.");
-            yield break;
-        }
-
-        for (int i = 0; i < phase2CircleCount; i++)
-        {
-            Vector3 spawnPos = player.position + circleSpawnOffset;
-
-            GameObject circle = Instantiate(envycirclePrefab, spawnPos, Quaternion.identity);
-            StartCoroutine(HandleCircleDamage(circle, spawnPos));
-        }
     }
 
     private void Die()
@@ -258,21 +209,15 @@ public class AngelBossAI : MonoBehaviour
     private void UpdateBossUI()
     {
         if (bossHealthBarFill != null)
-        {
             bossHealthBarFill.fillAmount = (maxHealth > 0f) ? currentHealth / maxHealth : 0f;
-        }
 
         if (bossHealthText != null)
-        {
             bossHealthText.text = $"{Mathf.CeilToInt(currentHealth)}/{Mathf.CeilToInt(maxHealth)}";
-        }
     }
 
     private IEnumerator TeleportAndAttack()
     {
         isBusy = true;
-
-        Debug.Log("AngelBossAI: TeleportAndAttack started");
 
         TeleportToRandomNavMeshLocation();
 
@@ -284,12 +229,7 @@ public class AngelBossAI : MonoBehaviour
             yield break;
         }
 
-        if (player == null)
-        {
-            GameObject p = GameObject.FindGameObjectWithTag(playerTag);
-            if (p != null)
-                player = p.transform;
-        }
+        FindPlayerIfNeeded();
 
         if (player == null)
         {
@@ -310,24 +250,79 @@ public class AngelBossAI : MonoBehaviour
             yield break;
         }
 
-        int circleCount = (currentPhase == BossPhase.Phase2) ? phase2CircleCount : phase1CircleCount;
-
-        for (int i = 0; i < circleCount; i++)
+        if (currentPhase == BossPhase.Phase1)
         {
-            Vector3 spawnPos = player.position + circleSpawnOffset;
-            spawnPos.y = player.position.y + circleSpawnOffset.y;
-
-            GameObject circle = Instantiate(envycirclePrefab, spawnPos, Quaternion.identity);
-            StartCoroutine(HandleCircleDamage(circle, spawnPos));
+            yield return StartCoroutine(DoPhase1CircleAttack());
         }
-
-        yield return new WaitForSeconds(attackCooldown);
+        else if (currentPhase == BossPhase.Phase2)
+        {
+            yield return StartCoroutine(DoPhase2CircleAttack());
+        }
 
         isBusy = false;
     }
 
-    private IEnumerator HandleCircleDamage(GameObject circle, Vector3 circleCenter)
+    private IEnumerator DoPhase1CircleAttack()
     {
+        const int circleCount = 3;
+
+        for (int i = 0; i < circleCount; i++)
+        {
+            GameObject circle = SpawnCircleAtCurrentPlayerPosition();
+
+            if (circle != null)
+            {
+                yield return StartCoroutine(HandleCircleDamage(circle));
+            }
+
+            if (i < circleCount - 1)
+            {
+                yield return new WaitForSeconds(phase1DelayAfterEachCircleEnds);
+            }
+        }
+    }
+
+    private IEnumerator DoPhase2CircleAttack()
+    {
+        const int circleCount = 3;
+        float totalCircleDuration = Mathf.Max(circleLifetime, circleDelayBeforeHit);
+
+        for (int i = 0; i < circleCount; i++)
+        {
+            GameObject circle = SpawnCircleAtCurrentPlayerPosition();
+
+            if (circle != null)
+            {
+                StartCoroutine(HandleCircleDamage(circle));
+            }
+
+            if (i < circleCount - 1)
+            {
+                yield return new WaitForSeconds(phase2DelayBetweenSpawns);
+            }
+        }
+
+        yield return new WaitForSeconds(totalCircleDuration + phase2DelayAfterLastCircleEnds);
+    }
+
+    private GameObject SpawnCircleAtCurrentPlayerPosition()
+    {
+        FindPlayerIfNeeded();
+
+        if (player == null || envycirclePrefab == null)
+            return null;
+
+        Vector3 spawnPos = player.position + circleSpawnOffset;
+        return Instantiate(envycirclePrefab, spawnPos, Quaternion.identity);
+    }
+
+    private IEnumerator HandleCircleDamage(GameObject circle)
+    {
+        if (circle == null)
+            yield break;
+
+        Vector3 circleCenter = circle.transform.position;
+
         yield return new WaitForSeconds(circleDelayBeforeHit);
 
         if (player != null)
@@ -342,8 +337,6 @@ public class AngelBossAI : MonoBehaviour
 
             if (dist <= circleDamageRadius)
             {
-                Debug.Log("AngelBossAI: Player was inside circle and took damage.");
-
                 PlayerHealth ph = player.GetComponent<PlayerHealth>();
                 if (ph == null) ph = player.GetComponentInChildren<PlayerHealth>();
                 if (ph == null) ph = player.GetComponentInParent<PlayerHealth>();
@@ -357,17 +350,15 @@ public class AngelBossAI : MonoBehaviour
                     Debug.LogWarning("AngelBossAI: Could not find PlayerHealth on player.");
                 }
             }
-            else
-            {
-                Debug.Log("AngelBossAI: Player escaped the circle.");
-            }
         }
 
-        yield return new WaitForSeconds(Mathf.Max(0f, circleLifetime - circleDelayBeforeHit));
+        float remainingLifetime = Mathf.Max(0f, circleLifetime - circleDelayBeforeHit);
+        yield return new WaitForSeconds(remainingLifetime);
 
         if (circle != null)
             Destroy(circle);
     }
+
     private void TeleportToRandomNavMeshLocation()
     {
         Vector3 chosenPosition = transform.position;
@@ -402,28 +393,6 @@ public class AngelBossAI : MonoBehaviour
         }
     }
 
-    private Vector3 GetNearbyNavMeshPointNearPlayer(Transform playerTransform, float radius, float maxSampleDistance, int attempts)
-    {
-        if (playerTransform == null)
-            return transform.position;
-
-        for (int i = 0; i < attempts; i++)
-        {
-            Vector2 random2D = Random.insideUnitCircle * radius;
-            Vector3 candidate = playerTransform.position + new Vector3(random2D.x, 0f, random2D.y);
-
-            if (NavMesh.SamplePosition(candidate, out NavMeshHit hit, maxSampleDistance, NavMesh.AllAreas))
-            {
-                return hit.position;
-            }
-        }
-
-        if (NavMesh.SamplePosition(playerTransform.position, out NavMeshHit fallback, maxSampleDistance, NavMesh.AllAreas))
-            return fallback.position;
-
-        return playerTransform.position;
-    }
-
     private void FaceTarget(Vector3 targetPosition)
     {
         Vector3 flatDir = targetPosition - transform.position;
@@ -433,135 +402,11 @@ public class AngelBossAI : MonoBehaviour
             transform.rotation = Quaternion.LookRotation(flatDir.normalized);
     }
 
-    private IEnumerator AnimateAttackCircle(GameObject attackRoot)
-    {
-        if (attackRoot == null)
-            yield break;
-
-        Transform canvasTransform = FindDeepChild(attackRoot.transform, canvasChildName);
-        Transform handsTransform = FindDeepChild(attackRoot.transform, handsParentName);
-        Light spotLight = attackRoot.GetComponentInChildren<Light>();
-
-        Vector3 handsStartLocalPos = Vector3.zero;
-        Vector3 handsEndLocalPos = Vector3.zero;
-
-        if (handsTransform != null)
-        {
-            handsEndLocalPos = handsTransform.localPosition;
-            handsStartLocalPos = handsEndLocalPos;
-            handsStartLocalPos.z = handsStartLocalZ;
-            handsEndLocalPos.z = handsEndLocalZ;
-
-            handsTransform.localPosition = handsStartLocalPos;
-        }
-
-        Quaternion canvasStartRot = Quaternion.identity;
-        if (canvasTransform != null)
-        {
-            canvasStartRot = canvasTransform.localRotation;
-        }
-
-        Vector3 lightStartLocalPos = Vector3.zero;
-        if (spotLight != null)
-        {
-            lightStartLocalPos = spotLight.transform.localPosition;
-        }
-
-        float elapsed = 0f;
-
-        while (elapsed < handsRiseDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / Mathf.Max(0.0001f, handsRiseDuration));
-            float easedT = Mathf.SmoothStep(0f, 1f, t);
-
-            if (handsTransform != null)
-            {
-                handsTransform.localPosition = Vector3.Lerp(handsStartLocalPos, handsEndLocalPos, easedT);
-            }
-
-            if (canvasTransform != null)
-            {
-                canvasTransform.localRotation = canvasStartRot * Quaternion.Euler(0f, 0f, canvasZRotateSpeed * elapsed);
-            }
-
-            if (spotLight != null)
-            {
-                float pulseT = Mathf.PingPong(elapsed / Mathf.Max(0.0001f, spotlightPulseDuration), 1f);
-                float yOffset = Mathf.Lerp(-spotlightMoveAmount, spotlightMoveAmount, pulseT);
-
-                Vector3 p = lightStartLocalPos;
-                p.y += yOffset;
-                spotLight.transform.localPosition = p;
-            }
-
-            yield return null;
-        }
-
-        if (handsTransform != null)
-        {
-            handsTransform.localPosition = handsEndLocalPos;
-        }
-    }
-
     private void OnDrawGizmosSelected()
     {
         if (!drawDebugRange) return;
 
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, engageRange);
-    }
-
-    private IEnumerator SinkAndDespawnAttack(GameObject attackRoot)
-    {
-        if (attackRoot == null)
-            yield break;
-
-        Transform[] allParts = attackRoot.GetComponentsInChildren<Transform>(true);
-        Dictionary<Transform, Vector3> startPositions = new Dictionary<Transform, Vector3>();
-        Dictionary<Transform, float> sinkSpeeds = new Dictionary<Transform, float>();
-
-        foreach (Transform part in allParts)
-        {
-            if (part == attackRoot.transform) continue;
-
-            startPositions[part] = part.position;
-            sinkSpeeds[part] = Random.Range(minSinkSpeed, maxSinkSpeed);
-        }
-
-        float elapsed = 0f;
-
-        while (elapsed < sinkDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / sinkDuration);
-
-            foreach (Transform part in allParts)
-            {
-                if (part == null || part == attackRoot.transform) continue;
-
-                Vector3 startPos = startPositions[part];
-                float sinkAmount = sinkSpeeds[part] * t;
-                part.position = startPos + Vector3.down * sinkAmount;
-            }
-
-            yield return null;
-        }
-
-        Destroy(attackRoot);
-    }
-
-    private Transform FindDeepChild(Transform parent, string childName)
-    {
-        if (parent == null || string.IsNullOrEmpty(childName))
-            return null;
-
-        foreach (Transform child in parent.GetComponentsInChildren<Transform>(true))
-        {
-            if (child.name == childName)
-                return child;
-        }
-
-        return null;
     }
 }
