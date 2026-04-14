@@ -72,7 +72,7 @@ public class GluttonyAI : MonoBehaviour
 
     void Start()
     {
-        maxHealth = 1000f + ((FloorTextController.floorNumber - 5) * 5f);
+        maxHealth = 500f + ((FloorTextController.floorNumber - 5) * 5f);
 
         agent = GetComponent<NavMeshAgent>();
 

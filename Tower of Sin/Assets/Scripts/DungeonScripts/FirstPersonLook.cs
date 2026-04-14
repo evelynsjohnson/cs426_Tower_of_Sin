@@ -55,10 +55,5 @@ public class FirstPersonLook : MonoBehaviour
 
         if (character != null)
             character.localRotation = Quaternion.AngleAxis(velocity.x, Vector3.up);
-
-        Debug.Log("Camera enabled: " + GetComponent<Camera>().enabled);
-        Debug.Log("Camera pos: " + transform.position);
-        Debug.Log("Camera rot: " + transform.rotation.eulerAngles);
-        Debug.Log("Player pos: " + character.position);
     }
 }

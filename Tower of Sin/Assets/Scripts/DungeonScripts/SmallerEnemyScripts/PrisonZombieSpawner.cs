@@ -21,7 +21,7 @@ public class PrisonZombieScript : MonoBehaviour
 
         foreach (Transform childSpawnPoint in transform)
         {
-            if ((Random.value*100) >= spawnChance)
+            if ((Random.value*100) <= spawnChance)
             {
                 GameObject newZombie = Instantiate(zombiePrefab, childSpawnPoint.position, childSpawnPoint.rotation);
                 activeZombies.Add(newZombie);

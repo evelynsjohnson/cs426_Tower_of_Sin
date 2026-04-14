@@ -17,13 +17,15 @@ public class PortalManager : MonoBehaviour
 
         for (int i = 0; i < dungeonPortals.Length; i++)
         {
-            if (i == winningIndex)
+            bool isWinning = (i == winningIndex);
+
+            dungeonPortals[i].TogglePortal(isWinning);
+
+            Transform teleporter = dungeonPortals[i].transform.Find("TeleporterCube");
+
+            if (teleporter != null)
             {
-                dungeonPortals[i].TogglePortal(true);
-            }
-            else
-            {
-                dungeonPortals[i].TogglePortal(false);
+                teleporter.gameObject.SetActive(isWinning);
             }
         }
     }
