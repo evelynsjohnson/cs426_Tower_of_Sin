@@ -13,26 +13,24 @@ public class AngelBossAI : MonoBehaviour
         Dead
     }
 
+    [SerializeField] private AudioClip circleSpawnClip;
+    [SerializeField][Range(0f, 1f)] private float circleSpawnVolume = 1f;
+
     [SerializeField] private Color alivePointLightColor = Color.green;
     [SerializeField] private Color deadPointLightColor = Color.white;
+
     [SerializeField] private float baseMaxHealth = 650f;
     [SerializeField] private float currentHealth;
     [SerializeField] private float maxHealth;
     [SerializeField] private BossPhase currentPhase = BossPhase.Phase1;
     [SerializeField] private int currentFloor = 5;
 
-
     [SerializeField] private Animator animator;
     [SerializeField] private NavMeshAgent agent;
     [SerializeField] private GameObject envycirclePrefab;
     [SerializeField] private Transform player;
-    [SerializeField] private Light controlledPointLight;
-
-    [SerializeField] private Image bossHealthBarFill;
-    [SerializeField] private TMP_Text bossHealthText;
-    [SerializeField] private GameObject bossHealthUIRoot;
-
     [SerializeField] private string playerTag = "Player";
+
     [SerializeField] private float teleportSearchRadius = 25f;
     [SerializeField] private float navMeshSampleDistance = 8f;
     [SerializeField] private int teleportAttempts = 20;
@@ -47,22 +45,26 @@ public class AngelBossAI : MonoBehaviour
     [SerializeField] private float phase2DelayBetweenSpawns = 1f;
     [SerializeField] private float phase2DelayAfterLastCircleEnds = 2f;
 
-    [SerializeField] private GameObject bossChestPrefab;
-    [SerializeField] private Transform bossChestSpawnPoint;
-    [SerializeField] private Transform basementDoorLeft;
-    [SerializeField] private Transform basementDoorRight;
-    [SerializeField] private float doorMoveDistanceZ = 1f;
-    [SerializeField] private float doorMoveDuration = 1f;
-    [SerializeField] private AudioSource gateAudioSource;
-    [SerializeField] private AudioClip largeGateClip;
-
-    [SerializeField] private bool drawDebugRange = true;
-
-    [Header("Circle Damage")]
     [SerializeField] private float circleDelayBeforeHit = 1.5f;
     [SerializeField] private float circleDamageRadius = 3f;
     [SerializeField] private float circleDamage = 25f;
     [SerializeField] private float circleLifetime = 2.5f;
+    [SerializeField] private bool drawDebugRange = true;
+
+    private Light controlledPointLight;
+    private Transform basementDoorLeft;
+    private Transform basementDoorRight;
+    private AudioSource gateAudioSource;
+    private AudioClip largeGateClip;
+    private GameObject bossChestPrefab;
+    private Transform bossChestSpawnPoint;
+
+    private Image bossHealthBarFill;
+    private TMP_Text bossHealthText;
+    private GameObject bossHealthUIRoot;
+
+    private float doorMoveDistanceZ = 1f;
+    private float doorMoveDuration = 1f;
 
     private float nextAttackTime = 0f;
     private bool isBusy = false;
@@ -74,7 +76,6 @@ public class AngelBossAI : MonoBehaviour
     public float CurrentHealth => currentHealth;
     public float MaxHealth => maxHealth;
     public bool IsDead => isDead;
-    public Color AlivePointLightColor => alivePointLightColor;
 
     private void Reset()
     {
@@ -108,14 +109,40 @@ public class AngelBossAI : MonoBehaviour
         aiLoopRoutine = StartCoroutine(BossLoop());
     }
 
-    public void SetControlledPointLight(Light lightToControl)
+    public void SetupArenaReferences(
+        Light pointLight,
+        Transform leftDoor,
+        Transform rightDoor,
+        AudioSource gateSource,
+        AudioClip gateClip,
+        GameObject chestPrefab,
+        Transform chestSpawnPoint,
+        Image healthBarFill,
+        TMP_Text healthText,
+        GameObject healthUIRoot,
+        float doorDistanceZ,
+        float doorOpenDuration)
     {
-        controlledPointLight = lightToControl;
+        controlledPointLight = pointLight;
+        basementDoorLeft = leftDoor;
+        basementDoorRight = rightDoor;
+        gateAudioSource = gateSource;
+        largeGateClip = gateClip;
+        bossChestPrefab = chestPrefab;
+        bossChestSpawnPoint = chestSpawnPoint;
 
-        if (controlledPointLight != null)
-        {
-            controlledPointLight.color = isDead ? deadPointLightColor : alivePointLightColor;
-        }
+        bossHealthBarFill = healthBarFill;
+        bossHealthText = healthText;
+        bossHealthUIRoot = healthUIRoot;
+
+        doorMoveDistanceZ = doorDistanceZ;
+        doorMoveDuration = doorOpenDuration;
+
+        if (bossHealthUIRoot != null)
+            bossHealthUIRoot.SetActive(true);
+
+        UpdateBossUI();
+        ApplyAliveLightColor();
     }
 
     private void ApplyAliveLightColor()
@@ -199,14 +226,10 @@ public class AngelBossAI : MonoBehaviour
         UpdateBossUI();
 
         if (!phase2Started && currentHealth <= maxHealth * 0.5f)
-        {
             EnterPhase2();
-        }
 
         if (currentHealth <= 0f)
-        {
             Die();
-        }
     }
 
     private void EnterPhase2()
@@ -378,7 +401,6 @@ public class AngelBossAI : MonoBehaviour
 
         yield return new WaitForSeconds(totalCircleDuration + phase2DelayAfterLastCircleEnds);
     }
-
     private GameObject SpawnCircleAtCurrentPlayerPosition()
     {
         FindPlayerIfNeeded();
@@ -387,7 +409,15 @@ public class AngelBossAI : MonoBehaviour
             return null;
 
         Vector3 spawnPos = player.position + circleSpawnOffset;
-        return Instantiate(envycirclePrefab, spawnPos, Quaternion.identity);
+
+        GameObject circle = Instantiate(envycirclePrefab, spawnPos, Quaternion.identity);
+
+        if (circleSpawnClip != null)
+        {
+            AudioSource.PlayClipAtPoint(circleSpawnClip, spawnPos, circleSpawnVolume);
+        }
+
+        return circle;
     }
 
     private IEnumerator HandleCircleDamage(GameObject circle)
