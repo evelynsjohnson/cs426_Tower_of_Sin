@@ -9472,8 +9472,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AngelBossAI
   circleSpawnClip: {fileID: 8300000, guid: 41d9ea5c12f5f4944816783e5d56a9fe, type: 3}
   circleSpawnVolume: 1
-  alivePointLightColor: {r: 0, g: 1, b: 0, a: 1}
-  deadPointLightColor: {r: 1, g: 1, b: 1, a: 1}
+  aliveLightColor: {r: 0, g: 1, b: 0, a: 1}
+  deadLightColor: {r: 0.9529412, g: 0.81960785, b: 0.45490196, a: 1}
+  bossMusicClip: {fileID: 0}
+  bossMusicVolume: 1
+  bossMusicFadeOutDuration: 1.5
   baseMaxHealth: 650
   currentHealth: 0
   maxHealth: 0
@@ -9487,16 +9490,16 @@ MonoBehaviour:
   teleportSearchRadius: 25
   navMeshSampleDistance: 8
   teleportAttempts: 20
-  delayAfterTeleport: 3
+  delayAfterTeleport: 2
   attackTriggerName: attack1
   circleSpawnOffset: {x: 0, y: 0, z: 0}
   engageRange: 15
-  attackCooldown: 15
+  attackCooldown: 10
   phase1DelayAfterEachCircleEnds: 2
   phase2DelayBetweenSpawns: 1
   phase2DelayAfterLastCircleEnds: 2
-  circleDelayBeforeHit: 1.5
-  circleDamageRadius: 3
+  circleDelayBeforeHit: 1.25
+  circleDamageRadius: 4.5
   circleDamage: 25
   circleLifetime: 2.5
   drawDebugRange: 1

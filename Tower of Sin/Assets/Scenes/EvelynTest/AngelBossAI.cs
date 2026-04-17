@@ -16,8 +16,12 @@ public class AngelBossAI : MonoBehaviour
     [SerializeField] private AudioClip circleSpawnClip;
     [SerializeField][Range(0f, 1f)] private float circleSpawnVolume = 1f;
 
-    [SerializeField] private Color alivePointLightColor = Color.green;
-    [SerializeField] private Color deadPointLightColor = Color.white;
+    [SerializeField] private Color aliveLightColor = Color.green;
+    [SerializeField] private Color deadLightColor = Color.white;
+
+    [SerializeField] private AudioClip bossMusicClip;
+    [SerializeField][Range(0f, 1f)] private float bossMusicVolume = 1f;
+    [SerializeField] private float bossMusicFadeOutDuration = 1.5f;
 
     [SerializeField] private float baseMaxHealth = 650f;
     [SerializeField] private float currentHealth;
@@ -49,13 +53,15 @@ public class AngelBossAI : MonoBehaviour
     [SerializeField] private float circleDamageRadius = 3f;
     [SerializeField] private float circleDamage = 25f;
     [SerializeField] private float circleLifetime = 2.5f;
+
     [SerializeField] private bool drawDebugRange = true;
 
-    private Light controlledPointLight;
+    private Light[] controlledLights = new Light[0];
     private Transform basementDoorLeft;
     private Transform basementDoorRight;
     private AudioSource gateAudioSource;
     private AudioClip largeGateClip;
+    private AudioSource backgroundMusicSource;
     private GameObject bossChestPrefab;
     private Transform bossChestSpawnPoint;
 
@@ -72,6 +78,7 @@ public class AngelBossAI : MonoBehaviour
     private bool isDead = false;
     private bool deathHandled = false;
     private Coroutine aiLoopRoutine;
+    private Coroutine musicFadeRoutine;
 
     public float CurrentHealth => currentHealth;
     public float MaxHealth => maxHealth;
@@ -110,11 +117,12 @@ public class AngelBossAI : MonoBehaviour
     }
 
     public void SetupArenaReferences(
-        Light pointLight,
+        Light[] arenaLights,
         Transform leftDoor,
         Transform rightDoor,
         AudioSource gateSource,
         AudioClip gateClip,
+        AudioSource musicSource,
         GameObject chestPrefab,
         Transform chestSpawnPoint,
         Image healthBarFill,
@@ -123,11 +131,12 @@ public class AngelBossAI : MonoBehaviour
         float doorDistanceZ,
         float doorOpenDuration)
     {
-        controlledPointLight = pointLight;
+        controlledLights = arenaLights ?? new Light[0];
         basementDoorLeft = leftDoor;
         basementDoorRight = rightDoor;
         gateAudioSource = gateSource;
         largeGateClip = gateClip;
+        backgroundMusicSource = musicSource;
         bossChestPrefab = chestPrefab;
         bossChestSpawnPoint = chestSpawnPoint;
 
@@ -143,18 +152,75 @@ public class AngelBossAI : MonoBehaviour
 
         UpdateBossUI();
         ApplyAliveLightColor();
+        StartBossMusic();
+    }
+
+    private void StartBossMusic()
+    {
+        if (backgroundMusicSource == null || bossMusicClip == null)
+            return;
+
+        if (musicFadeRoutine != null)
+            StopCoroutine(musicFadeRoutine);
+
+        backgroundMusicSource.clip = bossMusicClip;
+        backgroundMusicSource.volume = bossMusicVolume;
+        backgroundMusicSource.loop = true;
+        backgroundMusicSource.Play();
+    }
+
+    private void FadeOutBossMusic()
+    {
+        if (backgroundMusicSource == null)
+            return;
+
+        if (musicFadeRoutine != null)
+            StopCoroutine(musicFadeRoutine);
+
+        musicFadeRoutine = StartCoroutine(FadeOutMusicRoutine());
+    }
+
+    private IEnumerator FadeOutMusicRoutine()
+    {
+        float startVolume = backgroundMusicSource.volume;
+        float elapsed = 0f;
+        float duration = Mathf.Max(0.01f, bossMusicFadeOutDuration);
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            backgroundMusicSource.volume = Mathf.Lerp(startVolume, 0f, t);
+            yield return null;
+        }
+
+        backgroundMusicSource.volume = 0f;
+        backgroundMusicSource.Stop();
+        backgroundMusicSource.clip = null;
+        backgroundMusicSource.loop = false;
+        musicFadeRoutine = null;
     }
 
     private void ApplyAliveLightColor()
     {
-        if (controlledPointLight != null)
-            controlledPointLight.color = alivePointLightColor;
+        if (controlledLights == null) return;
+
+        for (int i = 0; i < controlledLights.Length; i++)
+        {
+            if (controlledLights[i] != null)
+                controlledLights[i].color = aliveLightColor;
+        }
     }
 
     private void ApplyDeadLightColor()
     {
-        if (controlledPointLight != null)
-            controlledPointLight.color = deadPointLightColor;
+        if (controlledLights == null) return;
+
+        for (int i = 0; i < controlledLights.Length; i++)
+        {
+            if (controlledLights[i] != null)
+                controlledLights[i].color = deadLightColor;
+        }
     }
 
     private IEnumerator BossLoop()
@@ -255,6 +321,7 @@ public class AngelBossAI : MonoBehaviour
 
         UpdateBossUI();
         ApplyDeadLightColor();
+        FadeOutBossMusic();
 
         if (!deathHandled)
             StartCoroutine(HandleDeathSequence());
@@ -272,8 +339,8 @@ public class AngelBossAI : MonoBehaviour
                 gateAudioSource.Play();
         }
 
-        Vector3 leftStart = basementDoorLeft != null ? basementDoorLeft.localPosition : Vector3.zero;
-        Vector3 rightStart = basementDoorRight != null ? basementDoorRight.localPosition : Vector3.zero;
+        Vector3 leftStart = basementDoorLeft != null ? basementDoorLeft.position : Vector3.zero;
+        Vector3 rightStart = basementDoorRight != null ? basementDoorRight.position : Vector3.zero;
 
         Vector3 leftEnd = leftStart + new Vector3(0f, 0f, doorMoveDistanceZ);
         Vector3 rightEnd = rightStart + new Vector3(0f, 0f, -doorMoveDistanceZ);
@@ -287,19 +354,19 @@ public class AngelBossAI : MonoBehaviour
             float eased = Mathf.SmoothStep(0f, 1f, t);
 
             if (basementDoorLeft != null)
-                basementDoorLeft.localPosition = Vector3.Lerp(leftStart, leftEnd, eased);
+                basementDoorLeft.position = Vector3.Lerp(leftStart, leftEnd, eased);
 
             if (basementDoorRight != null)
-                basementDoorRight.localPosition = Vector3.Lerp(rightStart, rightEnd, eased);
+                basementDoorRight.position = Vector3.Lerp(rightStart, rightEnd, eased);
 
             yield return null;
         }
 
         if (basementDoorLeft != null)
-            basementDoorLeft.localPosition = leftEnd;
+            basementDoorLeft.position = leftEnd;
 
         if (basementDoorRight != null)
-            basementDoorRight.localPosition = rightEnd;
+            basementDoorRight.position = rightEnd;
 
         SpawnBossChest();
     }
@@ -401,6 +468,7 @@ public class AngelBossAI : MonoBehaviour
 
         yield return new WaitForSeconds(totalCircleDuration + phase2DelayAfterLastCircleEnds);
     }
+
     private GameObject SpawnCircleAtCurrentPlayerPosition()
     {
         FindPlayerIfNeeded();
@@ -409,13 +477,10 @@ public class AngelBossAI : MonoBehaviour
             return null;
 
         Vector3 spawnPos = player.position + circleSpawnOffset;
-
         GameObject circle = Instantiate(envycirclePrefab, spawnPos, Quaternion.identity);
 
         if (circleSpawnClip != null)
-        {
             AudioSource.PlayClipAtPoint(circleSpawnClip, spawnPos, circleSpawnVolume);
-        }
 
         return circle;
     }
@@ -433,7 +498,6 @@ public class AngelBossAI : MonoBehaviour
         {
             Vector3 playerFlat = player.position;
             Vector3 circleFlat = circleCenter;
-
             playerFlat.y = 0f;
             circleFlat.y = 0f;
 
