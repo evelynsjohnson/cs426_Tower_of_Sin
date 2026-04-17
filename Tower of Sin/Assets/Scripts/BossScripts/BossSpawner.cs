@@ -8,9 +8,9 @@ public class BossSpawner : MonoBehaviour
     public int currentFloor = 5;
 
     public Transform bossSpawnPoint;
-    public Transform bossSpawnPointGreed;
     public Transform bossSpawnPointLedge;
     public string gluttonyNameContains = "Gluttony";
+    public string greedNameContains = "piratesking_skeleton";
 
     public Transform lightsRoot;
     public Transform basementDoorLeft;
@@ -33,61 +33,114 @@ public class BossSpawner : MonoBehaviour
 
     private void Start()
     {
-        if (bossPrefabs == null ||  bossPrefabs.Length == 0 || bossSpawnPoint == null || bossSpawnPointLedge == null || bossSpawnPointGreed == null)
+        if (bossPrefabs == null || bossPrefabs.Length == 0 || bossSpawnPoint == null || bossSpawnPointLedge == null)
         {
-            Debug.LogWarning("There's an error.");
+            Debug.LogWarning("BossSpawner is missing references.");
             return;
         }
 
         GameObject chosen = bossPrefabs[Random.Range(0, bossPrefabs.Length)];
 
-        bool isGreed =
-            chosen != null &&
-            chosen.name.ToLower().Contains("PiratesKing_Skeleton");
+        if (chosen == null)
+        {
+            Debug.LogWarning("Chosen boss prefab was null.");
+            return;
+        }
 
-        bool isGluttony =
-            chosen != null &&
-            chosen.name.ToLower().Contains(gluttonyNameContains.ToLower());
+        string chosenName = chosen.name.ToLower();
 
-        Transform selectedSpawnPoint = bossSpawnPoint;
+        bool isGreed = chosenName.Contains(greedNameContains.ToLower());
+        bool isGluttony = chosenName.Contains(gluttonyNameContains.ToLower());
+
+        Vector3 spawnPosition = bossSpawnPoint.position;
+        Quaternion spawnRotation = bossSpawnPoint.rotation;
 
         if (isGreed)
-            selectedSpawnPoint = bossSpawnPointGreed;
+        {
+            spawnPosition = bossSpawnPoint.position + new Vector3(-5f, 0f, 0f);
+            spawnRotation = bossSpawnPoint.rotation;
+        }
         else if (isGluttony)
-            selectedSpawnPoint = bossSpawnPointLedge;
+        {
+            spawnPosition = bossSpawnPointLedge.position;
+            spawnRotation = bossSpawnPointLedge.rotation;
+        }
 
+        GameObject spawnedBoss = Instantiate(chosen, spawnPosition, spawnRotation);
 
-        GameObject spawnedBoss = Instantiate(
-            chosen,
-            selectedSpawnPoint.position,
-            selectedSpawnPoint.rotation
-        );
+        // Try EnvyAI first
+        EnvyAI envyAI = spawnedBoss.GetComponent<EnvyAI>();
+        if (envyAI == null)
+            envyAI = spawnedBoss.GetComponentInChildren<EnvyAI>();
 
-        EnvyAI bossAI = spawnedBoss.GetComponent<EnvyAI>();
-
-        if (bossAI == null)
-            bossAI = spawnedBoss.GetComponentInChildren<EnvyAI>();
+        // Try GreedAI if EnvyAI wasn't found
+        GreedAI greedAI = null;
+        if (envyAI == null)
+        {
+            greedAI = spawnedBoss.GetComponent<GreedAI>();
+            if (greedAI == null)
+                greedAI = spawnedBoss.GetComponentInChildren<GreedAI>();
+        }
 
         Light[] arenaLights = new Light[0];
         if (lightsRoot != null)
             arenaLights = lightsRoot.GetComponentsInChildren<Light>(true);
 
-        bossAI.SetFloor(currentFloor);
+        if (envyAI != null)
+        {
+            envyAI.SetFloor(currentFloor);
 
-        bossAI.SetupArenaReferences(
-            arenaLights,
-            basementDoorLeft,
-            basementDoorRight,
-            gateAudioSource,
-            largeGateClip,
-            backgroundMusicSource,
-            bossChestPrefab,
-            bossChestSpawnPoint,
-            bossHealthBarFill,
-            bossHealthText,
-            bossHealthUIRoot,
-            doorMoveDistanceZ,
-            doorMoveDuration
-        );
+            envyAI.SetupArenaReferences(
+                arenaLights,
+                basementDoorLeft,
+                basementDoorRight,
+                gateAudioSource,
+                largeGateClip,
+                backgroundMusicSource,
+                bossChestPrefab,
+                bossChestSpawnPoint,
+                bossHealthBarFill,
+                bossHealthText,
+                bossHealthUIRoot,
+                doorMoveDistanceZ,
+                doorMoveDuration
+            );
+        }
+        else if (greedAI != null)
+        {
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+
+            greedAI.SetFloor(currentFloor);
+
+            greedAI.SetSceneReferences(
+                playerObj != null ? playerObj.transform : null,
+                bossSpawnPoint,
+                bossSpawnPointLedge,
+                bossSpawnPoint,
+                bossHealthBarFill,
+                bossHealthText,
+                bossHealthUIRoot
+            );
+
+            greedAI.SetupArenaReferences(
+                arenaLights,
+                basementDoorLeft,
+                basementDoorRight,
+                gateAudioSource,
+                largeGateClip,
+                backgroundMusicSource,
+                bossChestPrefab,
+                bossChestSpawnPoint,
+                bossHealthBarFill,
+                bossHealthText,
+                bossHealthUIRoot,
+                doorMoveDistanceZ,
+                doorMoveDuration
+            );
+        }
+        else
+        {
+            Debug.LogWarning("No supported boss AI script found on spawned boss: " + spawnedBoss.name);
+        }
     }
 }

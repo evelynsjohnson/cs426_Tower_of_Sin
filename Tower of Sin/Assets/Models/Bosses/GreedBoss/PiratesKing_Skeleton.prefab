@@ -2311,6 +2311,9 @@ GameObject:
   m_Component:
   - component: {fileID: 680150749665475886}
   - component: {fileID: 6850856107373648920}
+  - component: {fileID: 2182667544375412978}
+  - component: {fileID: -6261335136159872851}
+  - component: {fileID: -4756913217337075218}
   m_Layer: 0
   m_Name: PiratesKing_Skeleton
   m_TagString: Untagged
@@ -2357,6 +2360,184 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!195 &2182667544375412978
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2730658654648739784}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
+--- !u!82 &-6261335136159872851
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2730658654648739784}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!114 &-4756913217337075218
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2730658654648739784}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac0bc6b5f314778409a8f70189df19b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GreedAI
+  animator: {fileID: 6850856107373648920}
+  agent: {fileID: 2182667544375412978}
+  player: {fileID: 0}
+  spawnPointOverride: {fileID: 0}
+  ledgePointOverride: {fileID: 0}
+  wakeRange: 20
+  attackRange: 7
+  phase4MinDistance: 7
+  faceSpeed: 10
+  baseMaxHP: 500
+  baseAttackDamage: 25
+  attack1TelegraphTime: 1.25
+  attack1ActiveTime: 0.4
+  attack1Cooldown: 1.4
+  attack1ConeAngle: 75
+  attack1ConeLength: 8
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  roomCenter: {fileID: 0}
+  roomWidth: 40
+  roomLength: 40
+  telegraphHeight: 0.05
+  explosionPrefab: {fileID: 1819053320288612861, guid: d67aaed3dcf449b4daa3ef9b53904d01, type: 3}
+  rowTelegraphDuration: 1.25
+  columnTelegraphDuration: 1
+  detonationRadius: 2.25
+  detonationDelayBetweenBursts: 0.2
+  detonationDelayBetweenColumns: 1
+  phase2LoopPause: 1.25
+  tentaclePrefab: {fileID: 3837758516165033896, guid: 34af29cc88d35e14d82a46a79f81efce, type: 3}
+  phase3TentacleCount: 5
+  tentacleSpawnRadiusNearPlayer: 4
+  tentacleCornerInset: 3
+  skeletonPrefab: {fileID: 0}
+  skeletonSpawnCount: 6
+  navmeshSpawnRadius: 18
+  bossSpawnPoint: {fileID: 0}
+  bossSpawnPointLedge: {fileID: 0}
+  bossHealthBarFill: {fileID: 0}
+  bossHealthText: {fileID: 0}
+  bossHealthUIRoot: {fileID: 0}
+  telegraphMaterial: {fileID: 2100000, guid: e97c0c8d68d7e6546bd9086510864e83, type: 2}
+  telegraphLineWidth: 0.15
+  telegraphYOffset: 0.05
+  coneArcSegments: 20
+  drawGizmos: 1
 --- !u!1 &2739041801771881421
 GameObject:
   m_ObjectHideFlags: 0
