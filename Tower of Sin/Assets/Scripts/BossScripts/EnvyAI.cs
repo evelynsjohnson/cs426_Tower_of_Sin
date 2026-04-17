@@ -1,364 +1,925 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-using TMPro;
 using UnityEngine.UI;
-using System.Collections;
+using TMPro;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// EnvyAI — Envy Boss (Sin #1)
-//
-// Sin mechanic: Envy copies the player's fighting style.
-//   Phase 1: Watches the player — records whether quick or heavy attacks land
-//            more often, then mirrors the dominant style back.
-//   Phase 2 (below 60% HP): Mimic mode active — attack damage multiplied,
-//            cooldown cut, plays roar.
-//   Throughout: Moves faster when the player is moving (jealous of agility).
-//
-// AI: FSM with probabilistic phase transitions.
-//     States: Idle → Chase → Attack → Mimic (phase 2)
-// ─────────────────────────────────────────────────────────────────────────────
-
-[RequireComponent(typeof(NavMeshAgent))]
-[RequireComponent(typeof(AudioSource))]
+// Originally AngelBossAI script, via Evelyn's Test Scene
 public class EnvyAI : MonoBehaviour
 {
-    // ── Health & Phase ────────────────────────────────────────────────────────
-    public float maxHealth          = 250f;
-    private float currentHealth;
-    private int   currentPhase      = 1;
-    private bool  phase2Triggered   = false;
-    public float  phase2Threshold   = 0.60f;
+    public enum BossPhase
+    {
+        Phase1,
+        Phase2,
+        Dead
+    }
 
-    // ── Envy — Copy Mechanic ──────────────────────────────────────────────────
-    // Tracks how many quick vs heavy hits the player has landed
-    private int   quickHitsReceived = 0;
-    private int   heavyHitsReceived = 0;
+    [SerializeField] private AudioClip circleSpawnClip;
+    [SerializeField][Range(0f, 1f)] private float circleSpawnVolume = 1f;
 
-    // Once mimic is active, dominant attack style determines damage/cooldown
-    private bool  mimicActive           = false;
-    public float  mimicDamageMultiplier = 1.3f;
-    public float  mimicAttackCooldown   = 1.2f;
+    [Header("Boss Light Colors")]
+    [SerializeField] private Color aliveLightColor = Color.green;
+    [SerializeField] private Color deadLightColor = Color.white;
 
-    // ── Envy — Jealous Speed ──────────────────────────────────────────────────
-    public float  jealousSpeedBoost = 1.5f;
-    private bool  playerIsMoving    = false;
-    private Vector3 lastPlayerPos   = Vector3.zero;
+    [Header("Boss Audio")]
+    [SerializeField] private AudioClip ticktockLoop;
+    [SerializeField] private AudioClip robotNoise;
+    [SerializeField] private AudioClip robotNoise2;
+    [SerializeField] private AudioClip introAudio;
+    [SerializeField] private AudioClip phaseTwoAudio;
+    [SerializeField] private AudioClip deathAudio;
+    [SerializeField] private AudioClip attackAudio1;
+    [SerializeField] private AudioClip attackAudio2;
+    [SerializeField] private AudioClip attackAudio3;
+    [SerializeField] private AudioClip attackAudio4;
+    [SerializeField] private AudioClip attackAudio5;
+    [SerializeField] private AudioClip bossMusicClip;
+    private AudioSource backgroundMusicSource;
+    [SerializeField][Range(0f, 1f)] private float bossMusicVolume = 1f;
 
-    // ── Damage ────────────────────────────────────────────────────────────────
-    public float  damageToPlayer    = 18f;
-    private float damageMultiplier  = 1f;
+    [SerializeField][Range(0f, 1f)] private float ticktockVolume = 1f;
+    [SerializeField][Range(0f, 1f)] private float robotNoiseVolume = 1f;
+    [SerializeField][Range(0f, 1f)] private float robotNoise2Volume = 1f;
+    [SerializeField][Range(0f, 1f)] private float voiceVolume = 1f;
+    [SerializeField] private float introTriggerRange = 25f;
+    [SerializeField] private Vector2 randomRobotNoiseDelay = new Vector2(5f, 10f);
+    [SerializeField] private Vector2 randomAttackVoiceDelay = new Vector2(10f, 20f);
+    [SerializeField] private float audioMinDistance = 2f;
+    [SerializeField] private float audioMaxDistance = 30f;
 
-    // ── UI ────────────────────────────────────────────────────────────────────
-    public GameObject  uiCanvasObject;
-    public TMP_Text    healthText;
-    public Image       healthBarFill;
-    public float       healthDrainSpeed       = 5f;
-    public float       deathAnimationDuration = 2.5f;
+    [Header("Boss Stats")]
+    [SerializeField] private float baseMaxHealth = 650f;
+    [SerializeField] private float currentHealth;
+    [SerializeField] private float maxHealth;
+    [SerializeField] private BossPhase currentPhase = BossPhase.Phase1;
+    [SerializeField] private int currentFloor = 5;
 
-    // ── Movement ──────────────────────────────────────────────────────────────
-    public float walkSpeed      = 4.0f;
-    public float aggroRadius    = 18f;
-    public float attackRadius   = 2.5f;
-    public float attackCooldown = 2.0f;
-    public float attackDmgDelay = 0.4f;
+    [SerializeField] private Animator animator;
+    [SerializeField] private NavMeshAgent agent;
+    [SerializeField] private GameObject envycirclePrefab;
+    [SerializeField] private Transform player;
+    [SerializeField] private string playerTag = "Player";
 
-    // ── Audio ─────────────────────────────────────────────────────────────────
-    public AudioClip hitSound;
-    public AudioClip missSound;
-    public AudioClip idleSound;
-    public AudioClip walkSound;
-    public AudioClip roarSound;
+    [SerializeField] private float teleportSearchRadius = 25f;
+    [SerializeField] private float navMeshSampleDistance = 8f;
+    [SerializeField] private int teleportAttempts = 20;
 
-    // ── Loot ──────────────────────────────────────────────────────────────────
-    public GameObject healthPotionPrefab;
-    public float      healthPotChance = 40f;
+    [Header("Attack Timing")]
+    [SerializeField] private float delayAfterTeleport = 3f;
+    [SerializeField] private string attackTriggerName = "attack1";
+    [SerializeField] private Vector3 circleSpawnOffset = Vector3.zero;
 
-    // ── Components ────────────────────────────────────────────────────────────
-    public Animator animator;
+    [Header("Phase Behavior")]
+    [SerializeField] private float engageRange = 15f;
+    [SerializeField] private float attackCooldown = 15f;
+    [SerializeField] private float phase1DelayAfterEachCircleEnds = 2f;
+    [SerializeField] private float phase2DelayBetweenSpawns = 1f;
+    [SerializeField] private float phase2DelayAfterLastCircleEnds = 2f;
 
-    private Transform    player;
-    private Transform    mainCamera;
-    private NavMeshAgent agent;
-    private PlayerHealth playerHealthScript;
-    private AudioSource  sfxSource;
-    private AudioSource  walkSource;
+    [Header("Circle Damage")]
+    [SerializeField] private float circleDelayBeforeHit = 1.5f;
+    [SerializeField] private float circleDamageRadius = 3f;
+    [SerializeField] private float circleDamage = 25f;
+    [SerializeField] private float circleLifetime = 2.5f;
 
-    // ── State ─────────────────────────────────────────────────────────────────
-    private bool  isDead        = false;
-    private bool  isAttacking   = false;
-    private bool  hasSeenPlayer = false;
+    [SerializeField] private bool drawDebugRange = true;
+
+    [SerializeField] private bool alwaysFacePlayer = true;
+    [SerializeField] private float faceTurnSpeed = 720f;
+
+    private Light[] controlledLights = new Light[0];
+    private Transform basementDoorLeft;
+    private Transform basementDoorRight;
+    private AudioSource gateAudioSource;
+    private AudioClip largeGateClip;
+    private GameObject bossChestPrefab;
+    private Transform bossChestSpawnPoint;
+
+    private Image bossHealthBarFill;
+    private TMP_Text bossHealthText;
+    private GameObject bossHealthUIRoot;
+
+    private float doorMoveDistanceZ = 1f;
+    private float doorMoveDuration = 3f;
+
+    private AudioSource ticktockSource;
+    private AudioSource robotNoiseSource;
+    private AudioSource robotNoise2Source;
+    private AudioSource voiceSource;
+
+    private Coroutine aiLoopRoutine;
+    private Coroutine robotNoiseRoutine;
+    private Coroutine robotNoise2Routine;
+    private Coroutine attackVoiceRoutine;
+    private Coroutine deathFadeRoutine;
+
     private float nextAttackTime = 0f;
-    private float idleAudioTimer = 0f;
+    private bool isBusy = false;
+    private bool phase2Started = false;
+    private bool isDead = false;
+    private bool deathHandled = false;
+    private bool introPlayed = false;
+    private bool phaseTwoVoicePending = false;
+    private bool deathVoiceStarted = false;
 
-    // ─────────────────────────────────────────────────────────────────────────
-    void Start()
+    private readonly List<AudioClip> attackVoiceClips = new List<AudioClip>();
+    private int nextAttackVoiceIndex = 0;
+
+    private Renderer[] cachedRenderers;
+    private readonly Dictionary<Material, Color> originalMaterialColors = new Dictionary<Material, Color>();
+
+    public float CurrentHealth => currentHealth;
+    public float MaxHealth => maxHealth;
+    public bool IsDead => isDead;
+
+    private void Reset()
     {
-        maxHealth     = 250f + ((FloorTextController.floorNumber - 1) * 15f);
+        animator = GetComponentInChildren<Animator>();
+        agent = GetComponent<NavMeshAgent>();
+    }
+
+    private void Awake()
+    {
+        if (animator == null)
+            animator = GetComponentInChildren<Animator>();
+
+        if (agent == null)
+            agent = GetComponent<NavMeshAgent>();
+
+        if (agent != null)
+            agent.updateRotation = false;
+
+        FindPlayerIfNeeded();
+        SetupAudioSources();
+        CacheRenderers();
+        BuildAttackVoiceList();
+    }
+
+    private void Start()
+    {
+        SetupHealthForFloor(currentFloor);
+        UpdateBossUI();
+        ApplyAliveLightColor();
+
+        if (bossHealthUIRoot != null)
+            bossHealthUIRoot.SetActive(true);
+
+        StartAmbientBossAudio();
+
+        if (aiLoopRoutine != null)
+            StopCoroutine(aiLoopRoutine);
+
+        aiLoopRoutine = StartCoroutine(BossLoop());
+
+        if (attackVoiceRoutine != null)
+            StopCoroutine(attackVoiceRoutine);
+
+        attackVoiceRoutine = StartCoroutine(AttackVoiceLoop());
+    }
+
+    private void Update()
+    {
+        if (!alwaysFacePlayer || isDead)
+            return;
+
+        FindPlayerIfNeeded();
+
+        if (player != null)
+            FaceTarget(player.position);
+    }
+
+    public void SetupArenaReferences(
+        Light[] arenaLights,
+        Transform leftDoor,
+        Transform rightDoor,
+        AudioSource gateSource,
+        AudioClip gateClip,
+        AudioSource musicSource,
+        GameObject chestPrefab,
+        Transform chestSpawnPoint,
+        Image healthBarFill,
+        TMP_Text healthText,
+        GameObject healthUIRoot,
+        float doorDistanceZ,
+        float doorOpenDuration)
+    {
+        controlledLights = arenaLights ?? new Light[0];
+        basementDoorLeft = leftDoor;
+        basementDoorRight = rightDoor;
+        gateAudioSource = gateSource;
+        largeGateClip = gateClip;
+        backgroundMusicSource = musicSource;
+        bossChestPrefab = chestPrefab;
+        bossChestSpawnPoint = chestSpawnPoint;
+
+        bossHealthBarFill = healthBarFill;
+        bossHealthText = healthText;
+        bossHealthUIRoot = healthUIRoot;
+
+        doorMoveDistanceZ = doorDistanceZ;
+        doorMoveDuration = doorOpenDuration;
+
+        if (bossHealthUIRoot != null)
+            bossHealthUIRoot.SetActive(true);
+
+        UpdateBossUI();
+        ApplyAliveLightColor();
+        StartBossMusic();
+    }
+
+    private void SetupAudioSources()
+    {
+        ticktockSource = Create3DAudioSource("TicktockSource");
+        robotNoiseSource = Create3DAudioSource("RobotNoiseSource");
+        robotNoise2Source = Create3DAudioSource("RobotNoise2Source");
+        voiceSource = Create3DAudioSource("VoiceSource");
+    }
+
+    private void StartBossMusic()
+    {
+        if (backgroundMusicSource == null || bossMusicClip == null)
+            return;
+
+        backgroundMusicSource.clip = bossMusicClip;
+        backgroundMusicSource.volume = bossMusicVolume;
+        backgroundMusicSource.loop = true;
+        backgroundMusicSource.Play();
+    }
+
+    private AudioSource Create3DAudioSource(string sourceName)
+    {
+        GameObject child = new GameObject(sourceName);
+        child.transform.SetParent(transform, false);
+
+        AudioSource source = child.AddComponent<AudioSource>();
+        source.playOnAwake = false;
+        source.loop = false;
+        source.spatialBlend = 1f;
+        source.rolloffMode = AudioRolloffMode.Logarithmic;
+        source.minDistance = audioMinDistance;
+        source.maxDistance = audioMaxDistance;
+        source.dopplerLevel = 0f;
+        return source;
+    }
+
+    private void CacheRenderers()
+    {
+        cachedRenderers = GetComponentsInChildren<Renderer>(true);
+        originalMaterialColors.Clear();
+
+        foreach (Renderer rend in cachedRenderers)
+        {
+            if (rend == null) continue;
+
+            Material[] mats = rend.materials;
+            foreach (Material mat in mats)
+            {
+                if (mat == null || originalMaterialColors.ContainsKey(mat)) continue;
+
+                if (mat.HasProperty("_BaseColor"))
+                    originalMaterialColors[mat] = mat.GetColor("_BaseColor");
+                else if (mat.HasProperty("_Color"))
+                    originalMaterialColors[mat] = mat.GetColor("_Color");
+            }
+        }
+    }
+
+    private void BuildAttackVoiceList()
+    {
+        attackVoiceClips.Clear();
+
+        if (attackAudio1 != null) attackVoiceClips.Add(attackAudio1);
+        if (attackAudio2 != null) attackVoiceClips.Add(attackAudio2);
+        if (attackAudio3 != null) attackVoiceClips.Add(attackAudio3);
+        if (attackAudio4 != null) attackVoiceClips.Add(attackAudio4);
+        if (attackAudio5 != null) attackVoiceClips.Add(attackAudio5);
+    }
+
+    private void StartAmbientBossAudio()
+    {
+        if (ticktockLoop != null && ticktockSource != null)
+        {
+            ticktockSource.clip = ticktockLoop;
+            ticktockSource.volume = ticktockVolume;
+            ticktockSource.loop = true;
+            ticktockSource.Play();
+        }
+
+        if (robotNoiseRoutine != null)
+            StopCoroutine(robotNoiseRoutine);
+        robotNoiseRoutine = StartCoroutine(RandomBossNoiseLoop(robotNoiseSource, robotNoise, robotNoiseVolume));
+
+        if (robotNoise2Routine != null)
+            StopCoroutine(robotNoise2Routine);
+        robotNoise2Routine = StartCoroutine(RandomBossNoiseLoop(robotNoise2Source, robotNoise2, robotNoise2Volume));
+    }
+
+    private IEnumerator RandomBossNoiseLoop(AudioSource source, AudioClip clip, float volume)
+    {
+        if (source == null || clip == null)
+            yield break;
+
+        while (!isDead)
+        {
+            float wait = Random.Range(randomRobotNoiseDelay.x, randomRobotNoiseDelay.y);
+            yield return new WaitForSeconds(wait);
+
+            if (isDead) yield break;
+
+            source.PlayOneShot(clip, volume);
+        }
+    }
+
+    private IEnumerator AttackVoiceLoop()
+    {
+        while (!isDead)
+        {
+            if (!introPlayed || phaseTwoVoicePending || deathVoiceStarted || attackVoiceClips.Count == 0)
+            {
+                yield return null;
+                continue;
+            }
+
+            float wait = Random.Range(randomAttackVoiceDelay.x, randomAttackVoiceDelay.y);
+            yield return new WaitForSeconds(wait);
+
+            while (!isDead && (voiceSource == null || voiceSource.isPlaying || phaseTwoVoicePending || deathVoiceStarted))
+                yield return null;
+
+            if (isDead || phaseTwoVoicePending || deathVoiceStarted)
+                continue;
+
+            AudioClip nextClip = attackVoiceClips[nextAttackVoiceIndex];
+            nextAttackVoiceIndex = (nextAttackVoiceIndex + 1) % attackVoiceClips.Count;
+
+            if (nextClip != null && voiceSource != null)
+            {
+                voiceSource.clip = nextClip;
+                voiceSource.volume = voiceVolume;
+                voiceSource.loop = false;
+                voiceSource.Play();
+            }
+        }
+    }
+
+    private void ApplyAliveLightColor()
+    {
+        if (controlledLights == null) return;
+
+        for (int i = 0; i < controlledLights.Length; i++)
+        {
+            if (controlledLights[i] != null)
+                controlledLights[i].color = aliveLightColor;
+        }
+    }
+
+    private void ApplyDeadLightColor()
+    {
+        if (controlledLights == null) return;
+
+        for (int i = 0; i < controlledLights.Length; i++)
+        {
+            if (controlledLights[i] != null)
+                controlledLights[i].color = deadLightColor;
+        }
+    }
+
+    private IEnumerator BossLoop()
+    {
+        while (!isDead)
+        {
+            FindPlayerIfNeeded();
+
+            if (!introPlayed && player != null)
+            {
+                float introDist = Vector3.Distance(transform.position, player.position);
+                if (introDist <= introTriggerRange)
+                {
+                    PlayIntroAudioOnce();
+                }
+            }
+
+            if (player != null && !isBusy)
+            {
+                float dist = Vector3.Distance(transform.position, player.position);
+
+                if (dist <= engageRange && Time.time >= nextAttackTime)
+                {
+                    nextAttackTime = Time.time + attackCooldown;
+                    yield return StartCoroutine(TeleportAndAttack());
+                }
+            }
+
+            yield return null;
+        }
+    }
+
+    private void PlayIntroAudioOnce()
+    {
+        if (introPlayed)
+            return;
+
+        introPlayed = true;
+
+        if (introAudio != null && voiceSource != null)
+        {
+            voiceSource.clip = introAudio;
+            voiceSource.volume = voiceVolume;
+            voiceSource.loop = false;
+            voiceSource.Play();
+        }
+    }
+
+    private void FindPlayerIfNeeded()
+    {
+        if (player != null) return;
+
+        GameObject p = GameObject.FindGameObjectWithTag(playerTag);
+        if (p != null)
+            player = p.transform;
+    }
+
+    public void SetFloor(int floor)
+    {
+        currentFloor = Mathf.Max(1, floor);
+        SetupHealthForFloor(currentFloor);
+        UpdateBossUI();
+    }
+
+    private void SetupHealthForFloor(int floor)
+    {
+        maxHealth = GetScaledHealthForFloor(floor);
         currentHealth = maxHealth;
+        currentPhase = BossPhase.Phase1;
+        phase2Started = false;
+        isDead = false;
+        deathHandled = false;
+        introPlayed = false;
+        phaseTwoVoicePending = false;
+        deathVoiceStarted = false;
+        nextAttackVoiceIndex = 0;
+    }
 
-        agent       = GetComponent<NavMeshAgent>();
-        agent.speed = walkSpeed;
+    private float GetScaledHealthForFloor(int floor)
+    {
+        int bonusSteps = Mathf.Max(0, floor / 5 - 1);
+        return baseMaxHealth + (bonusSteps * 100f);
+    }
 
-        sfxSource = GetComponent<AudioSource>();
-        sfxSource.spatialBlend = 1f;
-        sfxSource.rolloffMode  = AudioRolloffMode.Linear;
-        sfxSource.minDistance  = 2f;
-        sfxSource.maxDistance  = 12f;
+    public void TakeDamage(float damage)
+    {
+        TakeDamage(damage, 0);
+    }
 
-        walkSource = gameObject.AddComponent<AudioSource>();
-        walkSource.spatialBlend = 1f;
-        walkSource.rolloffMode  = AudioRolloffMode.Linear;
-        walkSource.minDistance  = 2f;
-        walkSource.maxDistance  = 18f;
-        walkSource.clip         = walkSound;
-        walkSource.loop         = true;
+    public void TakeDamage(float damage, int slashChoice)
+    {
+        if (isDead || damage <= 0f)
+            return;
 
-        GameObject pObj = GameObject.FindGameObjectWithTag("Player");
-        if (pObj != null)
+        currentHealth -= damage;
+        currentHealth = Mathf.Clamp(currentHealth, 0f, maxHealth);
+
+        UpdateBossUI();
+
+        if (!phase2Started && currentHealth <= maxHealth * 0.65f)
+            EnterPhase2();
+
+        if (currentHealth <= 0f)
+            Die();
+    }
+
+    private void EnterPhase2()
+    {
+        phase2Started = true;
+        currentPhase = BossPhase.Phase2;
+        phaseTwoVoicePending = true;
+        StartCoroutine(PlayPhaseTwoAudioWhenClear());
+    }
+
+    private IEnumerator PlayPhaseTwoAudioWhenClear()
+    {
+        while (!isDead && voiceSource != null && voiceSource.isPlaying)
+            yield return null;
+
+        if (isDead)
+            yield break;
+
+        if (phaseTwoAudio != null && voiceSource != null)
         {
-            player             = pObj.transform;
-            playerHealthScript = pObj.GetComponent<PlayerHealth>();
-            lastPlayerPos      = player.position;
+            voiceSource.clip = phaseTwoAudio;
+            voiceSource.volume = voiceVolume;
+            voiceSource.loop = false;
+            voiceSource.Play();
+
+            while (!isDead && voiceSource.isPlaying)
+                yield return null;
         }
 
-        if (Camera.main != null) mainCamera = Camera.main.transform;
-        if (healthBarFill != null) healthBarFill.fillAmount = 1f;
-
-        idleAudioTimer = Random.Range(3f, 7f);
-        UpdateHealthUI();
+        phaseTwoVoicePending = false;
     }
-
-    void Update()
-    {
-        UpdateHealthBar();
-        if (isDead || player == null) return;
-
-        // Jealous speed — tracks player movement
-        float playerSpeed = Vector3.Distance(player.position, lastPlayerPos) / Mathf.Max(Time.deltaTime, 0.001f);
-        lastPlayerPos  = player.position;
-        playerIsMoving = playerSpeed > 0.5f;
-
-        float targetSpeed = playerIsMoving ? walkSpeed * jealousSpeedBoost : walkSpeed;
-        agent.speed = Mathf.Lerp(agent.speed, targetSpeed, Time.deltaTime * 3f);
-
-        HandleAudio();
-
-        if (!hasSeenPlayer && FlatDist(transform.position, player.position) <= aggroRadius)
-            hasSeenPlayer = true;
-
-        if (!hasSeenPlayer) return;
-
-        if (!phase2Triggered && currentHealth / maxHealth <= phase2Threshold)
-            TriggerPhase2();
-
-        if (isAttacking) return;
-
-        float dist = FlatDist(transform.position, player.position);
-
-        if (dist <= aggroRadius)
-        {
-            FacePlayer();
-
-            if (dist <= attackRadius && Time.time >= nextAttackTime)
-                StartCoroutine(AttackRoutine());
-            else if (dist > attackRadius)
-            {
-                agent.isStopped = false;
-                agent.SetDestination(player.position);
-                animator?.SetBool("isWalking", true);
-                if (!walkSource.isPlaying) walkSource.Play();
-            }
-            else
-            {
-                agent.isStopped = true;
-                animator?.SetBool("isWalking", false);
-                walkSource.Pause();
-            }
-        }
-        else
-        {
-            agent.isStopped = true;
-            animator?.SetBool("isWalking", false);
-            walkSource.Pause();
-        }
-    }
-
-    void LateUpdate()
-    {
-        if (uiCanvasObject != null && mainCamera != null)
-            uiCanvasObject.transform.LookAt(uiCanvasObject.transform.position + mainCamera.forward);
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    //  Phase 2
-    // ─────────────────────────────────────────────────────────────────────────
-
-    private void TriggerPhase2()
-    {
-        phase2Triggered = true;
-        currentPhase    = 2;
-        mimicActive     = true;
-
-        // Mirror the dominant attack style
-        if (heavyHitsReceived >= quickHitsReceived)
-        {
-            // Player used heavy attacks more — mimic heavier, slower hits
-            damageMultiplier  *= mimicDamageMultiplier * 1.2f;
-            attackCooldown     = mimicAttackCooldown * 1.3f;
-        }
-        else
-        {
-            // Player used quick attacks more — mimic faster, lighter spam
-            damageMultiplier  *= mimicDamageMultiplier;
-            attackCooldown     = mimicAttackCooldown;
-        }
-
-        StartCoroutine(RoarRoutine());
-    }
-
-    private IEnumerator RoarRoutine()
-    {
-        isAttacking     = true;
-        agent.isStopped = true;
-        animator?.SetTrigger("roar");
-        if (roarSound != null) sfxSource.PlayOneShot(roarSound);
-        yield return new WaitForSeconds(1.8f);
-        isAttacking = false;
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    //  Attack
-    // ─────────────────────────────────────────────────────────────────────────
-
-    private IEnumerator AttackRoutine()
-    {
-        isAttacking     = true;
-        agent.isStopped = true;
-        FacePlayer();
-
-        animator?.SetTrigger("attack");
-
-        yield return new WaitForSeconds(attackDmgDelay);
-
-        if (!isDead && player != null)
-        {
-            if (FlatDist(transform.position, player.position) <= attackRadius + 0.5f)
-            {
-                if (playerHealthScript != null)
-                    playerHealthScript.TakeDamage(damageToPlayer * damageMultiplier);
-                if (hitSound != null) sfxSource.PlayOneShot(hitSound);
-            }
-            else
-            {
-                if (missSound != null) sfxSource.PlayOneShot(missSound);
-            }
-        }
-
-        nextAttackTime = Time.time + (attackCooldown - attackDmgDelay);
-        isAttacking    = false;
-        if (agent != null) agent.isStopped = false;
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    //  Damage
-    //  attackType 1 = quick slash, 2 = heavy slash (mirrors FirstPersonMovement)
-    // ─────────────────────────────────────────────────────────────────────────
-
-    public void TakeDamage(float amount, int attackType = 1)
-    {
-        if (isDead) return;
-
-        // Record what type of attack the player used — for mimic tracking
-        if (attackType == 1) quickHitsReceived++;
-        else                 heavyHitsReceived++;
-
-        currentHealth -= amount;
-        currentHealth  = Mathf.Max(0f, currentHealth);
-        UpdateHealthUI();
-
-        if (currentHealth <= 0f) Die();
-        else if (!phase2Triggered && currentHealth / maxHealth <= phase2Threshold)
-            TriggerPhase2();
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    //  Death
-    // ─────────────────────────────────────────────────────────────────────────
 
     private void Die()
     {
         if (isDead) return;
+
         isDead = true;
-
+        currentPhase = BossPhase.Dead;
+        deathVoiceStarted = true;
         StopAllCoroutines();
-        animator?.SetTrigger("die");
-        if (agent.enabled) agent.enabled = false;
-        GetComponent<Collider>().enabled  = false;
 
-        if (healthText != null) healthText.text = "";
-        walkSource?.Stop();
-        sfxSource?.Stop();
-
-        if (healthPotionPrefab != null && Random.Range(0f, 100f) < healthPotChance)
-            Instantiate(healthPotionPrefab, transform.position + Vector3.up * 0.2f, Quaternion.identity);
-
-        StartCoroutine(HideUIAfterDeath());
-    }
-
-    private IEnumerator HideUIAfterDeath()
-    {
-        yield return new WaitForSeconds(deathAnimationDuration);
-        if (uiCanvasObject != null) uiCanvasObject.SetActive(false);
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    //  Helpers
-    // ─────────────────────────────────────────────────────────────────────────
-
-    private void FacePlayer()
-    {
-        if (player == null) return;
-        Vector3 dir = player.position - transform.position;
-        dir.y = 0f;
-        if (dir != Vector3.zero)
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 8f);
-    }
-
-    private float FlatDist(Vector3 a, Vector3 b)
-        => Vector3.Distance(new Vector3(a.x, 0f, a.z), new Vector3(b.x, 0f, b.z));
-
-    private void HandleAudio()
-    {
-        float vertDist  = Mathf.Abs(player.position.y - transform.position.y);
-        bool  sameFloor = vertDist < 2.5f;
-        sfxSource.mute  = !sameFloor;
-        walkSource.mute = !sameFloor;
-
-        idleAudioTimer -= Time.deltaTime;
-        if (idleAudioTimer <= 0f)
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
         {
-            if (idleSound != null && sameFloor) sfxSource.PlayOneShot(idleSound);
-            idleAudioTimer = Random.Range(4f, 8f);
+            agent.isStopped = true;
+            agent.ResetPath();
+        }
+
+        if (ticktockSource != null)
+            ticktockSource.Stop();
+        if (robotNoiseSource != null)
+            robotNoiseSource.Stop();
+        if (robotNoise2Source != null)
+            robotNoise2Source.Stop();
+
+        UpdateBossUI();
+        ApplyDeadLightColor();
+
+        if (!deathHandled)
+            StartCoroutine(HandleDeathSequence());
+
+        PlayDeathAudioAndFadeBoss();
+    }
+
+    private void PlayDeathAudioAndFadeBoss()
+    {
+        if (deathAudio != null && voiceSource != null)
+        {
+            voiceSource.Stop();
+            voiceSource.clip = deathAudio;
+            voiceSource.volume = voiceVolume;
+            voiceSource.loop = false;
+            voiceSource.Play();
+
+            float startFadeDelay = deathAudio.length * 0.5f;
+            float fadeDuration = (deathAudio.length * 0.5f) + 5f;
+
+            if (deathFadeRoutine != null)
+                StopCoroutine(deathFadeRoutine);
+
+            deathFadeRoutine = StartCoroutine(FadeBossOutRoutine(startFadeDelay, fadeDuration));
+        }
+        else
+        {
+            if (deathFadeRoutine != null)
+                StopCoroutine(deathFadeRoutine);
+
+            deathFadeRoutine = StartCoroutine(FadeBossOutRoutine(0f, 5f));
         }
     }
 
-    private void UpdateHealthBar()
+    private IEnumerator FadeBossOutRoutine(float delayBeforeFade, float fadeDuration)
     {
-        if (healthBarFill == null) return;
-        healthBarFill.fillAmount = Mathf.Lerp(
-            healthBarFill.fillAmount, currentHealth / maxHealth, Time.deltaTime * healthDrainSpeed);
+        if (delayBeforeFade > 0f)
+            yield return new WaitForSeconds(delayBeforeFade);
+
+        foreach (var kvp in originalMaterialColors)
+        {
+            PrepareMaterialForFade(kvp.Key);
+        }
+
+        float elapsed = 0f;
+        float duration = Mathf.Max(0.01f, fadeDuration);
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float alpha = Mathf.Lerp(1f, 0f, t);
+
+            foreach (var kvp in originalMaterialColors)
+            {
+                Material mat = kvp.Key;
+                Color baseColor = kvp.Value;
+
+                if (mat == null) continue;
+
+                Color faded = baseColor;
+                faded.a = alpha;
+
+                if (mat.HasProperty("_BaseColor"))
+                    mat.SetColor("_BaseColor", faded);
+
+                if (mat.HasProperty("_Color"))
+                    mat.SetColor("_Color", faded);
+            }
+
+            yield return null;
+        }
+
+        foreach (Renderer rend in cachedRenderers)
+        {
+            if (rend != null)
+                rend.enabled = false;
+        }
     }
 
-    private void UpdateHealthUI()
+    private void PrepareMaterialForFade(Material mat)
     {
-        if (healthText != null) healthText.text = (int)currentHealth + "/" + (int)maxHealth;
+        if (mat == null)
+            return;
+
+        if (mat.HasProperty("_Surface"))
+        {
+            mat.SetFloat("_Surface", 1f);
+            mat.SetFloat("_Blend", 0f);
+            mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            mat.SetInt("_ZWrite", 0);
+            mat.DisableKeyword("_ALPHATEST_ON");
+            mat.EnableKeyword("_ALPHABLEND_ON");
+            mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+            mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+        }
+
+        if (mat.HasProperty("_Mode"))
+        {
+            mat.SetFloat("_Mode", 2f);
+            mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            mat.SetInt("_ZWrite", 0);
+            mat.DisableKeyword("_ALPHATEST_ON");
+            mat.EnableKeyword("_ALPHABLEND_ON");
+            mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+            mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+        }
+    }
+
+    private IEnumerator HandleDeathSequence()
+    {
+        deathHandled = true;
+
+        if (gateAudioSource != null)
+        {
+            if (largeGateClip != null)
+                gateAudioSource.PlayOneShot(largeGateClip);
+            else
+                gateAudioSource.Play();
+        }
+
+        Vector3 leftStart = basementDoorLeft != null ? basementDoorLeft.position : Vector3.zero;
+        Vector3 rightStart = basementDoorRight != null ? basementDoorRight.position : Vector3.zero;
+
+        Vector3 leftEnd = leftStart + new Vector3(0f, 0f, doorMoveDistanceZ);
+        Vector3 rightEnd = rightStart + new Vector3(0f, 0f, -doorMoveDistanceZ);
+
+        float elapsed = 0f;
+
+        while (elapsed < doorMoveDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / Mathf.Max(0.0001f, doorMoveDuration));
+            float eased = Mathf.SmoothStep(0f, 1f, t);
+
+            if (basementDoorLeft != null)
+                basementDoorLeft.position = Vector3.Lerp(leftStart, leftEnd, eased);
+
+            if (basementDoorRight != null)
+                basementDoorRight.position = Vector3.Lerp(rightStart, rightEnd, eased);
+
+            yield return null;
+        }
+
+        if (basementDoorLeft != null)
+            basementDoorLeft.position = leftEnd;
+
+        if (basementDoorRight != null)
+            basementDoorRight.position = rightEnd;
+
+        SpawnBossChest();
+    }
+
+    private void SpawnBossChest()
+    {
+        if (bossChestPrefab == null)
+            return;
+
+        Vector3 spawnPos = bossChestSpawnPoint != null ? bossChestSpawnPoint.position : transform.position;
+        Quaternion spawnRot = bossChestSpawnPoint != null ? bossChestSpawnPoint.rotation : Quaternion.identity;
+
+        Instantiate(bossChestPrefab, spawnPos, spawnRot);
+    }
+
+    private void UpdateBossUI()
+    {
+        if (bossHealthBarFill != null)
+            bossHealthBarFill.fillAmount = (maxHealth > 0f) ? currentHealth / maxHealth : 0f;
+
+        if (bossHealthText != null)
+            bossHealthText.text = $"{Mathf.CeilToInt(currentHealth)}/{Mathf.CeilToInt(maxHealth)}";
+    }
+
+    private IEnumerator TeleportAndAttack()
+    {
+        isBusy = true;
+
+        TeleportToRandomNavMeshLocation();
+        FindPlayerIfNeeded();
+        if (player != null)
+            SnapFaceTarget(player.position);
+
+        yield return new WaitForSeconds(delayAfterTeleport);
+
+        if (isDead)
+        {
+            isBusy = false;
+            yield break;
+        }
+
+        FindPlayerIfNeeded();
+
+        if (player == null)
+        {
+            Debug.LogWarning($"{name}: Player not found.");
+            isBusy = false;
+            yield break;
+        }
+
+        FaceTarget(player.position);
+
+        if (animator != null && !string.IsNullOrEmpty(attackTriggerName))
+            animator.SetTrigger(attackTriggerName);
+
+        if (envycirclePrefab == null)
+        {
+            Debug.LogError($"{name}: envycirclePrefab is not assigned.");
+            isBusy = false;
+            yield break;
+        }
+
+        if (currentPhase == BossPhase.Phase1)
+            yield return StartCoroutine(DoPhase1CircleAttack());
+        else if (currentPhase == BossPhase.Phase2)
+            yield return StartCoroutine(DoPhase2CircleAttack());
+
+        isBusy = false;
+    }
+
+    private IEnumerator DoPhase1CircleAttack()
+    {
+        const int circleCount = 3;
+
+        for (int i = 0; i < circleCount; i++)
+        {
+            GameObject circle = SpawnCircleAtCurrentPlayerPosition();
+
+            if (circle != null)
+                yield return StartCoroutine(HandleCircleDamage(circle));
+
+            if (i < circleCount - 1)
+                yield return new WaitForSeconds(phase1DelayAfterEachCircleEnds);
+        }
+    }
+
+    private IEnumerator DoPhase2CircleAttack()
+    {
+        const int circleCount = 3;
+        float totalCircleDuration = Mathf.Max(circleLifetime, circleDelayBeforeHit);
+
+        for (int i = 0; i < circleCount; i++)
+        {
+            GameObject circle = SpawnCircleAtCurrentPlayerPosition();
+
+            if (circle != null)
+                StartCoroutine(HandleCircleDamage(circle));
+
+            if (i < circleCount - 1)
+                yield return new WaitForSeconds(phase2DelayBetweenSpawns);
+        }
+
+        yield return new WaitForSeconds(totalCircleDuration + phase2DelayAfterLastCircleEnds);
+    }
+
+    private GameObject SpawnCircleAtCurrentPlayerPosition()
+    {
+        FindPlayerIfNeeded();
+
+        if (player == null || envycirclePrefab == null)
+            return null;
+
+        Vector3 spawnPos = player.position + circleSpawnOffset;
+        GameObject circle = Instantiate(envycirclePrefab, spawnPos, Quaternion.identity);
+
+        if (circleSpawnClip != null)
+            AudioSource.PlayClipAtPoint(circleSpawnClip, spawnPos, circleSpawnVolume);
+
+        return circle;
+    }
+
+    private IEnumerator HandleCircleDamage(GameObject circle)
+    {
+        if (circle == null)
+            yield break;
+
+        Vector3 circleCenter = circle.transform.position;
+
+        yield return new WaitForSeconds(circleDelayBeforeHit);
+
+        if (player != null)
+        {
+            Vector3 playerFlat = player.position;
+            Vector3 circleFlat = circleCenter;
+            playerFlat.y = 0f;
+            circleFlat.y = 0f;
+
+            float dist = Vector3.Distance(playerFlat, circleFlat);
+
+            if (dist <= circleDamageRadius)
+            {
+                PlayerHealth ph = player.GetComponent<PlayerHealth>();
+                if (ph == null) ph = player.GetComponentInChildren<PlayerHealth>();
+                if (ph == null) ph = player.GetComponentInParent<PlayerHealth>();
+
+                if (ph != null)
+                    ph.TakeDamage(circleDamage);
+                else
+                    Debug.LogWarning($"{name}: Could not find PlayerHealth on player.");
+            }
+        }
+
+        float remainingLifetime = Mathf.Max(0f, circleLifetime - circleDelayBeforeHit);
+        yield return new WaitForSeconds(remainingLifetime);
+
+        if (circle != null)
+            Destroy(circle);
+    }
+
+    private void TeleportToRandomNavMeshLocation()
+    {
+        Vector3 chosenPosition = transform.position;
+        bool found = false;
+
+        for (int i = 0; i < teleportAttempts; i++)
+        {
+            Vector2 random2D = Random.insideUnitCircle * teleportSearchRadius;
+            Vector3 randomPoint = transform.position + new Vector3(random2D.x, 0f, random2D.y);
+
+            if (NavMesh.SamplePosition(randomPoint, out NavMeshHit hit, navMeshSampleDistance, NavMesh.AllAreas))
+            {
+                chosenPosition = hit.position;
+                found = true;
+                break;
+            }
+        }
+
+        if (!found && NavMesh.SamplePosition(transform.position, out NavMeshHit fallbackHit, navMeshSampleDistance, NavMesh.AllAreas))
+        {
+            chosenPosition = fallbackHit.position;
+        }
+
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
+        {
+            agent.Warp(chosenPosition);
+            agent.ResetPath();
+        }
+        else
+        {
+            transform.position = chosenPosition;
+        }
+    }
+
+    private void FaceTarget(Vector3 targetPosition)
+    {
+        Vector3 flatDir = targetPosition - transform.position;
+        flatDir.y = 0f;
+
+        if (flatDir.sqrMagnitude <= 0.001f)
+            return;
+
+        Quaternion targetRotation = Quaternion.LookRotation(flatDir.normalized);
+        transform.rotation = Quaternion.RotateTowards(
+            transform.rotation,
+            targetRotation,
+            faceTurnSpeed * Time.deltaTime
+        );
+    }
+    private void SnapFaceTarget(Vector3 targetPosition)
+    {
+        Vector3 flatDir = targetPosition - transform.position;
+        flatDir.y = 0f;
+
+        if (flatDir.sqrMagnitude <= 0.001f)
+            return;
+
+        transform.rotation = Quaternion.LookRotation(flatDir.normalized);
     }
 
     private void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, aggroRadius);
+        if (!drawDebugRange) return;
+
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, attackRadius);
+        Gizmos.DrawWireSphere(transform.position, engageRange);
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, introTriggerRange);
     }
 }

@@ -250,6 +250,9 @@ public class FirstPersonMovement : MonoBehaviour
                     PrisonZombieAI zombie = hitCol.GetComponentInParent<PrisonZombieAI>();
                     if (zombie != null) zombie.TakeDamage(finalDamage, slashChoice);
 
+                    EnvyAI envy = hitCol.GetComponentInParent<EnvyAI>(); // originally AngelBossAI in the scripts, renamed to Envy when it was fightable
+                    if (envy != null) envy.TakeDamage(finalDamage, slashChoice);
+
                     GluttonyAI gluttony = hitCol.GetComponentInParent<GluttonyAI>();
                     if (gluttony != null) gluttony.TakeDamage(finalDamage, slashChoice);
 
@@ -258,9 +261,6 @@ public class FirstPersonMovement : MonoBehaviour
 
                     WrathAI wrath = hitCol.GetComponentInParent<WrathAI>();
                     if (wrath != null) wrath.TakeDamage(finalDamage);
-
-                    EnvyAI envy = hitCol.GetComponentInParent<EnvyAI>();
-                    if (envy != null) envy.TakeDamage(finalDamage, slashChoice);
 
                     PrideAI pride = hitCol.GetComponentInParent<PrideAI>();
                     if (pride != null) pride.TakeDamage(finalDamage);
@@ -273,9 +273,6 @@ public class FirstPersonMovement : MonoBehaviour
 
                     GreedAI greed = hitCol.GetComponentInParent<GreedAI>();
                     if (greed != null) greed.TakeDamage(finalDamage);
-
-                    AngelBossAI angelBoss = hitCol.GetComponentInParent<AngelBossAI>();
-                    if (angelBoss != null) angelBoss.TakeDamage(finalDamage, slashChoice);
                 }
 
                 TargetDummy dummy = hitCol.GetComponentInParent<TargetDummy>();
