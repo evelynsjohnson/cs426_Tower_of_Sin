@@ -8,6 +8,7 @@ public class BossSpawner : MonoBehaviour
     public int currentFloor = 5;
 
     public Transform bossSpawnPoint;
+    public Transform bossSpawnPointGreed;
     public Transform bossSpawnPointLedge;
     public string gluttonyNameContains = "Gluttony";
 
@@ -32,31 +33,29 @@ public class BossSpawner : MonoBehaviour
 
     private void Start()
     {
-        if (bossPrefabs == null || bossPrefabs.Length == 0)
+        if (bossPrefabs == null ||  bossPrefabs.Length == 0 || bossSpawnPoint == null || bossSpawnPointLedge == null || bossSpawnPointGreed == null)
         {
-            Debug.LogWarning("BossSpawner: no boss prefabs assigned.");
-            return;
-        }
-
-        if (bossSpawnPoint == null)
-        {
-            Debug.LogWarning("BossSpawner: bossSpawnPoint is not assigned.");
-            return;
-        }
-
-        if (bossSpawnPointLedge == null)
-        {
-            Debug.LogWarning("BossSpawner: bossSpawnPointLedge is not assigned.");
+            Debug.LogWarning("There's an error.");
             return;
         }
 
         GameObject chosen = bossPrefabs[Random.Range(0, bossPrefabs.Length)];
 
+        bool isGreed =
+            chosen != null &&
+            chosen.name.ToLower().Contains("PiratesKing_Skeleton");
+
         bool isGluttony =
             chosen != null &&
             chosen.name.ToLower().Contains(gluttonyNameContains.ToLower());
 
-        Transform selectedSpawnPoint = isGluttony ? bossSpawnPointLedge : bossSpawnPoint;
+        Transform selectedSpawnPoint = bossSpawnPoint;
+
+        if (isGreed)
+            selectedSpawnPoint = bossSpawnPointGreed;
+        else if (isGluttony)
+            selectedSpawnPoint = bossSpawnPointLedge;
+
 
         GameObject spawnedBoss = Instantiate(
             chosen,
@@ -65,14 +64,9 @@ public class BossSpawner : MonoBehaviour
         );
 
         EnvyAI bossAI = spawnedBoss.GetComponent<EnvyAI>();
-        if (bossAI == null)
-            bossAI = spawnedBoss.GetComponentInChildren<EnvyAI>();
 
         if (bossAI == null)
-        {
-            Debug.LogWarning("BossSpawner: Spawned boss is missing AngelBossAI.");
-            return;
-        }
+            bossAI = spawnedBoss.GetComponentInChildren<EnvyAI>();
 
         Light[] arenaLights = new Light[0];
         if (lightsRoot != null)
