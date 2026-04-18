@@ -31,6 +31,8 @@ public class BossSpawner : MonoBehaviour
     public float doorMoveDistanceZ = 1f;
     public float doorMoveDuration = 3f;
 
+    public Transform roomCenter;
+
     private void Start()
     {
         if (bossPrefabs == null || bossPrefabs.Length == 0 || bossSpawnPoint == null || bossSpawnPointLedge == null)
@@ -116,7 +118,7 @@ public class BossSpawner : MonoBehaviour
                 playerObj != null ? playerObj.transform : null,
                 bossSpawnPoint,
                 bossSpawnPointLedge,
-                bossSpawnPoint,
+                roomCenter,
                 bossHealthBarFill,
                 bossHealthText,
                 bossHealthUIRoot

@@ -1585,6 +1585,37 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c7af5921109b94141afd37e9fdd75443, type: 3}
+--- !u!1 &203339399
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 203339400}
+  m_Layer: 0
+  m_Name: RoomCenter
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &203339400
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 203339399}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 13.74, y: 0.01, z: -14.15}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &212245514
 GameObject:
   m_ObjectHideFlags: 0
@@ -4555,8 +4586,9 @@ MonoBehaviour:
   bossHealthBarFill: {fileID: 1257694660}
   bossHealthText: {fileID: 1081649638}
   bossHealthUIRoot: {fileID: 877502356}
-  doorMoveDistanceZ: 1
-  doorMoveDuration: 1
+  doorMoveDistanceZ: 1.5
+  doorMoveDuration: 1.5
+  roomCenter: {fileID: 203339400}
 --- !u!1001 &543942838
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -16491,3 +16523,4 @@ SceneRoots:
   - {fileID: 271797449}
   - {fileID: 1769859245}
   - {fileID: 877502360}
+  - {fileID: 203339400}

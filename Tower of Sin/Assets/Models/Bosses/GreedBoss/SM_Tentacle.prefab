@@ -397,8 +397,8 @@ Animator:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3837758516165033896}
   m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
+  m_Avatar: {fileID: 9000000, guid: 3d895344601409443983cc76e5178a51, type: 3}
+  m_Controller: {fileID: 9100000, guid: 7b0ab06ed4d7553428fc533978d163f6, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -422,6 +422,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4af254293c9049e46b6e57aba2439d32, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TentacleBossUnit
+  maxHP: 100
+  currentHP: 100
+  hpFill: {fileID: 191241757436044212}
+  player: {fileID: 7055076948865604433}
 --- !u!1 &4399432018590129710
 GameObject:
   m_ObjectHideFlags: 0

@@ -2314,9 +2314,10 @@ GameObject:
   - component: {fileID: 2182667544375412978}
   - component: {fileID: -6261335136159872851}
   - component: {fileID: -4756913217337075218}
+  - component: {fileID: 1392011101902764569}
   m_Layer: 0
   m_Name: PiratesKing_Skeleton
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2403,7 +2404,7 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 128
   DopplerLevel: 1
-  MinDistance: 1
+  MinDistance: 1.7783141
   MaxDistance: 500
   Pan2D: 0
   rolloffMode: 0
@@ -2496,48 +2497,88 @@ MonoBehaviour:
   player: {fileID: 0}
   spawnPointOverride: {fileID: 0}
   ledgePointOverride: {fileID: 0}
+  roomCenter: {fileID: 0}
+  bossSpawnPoint: {fileID: 0}
+  bossSpawnPointLedge: {fileID: 0}
   wakeRange: 20
   attackRange: 7
   phase4MinDistance: 7
   faceSpeed: 10
-  baseMaxHP: 500
-  baseAttackDamage: 25
+  baseMaxHP: 600
+  baseAttackDamage: 15
+  attack1SweepSteps: 20
+  attack1SweepDamageWindow: 0.35
   attack1TelegraphTime: 1.25
   attack1ActiveTime: 0.4
   attack1Cooldown: 1.4
   attack1ConeAngle: 75
   attack1ConeLength: 8
-  playerLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  roomCenter: {fileID: 0}
   roomWidth: 40
-  roomLength: 40
+  roomLength: 30
   telegraphHeight: 0.05
+  version1TelegraphDuration: 1.25
+  version1BurstGap: 0.2
+  version2LightGap: 1
+  version2DetonationGap: 1
+  version2PauseBeforeReverse: 5
+  phase2LoopPause: 10
   explosionPrefab: {fileID: 1819053320288612861, guid: d67aaed3dcf449b4daa3ef9b53904d01, type: 3}
-  rowTelegraphDuration: 1.25
-  columnTelegraphDuration: 1
-  detonationRadius: 2.25
-  detonationDelayBetweenBursts: 0.2
-  detonationDelayBetweenColumns: 1
-  phase2LoopPause: 1.25
   tentaclePrefab: {fileID: 3837758516165033896, guid: 34af29cc88d35e14d82a46a79f81efce, type: 3}
   phase3TentacleCount: 5
   tentacleSpawnRadiusNearPlayer: 4
   tentacleCornerInset: 3
-  skeletonPrefab: {fileID: 0}
+  skeletonPrefab: {fileID: 7923153878451664929, guid: 9c02b42bcfccb5041961c7efbafa0f4e, type: 3}
   skeletonSpawnCount: 6
-  navmeshSpawnRadius: 18
-  bossSpawnPoint: {fileID: 0}
-  bossSpawnPointLedge: {fileID: 0}
+  navmeshSpawnRadius: 30
   bossHealthBarFill: {fileID: 0}
   bossHealthText: {fileID: 0}
   bossHealthUIRoot: {fileID: 0}
-  telegraphMaterial: {fileID: 2100000, guid: e97c0c8d68d7e6546bd9086510864e83, type: 2}
   telegraphLineWidth: 0.15
   telegraphYOffset: 0.05
   coneArcSegments: 20
+  telegraphFillColor: {r: 1, g: 0.6970087, b: 0.05098039, a: 0.22}
+  telegraphOutlineColor: {r: 0.9811321, g: 0.6755887, b: 0, a: 0.95}
+  bossLightColor: {r: 1, g: 0.8960756, b: 0.12156862, a: 1}
+  lightIntensityMultiplier: 1.25
+  cannonFireClip: {fileID: 8300000, guid: 05f5d68fd194afa4e82d2e347c3742d6, type: 3}
+  bossLoopClip: {fileID: 8300000, guid: 4d59a07649a0b0f408408e4f039be4f7, type: 3}
+  walkingClip: {fileID: 8300000, guid: 4db9bf76746d6ba4a813e2abce127c5f, type: 3}
+  bossMusicClip: {fileID: 8300000, guid: 869ba782a3e1e764893ab194ba055b70, type: 3}
+  randomVoiceClips:
+  - {fileID: 8300000, guid: 8a9d8379321e84644b58b456c30b3b99, type: 3}
+  - {fileID: 8300000, guid: 76bfcb75a68d8da46bc206117bd41445, type: 3}
+  - {fileID: 8300000, guid: 2a51503358a33c0499a64c2e66a31e7d, type: 3}
+  - {fileID: 8300000, guid: 4ba8ec498738d9841b9aa82ba7859069, type: 3}
+  - {fileID: 8300000, guid: 7028c78ad8eb9a44baecb96afc35ce43, type: 3}
+  - {fileID: 8300000, guid: d64a96389ab54ca4f8a81c3fca8cf703, type: 3}
+  randomVoiceIntervalRange: {x: 3, y: 8}
+  oneShotSpatialBlend: 1
+  oneShotMinDistance: 6
+  oneShotMaxDistance: 35
   drawGizmos: 1
+--- !u!136 &1392011101902764569
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2730658654648739784}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 4.75
+  m_Height: 13.94
+  m_Direction: 1
+  m_Center: {x: 0, y: 6.69, z: 0}
 --- !u!1 &2739041801771881421
 GameObject:
   m_ObjectHideFlags: 0
