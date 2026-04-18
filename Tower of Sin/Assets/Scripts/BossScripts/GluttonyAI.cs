@@ -52,7 +52,6 @@ public class GluttonyAI : MonoBehaviour
     private AudioSource walkAudioSource;
 
     private Vector3 initialSpawnPosition;
-    private bool isReturning = false;
     private bool isDead = false;
     private bool isAttacking = false;
     private bool hasSeenPlayer = false;
@@ -175,32 +174,6 @@ public class GluttonyAI : MonoBehaviour
 
         // Vector3 flatSpawnPos = new Vector3(initialSpawnPosition.x, transform.position.y, initialSpawnPosition.z);
         // float flatDistanceToSpawn = Vector3.Distance(transform.position, flatSpawnPos);
-
-        // if (flatDistanceToSpawn > maxLeashDistance)
-        // {
-        //     isReturning = true;
-        // }
-
-        // if (isReturning)
-        // {
-        //     agent.SetDestination(initialSpawnPosition);
-        //     animator.SetBool("isWalking", true);
-
-        //     if (currentHealth < maxHealth)
-        //     {
-        //         currentHealth += 10f * Time.deltaTime;
-        //         if (currentHealth > maxHealth) currentHealth = maxHealth;
-        //         UpdateHealthUI();
-        //     }
-
-        //     if (flatDistanceToSpawn <= agent.stoppingDistance + 0.5f)
-        //     {
-        //         isReturning = false;
-        //         hasSeenPlayer = false;
-        //         animator.SetBool("isWalking", false);
-        //     }
-        //     return;
-        // }
 
         // Aggro trigger
         if (!hasSeenPlayer && flatDistanceToPlayer <= aggroRadius) //&& onSameFloor
@@ -337,27 +310,23 @@ public class GluttonyAI : MonoBehaviour
         float roll = Random.Range(0f, 100f);
         float blockChance = 0f;
         float enrageChance = 0f;
-        float fleeChance = 0f;
 
         // Assign probabilities
         if (currentHealth <= maxHealth * 0.25f)
         {
             blockChance = 5f;
             enrageChance = 60f;
-            fleeChance = 10f;
         }
         else if (currentHealth <= maxHealth * 0.5f)
         {
             blockChance = 15f;
             enrageChance = 20f;
-            fleeChance = 15f;
         }
         else
         {
             // Full HP
             blockChance = 10f;
             enrageChance = 10f;
-            fleeChance = 0f;
         }
 
         if (roll < blockChance)
@@ -368,11 +337,6 @@ public class GluttonyAI : MonoBehaviour
         {
             StartCoroutine(EnrageRoutine());
         }
-        // else if (roll < blockChance + enrageChance + fleeChance)
-        // {
-        //     isFleeing = true;
-        // }
-        // If it rolls into the remaining %, nothing is done differently
     }
 
     void UpdateHealthUI()
