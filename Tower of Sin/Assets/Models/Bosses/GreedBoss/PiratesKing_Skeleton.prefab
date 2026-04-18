@@ -2508,16 +2508,16 @@ MonoBehaviour:
   baseAttackDamage: 15
   attack1SweepSteps: 30
   attack1SweepDamageWindow: 0.35
-  attack1TelegraphTime: 1.25
+  attack1TelegraphTime: 1.1
   attack1ActiveTime: 0.4
   attack1Cooldown: 1
   attack1ConeAngle: 140
   attack1ConeLength: 8
-  attack1DamageStartDelay: 0.2
+  attack1DamageStartDelay: 0.35
   roomWidth: 40
   roomLength: 30
   telegraphHeight: 0.07
-  version1TelegraphDuration: 1.25
+  version1TelegraphDuration: 1.2
   version1BurstGap: 0.2
   version2LightGap: 0.6
   version2DetonationGap: 0.6
@@ -2561,8 +2561,8 @@ MonoBehaviour:
   randomVoiceVolume: 0.116
   footstepVolume: 0.127
   musicVolume: 0.106
-  attack1TriggerClip: {fileID: 0}
-  attack1TriggerVolume: 1
+  attack1TriggerClip: {fileID: 8300000, guid: 64da191cd35257541806a5e90a904d61, type: 3}
+  attack1TriggerVolume: 0.725
   drawGizmos: 1
 --- !u!136 &1392011101902764569
 CapsuleCollider:
