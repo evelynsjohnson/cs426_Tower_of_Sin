@@ -23,23 +23,22 @@ public class ItemButton : MonoBehaviour, IPointerClickHandler, IPointerEnterHand
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        UnityEngine.Debug.Log("Activation");
+        // UnityEngine.Debug.Log("Activation");
         ShowStats();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        UnityEngine.Debug.Log("Deactivation");
+        // UnityEngine.Debug.Log("Deactivation");
         HideStats();
     }
 
     public void ShowStats()
     {
-        // itemStatsPanel = GameObject.Find("ItemStats");
-        UnityEngine.Debug.Log("Tring to show stats");
+        // UnityEngine.Debug.Log("Tring to show stats");
         if (itemStatsPanel != null)
         {
-            UnityEngine.Debug.Log("Step 1");
+            // UnityEngine.Debug.Log("Step 1");
             itemStatsPanel.SetActive(true);
 
             string itemText = item.name + "\nATK: +" + item.damage + "\nDEF: +" + item.defense + "\nHP: +" + item.health;
