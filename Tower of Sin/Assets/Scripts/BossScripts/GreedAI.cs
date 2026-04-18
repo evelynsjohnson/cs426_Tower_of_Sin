@@ -103,10 +103,11 @@ public class GreedAI : MonoBehaviour
     [SerializeField] private float oneShotMinDistance = 6f;
     [SerializeField] private float oneShotMaxDistance = 35f;
 
-    [Range(0f, 1f)] public float cannonVolume = 1f;
-    [Range(0f, 1f)] public float ambientVolume = 0.6f;
-    [Range(0f, 1f)] public float randomVoiceVolume = 0.8f;
-    [Range(0f, 1f)] public float footstepVolume = 0.7f;
+    [Range(0f, 1f)][SerializeField] private float cannonVolume = 1f;
+    [Range(0f, 1f)][SerializeField] private float ambientVolume = 0.6f;
+    [Range(0f, 1f)][SerializeField] private float randomVoiceVolume = 0.8f;
+    [Range(0f, 1f)][SerializeField] private float footstepVolume = 0.7f;
+    [Range(0f, 1f)][SerializeField] private float musicVolume = 1f;
 
     [Header("Debug")]
     [SerializeField] private bool drawGizmos = true;

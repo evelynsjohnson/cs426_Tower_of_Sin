@@ -2513,6 +2513,7 @@ MonoBehaviour:
   attack1Cooldown: 1.4
   attack1ConeAngle: 75
   attack1ConeLength: 8
+  attack1DamageStartDelay: 0.15
   roomWidth: 40
   roomLength: 30
   telegraphHeight: 0.05
@@ -2555,6 +2556,11 @@ MonoBehaviour:
   oneShotSpatialBlend: 1
   oneShotMinDistance: 6
   oneShotMaxDistance: 35
+  cannonVolume: 0.116
+  ambientVolume: 0.122
+  randomVoiceVolume: 0.116
+  footstepVolume: 0.127
+  musicVolume: 0.106
   drawGizmos: 1
 --- !u!136 &1392011101902764569
 CapsuleCollider:
