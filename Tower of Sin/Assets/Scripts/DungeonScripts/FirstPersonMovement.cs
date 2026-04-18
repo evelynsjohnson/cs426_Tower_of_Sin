@@ -273,6 +273,9 @@ public class FirstPersonMovement : MonoBehaviour
 
                     GreedAI greed = hitCol.GetComponentInParent<GreedAI>();
                     if (greed != null) greed.TakeDamage(finalDamage);
+
+                    TentacleBossUnit greedTentacle = hitCol.GetComponentInParent<TentacleBossUnit>();   // Sub enemy for greed boss
+                    if (greedTentacle != null) greedTentacle.TakeDamage(finalDamage);
                 }
 
                 TargetDummy dummy = hitCol.GetComponentInParent<TargetDummy>();

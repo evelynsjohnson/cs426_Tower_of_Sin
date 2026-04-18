@@ -30,7 +30,7 @@ public class GreedAI : MonoBehaviour
     [SerializeField] private Transform bossSpawnPointLedge;
 
     [Header("Detection / Movement")]
-    [SerializeField] private float wakeRange = 20f;
+    [SerializeField] private float wakeRange = 15f;
     [SerializeField] private float attackRange = 7f;
     [SerializeField] private float phase4MinDistance = 7f;
     [SerializeField] private float faceSpeed = 10f;
@@ -68,6 +68,7 @@ public class GreedAI : MonoBehaviour
     [SerializeField] private int phase3TentacleCount = 5;
     [SerializeField] private float tentacleSpawnRadiusNearPlayer = 4f;
     [SerializeField] private float tentacleCornerInset = 3f;
+    [SerializeField] private float phase3And4LoopPause = 7f;
 
     [Header("Phase 4")]
     [SerializeField] private GameObject skeletonPrefab;
@@ -461,7 +462,7 @@ public class GreedAI : MonoBehaviour
                     yield return StartCoroutine(Phase2Version2_Columns());
 
                 phase2PatternToggle = !phase2PatternToggle;
-                yield return new WaitForSeconds(phase2LoopPause);
+                yield return new WaitForSeconds(phase3And4LoopPause);
             }
 
             yield return null;
@@ -493,6 +494,7 @@ public class GreedAI : MonoBehaviour
                 }
 
                 cycleIndex = (cycleIndex + 1) % 3;
+                yield return new WaitForSeconds(phase3And4LoopPause);
             }
             else
             {

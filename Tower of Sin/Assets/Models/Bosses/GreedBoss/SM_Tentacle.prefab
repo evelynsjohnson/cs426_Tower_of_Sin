@@ -365,7 +365,7 @@ GameObject:
   - component: {fileID: 284460519650511399}
   m_Layer: 0
   m_Name: SM_Tentacle
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -423,10 +423,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4af254293c9049e46b6e57aba2439d32, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TentacleBossUnit
-  maxHP: 100
-  currentHP: 100
+  animator: {fileID: 5170855337146266030}
   hpFill: {fileID: 191241757436044212}
   player: {fileID: 7055076948865604433}
+  baseMaxHP: 100
+  currentHP: 100
+  baseDamage: 15
+  minAttackInterval: 2.5
+  maxAttackInterval: 4.5
+  telegraphLeadTime: 0.5
+  damageDelayAfterAnimStart: 1
+  postAttackCooldown: 10
+  attackWidth: 3
+  attackLength: 5
+  telegraphYOffset: 0.05
+  telegraphLineWidth: 0.1
+  telegraphFillColor: {r: 0.764151, g: 0.49381453, b: 0.5618034, a: 0.22}
+  telegraphOutlineColor: {r: 0.5283019, g: 0.28093433, b: 0.26165894, a: 0.95}
+  drawGizmos: 1
 --- !u!136 &284460519650511399
 CapsuleCollider:
   m_ObjectHideFlags: 0
