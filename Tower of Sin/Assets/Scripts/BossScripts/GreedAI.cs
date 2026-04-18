@@ -44,25 +44,23 @@ public class GreedAI : MonoBehaviour
     [SerializeField] private float attack1SweepDamageWindow = 0.35f;
     [SerializeField] private float attack1TelegraphTime = 1.25f;
     [SerializeField] private float attack1ActiveTime = 0.4f;
-    [SerializeField] private float attack1Cooldown = 1.4f;
+    [SerializeField] private float attack1Cooldown = 1f;
     [SerializeField] private float attack1ConeAngle = 75f;
     [SerializeField] private float attack1ConeLength = 8f;
-    [SerializeField] private float attack1DamageStartDelay = 0.15f;
+    [SerializeField] private float attack1DamageStartDelay = 0.25f;
 
     [Header("Phase 2 Arena")]
-    [SerializeField] private float roomWidth = 40f;
+    [SerializeField] private float roomWidth = 30f;
     [SerializeField] private float roomLength = 40f;
     [SerializeField] private float telegraphHeight = 0.05f;
 
     [Header("Phase 2 Timing")]
-    [SerializeField] private float version1TelegraphDuration = 1.25f;
-    [SerializeField] private float version1BurstGap = 0.2f;
-    [SerializeField] private float version2LightGap = 1f;
-    [SerializeField] private float version2DetonationGap = 1f;
-    [SerializeField] private float version2PauseBeforeReverse = 5f;
-    [SerializeField] private float phase2LoopPause = 1.25f;
-
-    [Header("FX")]
+    [SerializeField] private float version1TelegraphDuration = 1.3f;
+    [SerializeField] private float version1BurstGap = 0.15f;
+    [SerializeField] private float version2LightGap = 0.35f;
+    [SerializeField] private float version2DetonationGap = 0.35f;
+    [SerializeField] private float version2PauseBeforeReverse = 0f;
+    [SerializeField] private float phase2LoopPause = 1f;
     [SerializeField] private GameObject explosionPrefab;
 
     [Header("Phase 3")]
@@ -109,7 +107,9 @@ public class GreedAI : MonoBehaviour
     [Range(0f, 1f)][SerializeField] private float footstepVolume = 0.7f;
     [Range(0f, 1f)][SerializeField] private float musicVolume = 1f;
 
-    [Header("Debug")]
+    [SerializeField] private AudioClip attack1TriggerClip;
+    [Range(0f, 1f)][SerializeField] private float attack1TriggerVolume = 1f;
+
     [SerializeField] private bool drawGizmos = true;
 
     private static readonly int AnimAttack1 = Animator.StringToHash("attack1Sweep");
@@ -278,6 +278,7 @@ public class GreedAI : MonoBehaviour
             {
                 musicAudioSource.clip = bossMusicClip;
                 musicAudioSource.loop = true;
+                musicAudioSource.volume = musicVolume;
                 musicAudioSource.Play();
             }
         }
@@ -560,6 +561,7 @@ public class GreedAI : MonoBehaviour
     {
         isTransitioning = true;
         isBusy = true;
+        isInvulnerable = true;
 
         StopMoving();
 
@@ -569,6 +571,7 @@ public class GreedAI : MonoBehaviour
         StopMoving();
         yield return StartCoroutine(FacePlayerOverTime(0.35f));
 
+        isInvulnerable = false;
         isBusy = false;
         isTransitioning = false;
     }
@@ -640,6 +643,7 @@ public class GreedAI : MonoBehaviour
 
         animator.ResetTrigger(AnimAttack1);
         animator.SetTrigger(AnimAttack1);
+        PlayAttack1TriggerSound();
 
         yield return new WaitForSeconds(attack1DamageStartDelay);
         yield return StartCoroutine(DealSweepingConeDamage(attackForward));
@@ -651,6 +655,10 @@ public class GreedAI : MonoBehaviour
         yield return new WaitForSeconds(attack1Cooldown);
 
         isBusy = false;
+    }
+    private void PlayAttack1TriggerSound()
+    {
+        PlayOneShotAtPosition(attack1TriggerClip, transform.position, attack1TriggerVolume);
     }
 
     private IEnumerator DealSweepingConeDamage(Vector3 attackForward)
@@ -820,12 +828,24 @@ public class GreedAI : MonoBehaviour
 
     private void SpawnExplosionForColumn(int columnIndex)
     {
-        if (explosionPrefab == null) return;
+        if (explosionPrefab == null || roomCenter == null) return;
 
-        Vector3 center = GetColumnCenter(columnIndex);
-        GameObject exp = Instantiate(explosionPrefab, center, Quaternion.identity);
-        spawnedExplosions.Add(exp);
-        Destroy(exp, 1.5f);
+        float columnWidth = roomWidth / 5f;
+        float xMin = roomCenter.position.x - roomWidth * 0.5f;
+        float x = xMin + (columnWidth * columnIndex) + columnWidth * 0.5f;
+
+        float zMin = roomCenter.position.z - roomLength * 0.5f;
+        float sectionLength = roomLength / 3f;
+
+        for (int i = 0; i < 3; i++)
+        {
+            float z = zMin + sectionLength * i + sectionLength * 0.5f;
+            Vector3 spawnPos = new Vector3(x, roomCenter.position.y, z);
+
+            GameObject exp = Instantiate(explosionPrefab, spawnPos, Quaternion.identity);
+            spawnedExplosions.Add(exp);
+            Destroy(exp, 1.5f);
+        }
     }
 
     private List<GameObject> SpawnColumnTelegraphs(int[] columnIndices)
@@ -1241,7 +1261,7 @@ public class GreedAI : MonoBehaviour
         loopAudioSource.spatialBlend = 1f;
         loopAudioSource.minDistance = 5f;
         loopAudioSource.maxDistance = 30f;
-        loopAudioSource.volume = 1f;
+        loopAudioSource.volume = ambientVolume;
 
         if (bossLoopClip != null)
             loopAudioSource.Play();
@@ -1253,7 +1273,7 @@ public class GreedAI : MonoBehaviour
         walkAudioSource.spatialBlend = 1f;
         walkAudioSource.minDistance = 4f;
         walkAudioSource.maxDistance = 20f;
-        walkAudioSource.volume = 1f;
+        walkAudioSource.volume = footstepVolume;
     }
 
     private void UpdateWalkAudio()
@@ -1284,12 +1304,12 @@ public class GreedAI : MonoBehaviour
             if (randomVoiceClips != null && randomVoiceClips.Length > 0)
             {
                 AudioClip clip = randomVoiceClips[Random.Range(0, randomVoiceClips.Length)];
-                PlayOneShotAtPosition(clip, transform.position);
+                PlayOneShotAtPosition(clip, transform.position, randomVoiceVolume);
             }
         }
     }
 
-    private void PlayOneShotAtPosition(AudioClip clip, Vector3 pos)
+    private void PlayOneShotAtPosition(AudioClip clip, Vector3 pos, float volume)
     {
         if (clip == null) return;
 
@@ -1301,6 +1321,7 @@ public class GreedAI : MonoBehaviour
         src.spatialBlend = oneShotSpatialBlend;
         src.minDistance = oneShotMinDistance;
         src.maxDistance = oneShotMaxDistance;
+        src.volume = volume;
         src.Play();
 
         Destroy(temp, clip.length + 0.2f);
@@ -1308,7 +1329,7 @@ public class GreedAI : MonoBehaviour
 
     private void PlayCannonShot(Vector3 pos)
     {
-        PlayOneShotAtPosition(cannonFireClip, pos);
+        PlayOneShotAtPosition(cannonFireClip, pos, cannonVolume);
     }
 
     private void ApplyBossLightState()

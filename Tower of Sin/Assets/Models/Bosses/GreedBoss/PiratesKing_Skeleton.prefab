@@ -2392,7 +2392,7 @@ AudioSource:
   m_GameObject: {fileID: 2730658654648739784}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 24300002, guid: 37acf924d13abde49898458ba1054559, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
@@ -2504,25 +2504,25 @@ MonoBehaviour:
   attackRange: 7
   phase4MinDistance: 7
   faceSpeed: 10
-  baseMaxHP: 600
+  baseMaxHP: 800
   baseAttackDamage: 15
-  attack1SweepSteps: 20
+  attack1SweepSteps: 30
   attack1SweepDamageWindow: 0.35
   attack1TelegraphTime: 1.25
   attack1ActiveTime: 0.4
-  attack1Cooldown: 1.4
-  attack1ConeAngle: 75
+  attack1Cooldown: 1
+  attack1ConeAngle: 140
   attack1ConeLength: 8
-  attack1DamageStartDelay: 0.15
+  attack1DamageStartDelay: 0.2
   roomWidth: 40
-  roomLength: 30
-  telegraphHeight: 0.05
+  roomLength: 25
+  telegraphHeight: 0.07
   version1TelegraphDuration: 1.25
   version1BurstGap: 0.2
-  version2LightGap: 1
-  version2DetonationGap: 1
-  version2PauseBeforeReverse: 5
-  phase2LoopPause: 10
+  version2LightGap: 0.6
+  version2DetonationGap: 0.6
+  version2PauseBeforeReverse: 0
+  phase2LoopPause: 0
   explosionPrefab: {fileID: 1819053320288612861, guid: d67aaed3dcf449b4daa3ef9b53904d01, type: 3}
   tentaclePrefab: {fileID: 3837758516165033896, guid: 34af29cc88d35e14d82a46a79f81efce, type: 3}
   phase3TentacleCount: 5
@@ -2537,10 +2537,10 @@ MonoBehaviour:
   telegraphLineWidth: 0.15
   telegraphYOffset: 0.05
   coneArcSegments: 20
-  telegraphFillColor: {r: 1, g: 0.6970087, b: 0.05098039, a: 0.22}
+  telegraphFillColor: {r: 1, g: 0.6818182, b: 0, a: 0.22}
   telegraphOutlineColor: {r: 0.9811321, g: 0.6755887, b: 0, a: 0.95}
   bossLightColor: {r: 1, g: 0.8960756, b: 0.12156862, a: 1}
-  lightIntensityMultiplier: 1.25
+  lightIntensityMultiplier: 1
   cannonFireClip: {fileID: 8300000, guid: 05f5d68fd194afa4e82d2e347c3742d6, type: 3}
   bossLoopClip: {fileID: 8300000, guid: 4d59a07649a0b0f408408e4f039be4f7, type: 3}
   walkingClip: {fileID: 8300000, guid: 4db9bf76746d6ba4a813e2abce127c5f, type: 3}
@@ -2561,6 +2561,8 @@ MonoBehaviour:
   randomVoiceVolume: 0.116
   footstepVolume: 0.127
   musicVolume: 0.106
+  attack1TriggerClip: {fileID: 0}
+  attack1TriggerVolume: 1
   drawGizmos: 1
 --- !u!136 &1392011101902764569
 CapsuleCollider:
