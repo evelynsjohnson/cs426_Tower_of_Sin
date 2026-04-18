@@ -2515,7 +2515,7 @@ MonoBehaviour:
   attack1ConeLength: 8
   attack1DamageStartDelay: 0.2
   roomWidth: 40
-  roomLength: 25
+  roomLength: 30
   telegraphHeight: 0.07
   version1TelegraphDuration: 1.25
   version1BurstGap: 0.2
