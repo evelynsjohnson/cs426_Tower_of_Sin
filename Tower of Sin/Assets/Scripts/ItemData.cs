@@ -5,6 +5,8 @@ using System.Runtime.Serialization;
 using System.Security.AccessControl;
 using System;
 
+using TMPro;
+
 [System.Serializable]
 public class ItemData
 {

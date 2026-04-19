@@ -15,6 +15,7 @@ public class ItemButton : MonoBehaviour, IPointerClickHandler, IPointerEnterHand
 
     public GameObject itemStatsPanel;
     public TextMeshProUGUI itemStatsText;
+    public RawImage itemPicture;
 
     public void OnPointerClick(PointerEventData eventData)
     {
@@ -44,6 +45,7 @@ public class ItemButton : MonoBehaviour, IPointerClickHandler, IPointerEnterHand
             string itemText = item.name + "\nATK: +" + item.damage + "\nDEF: +" + item.defense + "\nHP: +" + item.health;
 
             itemStatsText.text = itemText;
+            itemPicture.texture = item.icon;
         }
 
     }
