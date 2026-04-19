@@ -136,10 +136,78 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6b125e03b59c3f408ee505511d2dbda, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
+  baseHealth: 200
   maxHealth: 200
+  baseHealthText: {fileID: 0}
+  healthBonusText: {fileID: 0}
+  finalHealthText: {fileID: 0}
   healthUIText: {fileID: 0}
   healthBarFill: {fileID: 0}
   drainSpeed: 5
+  playerAnimator: {fileID: 0}
+  deathTriggerName: death
+  deathAnimationDuration: 2
+  gameplayUICanvasGroup: {fileID: 0}
+  deathScreenCanvasGroup: {fileID: 0}
+  uiFadeDuration: 1.5
+  finalDefenseText: {fileID: 0}
+--- !u!1001 &367710392
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 6f0e25127d371264db507316882cd02e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 6.94
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6f0e25127d371264db507316882cd02e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.12
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6f0e25127d371264db507316882cd02e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1.8976967
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6f0e25127d371264db507316882cd02e, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6f0e25127d371264db507316882cd02e, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6f0e25127d371264db507316882cd02e, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6f0e25127d371264db507316882cd02e, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6f0e25127d371264db507316882cd02e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6f0e25127d371264db507316882cd02e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6f0e25127d371264db507316882cd02e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 6f0e25127d371264db507316882cd02e, type: 3}
+      propertyPath: m_Name
+      value: tortle
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 6f0e25127d371264db507316882cd02e, type: 3}
 --- !u!1 &844272785
 GameObject:
   m_ObjectHideFlags: 0
@@ -389,6 +457,7 @@ MonoBehaviour:
   wSlam: 1.6
   wRoar: 3
   momentumPenalty: 0.45
+  bossMusic: {fileID: 0}
   hitSound: {fileID: 0}
   missSound: {fileID: 0}
   idleSound: {fileID: 0}
@@ -944,3 +1013,4 @@ SceneRoots:
   - {fileID: 1089547852}
   - {fileID: 7534573720551758152}
   - {fileID: 1217417227}
+  - {fileID: 367710392}
