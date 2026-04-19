@@ -7,6 +7,7 @@ Group members: Evelyn Johnson, Mario Tinoco, Soham Hisabia
 I primarily worked on analysing sound from another game and giving feedback on our game UI. As a team we decided that Hades was a game similar to the one that we're building. To analyse the sounds of Hades I went through a "round" attempting to take note of all the sounds that I heard. After completing a "round" I chose 6 sounds/types of sounds and analysed them in the design document. After analysing the sounds of Hades I took a look at our UI and found 3 instances where principals of UI design were broken and proposed ways to fix them.
 
 ## Name: Soham Hisabia
+[Bosses unusable for A7]<br><br>
 I worked on extending the game by adding more fightable bosses. I wrote the AI scripts and built the prefabs for additional bosses, increasing the total number of fightable unique bosses in the game. For sound, I added unique background music for each boss that plays during the fight. I found and fixed three main UI and gameplay issues in the A6 demo. First, the boss health bar was not showing properly for the bosses I worked on, so I fixed it and it now displays correctly. Second, the game was still taking player input while paused, so I added a Time.timeScale check in FirstPersonMovement to stop that. Third, the boss spawner was always loading the same boss every time, so I changed it to randomly choose a boss whenever the boss scene loads.
 
 ## Name: Evelyn Johnson

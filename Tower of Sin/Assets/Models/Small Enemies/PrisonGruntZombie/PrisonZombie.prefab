@@ -2119,7 +2119,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   currentState: 0
   maxHealth: 50
-  damageToPlayer: 25
+  damageToPlayer: 15
   uiCanvasObject: {fileID: 3979976454785301982}
   healthText: {fileID: 7180103447727898867}
   healthBarFill: {fileID: 3189913391675539088}
