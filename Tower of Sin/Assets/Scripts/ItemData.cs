@@ -16,9 +16,16 @@ public class ItemData
     public int damage;
     public int defense;
     public string name;
+
+    public Rarity rank;
 }
 
 public enum ItemType
 {
     Helmet, Chest, Pant, Boot, Weapon, Neck, Ring
+}
+
+public enum Rarity
+{
+    Common, Uncommon, Rare, Epic, Legendary
 }

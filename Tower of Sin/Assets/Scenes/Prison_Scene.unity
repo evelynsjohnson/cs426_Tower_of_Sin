@@ -650,6 +650,7 @@ MonoBehaviour:
     damage: 5
     defense: 2
     name: swordTest
+    rank: 0
   itemStatsPanel: {fileID: 315978038}
   itemStatsText: {fileID: 1115184264}
   itemPicture: {fileID: 922184344}
@@ -1025,6 +1026,7 @@ MonoBehaviour:
     damage: 2
     defense: 5
     name: pantTest
+    rank: 3
   itemStatsPanel: {fileID: 315978038}
   itemStatsText: {fileID: 1115184264}
   itemPicture: {fileID: 922184344}
@@ -23727,6 +23729,7 @@ MonoBehaviour:
     damage: 2
     defense: 2
     name: pendatnTest
+    rank: 0
   itemStatsPanel: {fileID: 315978038}
   itemStatsText: {fileID: 1115184264}
   itemPicture: {fileID: 922184344}
@@ -25550,6 +25553,7 @@ MonoBehaviour:
     damage: 1
     defense: 4
     name: helmetTest
+    rank: 2
   itemStatsPanel: {fileID: 315978038}
   itemStatsText: {fileID: 1115184264}
   itemPicture: {fileID: 922184344}
@@ -28925,6 +28929,7 @@ MonoBehaviour:
     damage: 2
     defense: 2
     name: ringTest
+    rank: 1
   itemStatsPanel: {fileID: 315978038}
   itemStatsText: {fileID: 1115184264}
   itemPicture: {fileID: 922184344}
@@ -40159,6 +40164,7 @@ MonoBehaviour:
     damage: 2
     defense: 6
     name: chestTest
+    rank: 4
   itemStatsPanel: {fileID: 315978038}
   itemStatsText: {fileID: 1115184264}
   itemPicture: {fileID: 922184344}
@@ -49459,6 +49465,7 @@ MonoBehaviour:
     damage: 1
     defense: 2
     name: bootTest
+    rank: 1
   itemStatsPanel: {fileID: 315978038}
   itemStatsText: {fileID: 1115184264}
   itemPicture: {fileID: 922184344}
