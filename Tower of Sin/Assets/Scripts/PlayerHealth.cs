@@ -2,6 +2,7 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class PlayerHealth : MonoBehaviour
 {
@@ -9,9 +10,10 @@ public class PlayerHealth : MonoBehaviour
 
     public float maxHealth;
     private float currentHealth;
-    public TextMeshProUGUI baseHealthText; //Inv UI base health text
-    public TextMeshProUGUI healthBonusText; //Inv UI health bonus text
-    public TextMeshProUGUI finalHealthText; //Inv UI final health text
+
+    public TextMeshProUGUI baseHealthText;
+    public TextMeshProUGUI healthBonusText;
+    public TextMeshProUGUI finalHealthText;
 
     public TextMeshProUGUI healthUIText;
     public Image healthBarFill;
@@ -26,27 +28,39 @@ public class PlayerHealth : MonoBehaviour
     public float uiFadeDuration = 1.5f;
 
     private bool isDead = false;
+    private bool deathRoutineRunning = false;
 
     private float defense = 0;
-
     public TextMeshProUGUI finalDefenseText;
+
+    private FirstPersonMovement movement;
+    private Rigidbody rb;
+
+    void Awake()
+    {
+        movement = GetComponent<FirstPersonMovement>();
+        rb = GetComponent<Rigidbody>();
+
+        if (playerAnimator == null)
+            playerAnimator = GetComponentInChildren<Animator>();
+    }
 
     void Start()
     {
-        float bonus = float.Parse(healthBonusText.text);
-        maxHealth = baseHealth + bonus;
-        finalHealthText.text = maxHealth.ToString();
-        baseHealthText.text = "+" + baseHealth.ToString();
-        currentHealth = maxHealth;
-
-        if (healthBarFill != null)
-            healthBarFill.fillAmount = 1f;
+        FullResetStatsAndHealth();
 
         if (deathScreenCanvasGroup != null)
         {
             deathScreenCanvasGroup.alpha = 0f;
             deathScreenCanvasGroup.interactable = false;
             deathScreenCanvasGroup.blocksRaycasts = false;
+        }
+
+        if (gameplayUICanvasGroup != null)
+        {
+            gameplayUICanvasGroup.alpha = 1f;
+            gameplayUICanvasGroup.interactable = true;
+            gameplayUICanvasGroup.blocksRaycasts = true;
         }
 
         UpdateUI();
@@ -56,7 +70,7 @@ public class PlayerHealth : MonoBehaviour
     {
         if (healthBarFill != null)
         {
-            float targetFill = currentHealth / maxHealth;
+            float targetFill = maxHealth > 0 ? currentHealth / maxHealth : 0f;
             healthBarFill.fillAmount = Mathf.Lerp(
                 healthBarFill.fillAmount,
                 targetFill,
@@ -67,17 +81,17 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
-        if (isDead) return;
+        if (isDead || deathRoutineRunning) return;
 
-        currentHealth -= damage - (defense * (float)0.25);
-        //Debug.Log($"[PlayerHealth] HIT for {damage}. Current HP: {currentHealth}/{maxHealth}");
+        float reducedDamage = damage - (defense * 0.25f);
+        reducedDamage = Mathf.Max(1f, reducedDamage); // optional minimum damage
+
+        currentHealth -= reducedDamage;
 
         if (currentHealth <= 0)
         {
             currentHealth = 0;
             UpdateUI();
-            //Debug.Log("[PlayerHealth] PLAYER DIED");
-
             StartCoroutine(HandleDeathSequence());
             return;
         }
@@ -87,26 +101,38 @@ public class PlayerHealth : MonoBehaviour
 
     private IEnumerator HandleDeathSequence()
     {
+        if (deathRoutineRunning) yield break;
+        deathRoutineRunning = true;
         isDead = true;
 
-        // Reset floor and other run stats
+        if (movement == null)
+            movement = GetComponent<FirstPersonMovement>();
+
+        if (movement != null)
+            movement.DisableControlOnDeath();
+
+        if (rb != null)
+            rb.linearVelocity = Vector3.zero;
+
         FloorTextController.floorNumber = 1;
 
-        // death anim
         if (playerAnimator != null)
         {
+            playerAnimator.ResetTrigger(deathTriggerName);
             playerAnimator.SetTrigger(deathTriggerName);
         }
 
-        // wait for death animation to finish
         yield return new WaitForSeconds(deathAnimationDuration);
 
-        // fade UIs
-        yield return StartCoroutine(FadeBetweenUI(gameplayUICanvasGroup, deathScreenCanvasGroup, uiFadeDuration));
+        // If you fade UI in the same scene before changing scene, keep this:
+        if (gameplayUICanvasGroup != null && deathScreenCanvasGroup != null)
+            yield return StartCoroutine(FadeBetweenUI(gameplayUICanvasGroup, deathScreenCanvasGroup, uiFadeDuration));
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-        currentHealth = baseHealth;
+
+        // Load death realm after death anim finishes
+        SceneManager.LoadScene("Death_Realm");
     }
 
     private IEnumerator FadeBetweenUI(CanvasGroup fromUI, CanvasGroup toUI, float duration)
@@ -162,24 +188,17 @@ public class PlayerHealth : MonoBehaviour
     {
         if (isDead) return;
 
-        float oldHealth = currentHealth;
         currentHealth += heal;
-
-        if (currentHealth >= maxHealth)
-        {
+        if (currentHealth > maxHealth)
             currentHealth = maxHealth;
-        }
 
-        //Debug.Log($"[PlayerHealth] HEALED for {heal}. HP: {oldHealth} → {currentHealth}/{maxHealth}");
         UpdateUI();
     }
 
     void UpdateUI()
     {
         if (healthUIText != null)
-        {
             healthUIText.text = (int)currentHealth + "/" + (int)maxHealth;
-        }
     }
 
     public void UpdateHealth()
@@ -190,7 +209,86 @@ public class PlayerHealth : MonoBehaviour
 
         defense = float.Parse(finalDefenseText.text);
 
+        if (finalHealthText != null)
+            finalHealthText.text = maxHealth.ToString();
+
+        if (baseHealthText != null)
+            baseHealthText.text = "+" + baseHealth.ToString();
 
         UpdateUI();
+    }
+
+    public void FullResetStatsAndHealth()
+    {
+        isDead = false;
+        deathRoutineRunning = false;
+
+        float bonus = 0f;
+        if (healthBonusText != null)
+            float.TryParse(healthBonusText.text, out bonus);
+
+        maxHealth = baseHealth + bonus;
+        currentHealth = maxHealth;
+
+        if (finalDefenseText != null)
+            float.TryParse(finalDefenseText.text, out defense);
+        else
+            defense = 0f;
+
+        if (finalHealthText != null)
+            finalHealthText.text = maxHealth.ToString();
+
+        if (baseHealthText != null)
+            baseHealthText.text = "+" + baseHealth.ToString();
+
+        if (healthBarFill != null)
+            healthBarFill.fillAmount = 1f;
+
+        UpdateUI();
+    }
+
+    public void ResetForNewRun()
+    {
+        FullResetStatsAndHealth();
+
+        if (movement == null)
+            movement = GetComponent<FirstPersonMovement>();
+
+        if (movement != null)
+            movement.ResetPlayerForNewRun();
+
+        if (rb == null)
+            rb = GetComponent<Rigidbody>();
+
+        if (rb != null)
+            rb.linearVelocity = Vector3.zero;
+
+        // Reset animator so it leaves death state and returns to idle normally
+        if (playerAnimator == null)
+            playerAnimator = GetComponentInChildren<Animator>();
+
+        if (playerAnimator != null)
+        {
+            playerAnimator.Rebind();
+            playerAnimator.Update(0f);
+        }
+
+        if (gameplayUICanvasGroup != null)
+        {
+            gameplayUICanvasGroup.alpha = 1f;
+            gameplayUICanvasGroup.interactable = true;
+            gameplayUICanvasGroup.blocksRaycasts = true;
+        }
+
+        if (deathScreenCanvasGroup != null)
+        {
+            deathScreenCanvasGroup.alpha = 0f;
+            deathScreenCanvasGroup.interactable = false;
+            deathScreenCanvasGroup.blocksRaycasts = false;
+            deathScreenCanvasGroup.gameObject.SetActive(false);
+        }
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 }

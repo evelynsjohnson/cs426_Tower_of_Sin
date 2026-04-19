@@ -23,6 +23,10 @@ public class FirstPersonMovement : MonoBehaviour
     public KeyCode toggleCursorKey = KeyCode.Escape;
     public bool uiMode = true;
 
+    [Header("Control State")]
+    public bool canControl = true;
+    public bool canAttack = true;
+
     [Header("Debug / Safety")]
     public bool enableDebugLogs = true;
     public bool enableContinuousPositionLogs = false;
@@ -104,6 +108,17 @@ public class FirstPersonMovement : MonoBehaviour
 
     void Update()
     {
+        if (!canControl)
+        {
+            currentHorizontalInput = 0f;
+            currentVerticalInput = 0f;
+            IsRunning = false;
+            holdTimer = 0f;
+            jumpQueued = false;
+            UpdateAnimationStates(0f, 0f);
+            return;
+        }
+
         if (Input.GetKeyDown(toggleCursorKey))
         {
             SetUIMode(!uiMode);
@@ -156,9 +171,6 @@ public class FirstPersonMovement : MonoBehaviour
                 Debug.Log($"[FPM] Rigidbody vel before jump={rigidbody.linearVelocity}");
                 Debug.Log($"[FPM] grounded={(groundCheck != null ? groundCheck.isGrounded.ToString() : "null groundCheck")}");
             }
-
-            // if (animator != null)
-            //     animator.SetTrigger("isJumping");
         }
 
         UpdateAnimationStates(currentHorizontalInput, currentVerticalInput);
@@ -174,6 +186,7 @@ public class FirstPersonMovement : MonoBehaviour
 
     void HandleInput()
     {
+        if (!canAttack) return;
         if (animator == null) return;
 
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
@@ -214,6 +227,8 @@ public class FirstPersonMovement : MonoBehaviour
 
     void PerformSlash(int slashChoice)
     {
+        if (!canAttack || !canControl) return;
+
         animator.ResetTrigger("isSlashing");
         animator.SetInteger("slashType", slashChoice);
         animator.SetTrigger("isSlashing");
@@ -228,6 +243,8 @@ public class FirstPersonMovement : MonoBehaviour
     private IEnumerator DealDamageAfterDelay(float delayTime, int slashChoice)
     {
         yield return new WaitForSeconds(delayTime);
+
+        if (!canAttack || !canControl) yield break;
 
         bool hitEnemy = false;
         float finalDamage = (slashChoice == 1) ? slash1BaseDamage : slash2BaseDamage;
@@ -250,7 +267,7 @@ public class FirstPersonMovement : MonoBehaviour
                     PrisonZombieAI zombie = hitCol.GetComponentInParent<PrisonZombieAI>();
                     if (zombie != null) zombie.TakeDamage(finalDamage, slashChoice);
 
-                    EnvyAI envy = hitCol.GetComponentInParent<EnvyAI>(); // originally AngelBossAI in the scripts, renamed to Envy when it was fightable
+                    EnvyAI envy = hitCol.GetComponentInParent<EnvyAI>();
                     if (envy != null) envy.TakeDamage(finalDamage, slashChoice);
 
                     GluttonyAI gluttony = hitCol.GetComponentInParent<GluttonyAI>();
@@ -274,7 +291,7 @@ public class FirstPersonMovement : MonoBehaviour
                     GreedAI greed = hitCol.GetComponentInParent<GreedAI>();
                     if (greed != null) greed.TakeDamage(finalDamage);
 
-                    TentacleBossUnit greedTentacle = hitCol.GetComponentInParent<TentacleBossUnit>();   // Sub enemy for greed boss
+                    TentacleBossUnit greedTentacle = hitCol.GetComponentInParent<TentacleBossUnit>();
                     if (greedTentacle != null) greedTentacle.TakeDamage(finalDamage);
                 }
 
@@ -306,6 +323,12 @@ public class FirstPersonMovement : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (!canControl)
+        {
+            rigidbody.linearVelocity = Vector3.zero;
+            return;
+        }
+
         if (uiMode)
         {
             rigidbody.linearVelocity = new Vector3(0f, rigidbody.linearVelocity.y, 0f);
@@ -363,7 +386,7 @@ public class FirstPersonMovement : MonoBehaviour
         bool isMovingBackward = verticalInput < -0.1f;
         bool isStrafingLeft = horizontalInput < -0.1f;
         bool isStrafingRight = horizontalInput > 0.1f;
-        bool isCrouching = Input.GetKey(crouchKey) && !uiMode;
+        bool isCrouching = Input.GetKey(crouchKey) && !uiMode && canControl;
 
         animator.SetBool("isWalkingForward", isMovingForward && !IsRunning);
         animator.SetBool("isRunningForward", isMovingForward && IsRunning);
@@ -438,7 +461,44 @@ public class FirstPersonMovement : MonoBehaviour
     {
         float damage = float.Parse(finalAttackText.text);
         slash1BaseDamage = damage;
-        slash2BaseDamage = damage * (float)1.5;
+        slash2BaseDamage = damage * 1.5f;
+    }
 
+    public void DisableControlOnDeath()
+    {
+        canControl = false;
+        canAttack = false;
+        currentHorizontalInput = 0f;
+        currentVerticalInput = 0f;
+        IsRunning = false;
+        holdTimer = 0f;
+        jumpQueued = false;
+        nextSlashTime = 0f;
+
+        if (rigidbody != null)
+            rigidbody.linearVelocity = Vector3.zero;
+
+        UpdateAnimationStates(0f, 0f);
+    }
+
+    public void ResetPlayerForNewRun()
+    {
+        canControl = true;
+        canAttack = true;
+
+        holdTimer = 0f;
+        jumpQueued = false;
+        IsRunning = false;
+        nextSlashTime = 0f;
+
+        currentHorizontalInput = 0f;
+        currentVerticalInput = 0f;
+
+        if (rigidbody != null)
+            rigidbody.linearVelocity = Vector3.zero;
+
+        UpdateAttack();
+        SetUIMode(false);
+        UpdateAnimationStates(0f, 0f);
     }
 }

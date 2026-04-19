@@ -49,12 +49,10 @@ public class GreedAI : MonoBehaviour
     [SerializeField] private float attack1ConeLength = 8f;
     [SerializeField] private float attack1DamageStartDelay = 0.25f;
 
-    [Header("Phase 2 Arena")]
+    [Header("Phase 2")]
     [SerializeField] private float roomWidth = 30f;
     [SerializeField] private float roomLength = 40f;
     [SerializeField] private float telegraphHeight = 0.05f;
-
-    [Header("Phase 2 Timing")]
     [SerializeField] private float version1TelegraphDuration = 1.3f;
     [SerializeField] private float version1BurstGap = 0.15f;
     [SerializeField] private float version2LightGap = 0.35f;
@@ -75,19 +73,16 @@ public class GreedAI : MonoBehaviour
     [SerializeField] private int skeletonSpawnCount = 6;
     [SerializeField] private float navmeshSpawnRadius = 18f;
 
-    [Header("Boss UI")]
     [SerializeField] private Image bossHealthBarFill;
     [SerializeField] private TMP_Text bossHealthText;
     [SerializeField] private GameObject bossHealthUIRoot;
 
-    [Header("Telegraph Drawing")]
     [SerializeField] private float telegraphLineWidth = 0.15f;
     [SerializeField] private float telegraphYOffset = 0.05f;
     [SerializeField] private int coneArcSegments = 20;
     [SerializeField] private Color telegraphFillColor = new Color(1f, 0.2f, 0.05f, 0.22f);
     [SerializeField] private Color telegraphOutlineColor = new Color(0.45f, 0.05f, 0.02f, 0.95f);
 
-    [Header("Arena Lights")]
     [SerializeField] private Color bossLightColor = new Color(1f, 0.55f, 0.12f);
     [SerializeField] private float lightIntensityMultiplier = 1.25f;
 
@@ -102,6 +97,19 @@ public class GreedAI : MonoBehaviour
     [SerializeField] private float oneShotMinDistance = 6f;
     [SerializeField] private float oneShotMaxDistance = 35f;
 
+    [SerializeField] private AudioClip introDialogueClip;
+    [SerializeField] private AudioClip phase2DialogueClip;
+    [SerializeField] private AudioClip phase3DialogueClip;
+    [SerializeField] private AudioClip phase4DialogueClip;
+    [SerializeField] private AudioClip deathDialogueClip;
+
+    [SerializeField] private AudioClip[] attackVoiceClips; // 5 clips
+    [SerializeField] private Vector2 attackVoiceIntervalRange = new Vector2(5f, 10f);
+    [Range(0f, 1f)][SerializeField] private float dialogueVolume = 1f;
+    [Range(0f, 1f)][SerializeField] private float deathDialogueVolume = 1f;
+    [Range(0f, 1f)][SerializeField] private float attackVoiceVolume = 1f;
+    [SerializeField] private float deathFadeOutDuration = 0.25f;
+
     [Range(0f, 1f)][SerializeField] private float cannonVolume = 1f;
     [Range(0f, 1f)][SerializeField] private float ambientVolume = 0.6f;
     [Range(0f, 1f)][SerializeField] private float randomVoiceVolume = 0.8f;
@@ -110,6 +118,23 @@ public class GreedAI : MonoBehaviour
 
     [SerializeField] private AudioClip attack1TriggerClip;
     [Range(0f, 1f)][SerializeField] private float attack1TriggerVolume = 1f;
+
+    private AudioSource dialogueAudioSource;
+    private Coroutine attackVoiceRoutine;
+    private bool introDialoguePlayed = false;
+    private bool phase2DialoguePlayed = false;
+    private bool phase3DialoguePlayed = false;
+    private bool phase4DialoguePlayed = false;
+    private int attackVoiceIndex = 0;
+
+    private Transform basementDoorLeftRef;
+    private Transform basementDoorRightRef;
+    private AudioSource gateAudioSourceRef;
+    private AudioClip largeGateClipRef;
+    private GameObject bossChestPrefabRef;
+    private Transform bossChestSpawnPointRef;
+    private float doorMoveDistanceZRef;
+    private float doorMoveDurationRef;
 
     [SerializeField] private bool drawGizmos = true;
 
@@ -221,12 +246,46 @@ public class GreedAI : MonoBehaviour
             return;
         }
 
+        HandleContinuousFacing();
+
         UpdateWalkAudio();
 
         bool running = HasValidNavMeshAgent() && agent.velocity.magnitude > 0.1f;
         animator.SetBool(AnimRunning, running);
 
         HandlePhaseRequestsByHealth();
+    }
+
+    private void HandleContinuousFacing()
+    {
+        if (player == null || isDead) return;
+
+        // Don't override the initial Phase 2
+        bool walkingBackToSpawnInPhase2 =
+            currentPhase == BossPhase.Phase2 &&
+            isTransitioning &&
+            isBusy &&
+            HasValidNavMeshAgent();
+
+        if (walkingBackToSpawnInPhase2)
+            return;
+
+        // If not actively moving somewhere else, keep facing player
+        if (!HasValidNavMeshAgent() || agent.velocity.magnitude < 0.05f || isBusy)
+        {
+            Vector3 dir = player.position - transform.position;
+            dir.y = 0f;
+
+            if (dir.sqrMagnitude > 0.001f)
+            {
+                Quaternion targetRot = Quaternion.LookRotation(dir.normalized, Vector3.up);
+                transform.rotation = Quaternion.Slerp(
+                    transform.rotation,
+                    targetRot,
+                    faceSpeed * Time.deltaTime
+                );
+            }
+        }
     }
 
     #region Public API
@@ -283,6 +342,15 @@ public class GreedAI : MonoBehaviour
                 musicAudioSource.Play();
             }
         }
+
+        basementDoorLeftRef = basementDoorLeft;
+        basementDoorRightRef = basementDoorRight;
+        gateAudioSourceRef = gateAudioSource;
+        largeGateClipRef = largeGateClip;
+        bossChestPrefabRef = bossChestPrefab;
+        bossChestSpawnPointRef = bossChestSpawnPoint;
+        doorMoveDistanceZRef = doorMoveDistanceZ;
+        doorMoveDurationRef = doorMoveDuration;
 
         ApplyBossLightState();
         UpdateBossUI();
@@ -371,7 +439,21 @@ public class GreedAI : MonoBehaviour
             float dist = Vector3.Distance(transform.position, player.position);
             if (dist <= wakeRange)
             {
+                isInvulnerable = true;
+                isBusy = true;
+
                 yield return StartCoroutine(PlaySpawnSequence());
+
+                if (!introDialoguePlayed)
+                {
+                    introDialoguePlayed = true;
+                    yield return StartCoroutine(PlayPhaseDialogue(introDialogueClip));
+                    StartAttackVoiceCycle();
+                }
+
+                isInvulnerable = false;
+                isBusy = false;
+
                 currentPhase = BossPhase.Phase1;
                 requestedPhase = BossPhase.Phase1;
                 yield break;
@@ -565,6 +647,7 @@ public class GreedAI : MonoBehaviour
         isBusy = true;
         isInvulnerable = true;
 
+        StopAttackVoiceCycle();
         StopMoving();
 
         Vector3 target = bossSpawnPoint != null ? bossSpawnPoint.position : originalSpawnPoint;
@@ -573,17 +656,25 @@ public class GreedAI : MonoBehaviour
         StopMoving();
         yield return StartCoroutine(FacePlayerOverTime(0.35f));
 
+        if (!phase2DialoguePlayed)
+        {
+            phase2DialoguePlayed = true;
+            yield return StartCoroutine(PlayPhaseDialogue(phase2DialogueClip));
+        }
+
+        StartAttackVoiceCycle();
+
         isInvulnerable = false;
         isBusy = false;
         isTransitioning = false;
     }
-
     private IEnumerator TransitionToPhase3()
     {
         isTransitioning = true;
         isBusy = true;
         isInvulnerable = true;
 
+        StopAttackVoiceCycle();
         StopMoving();
 
         Vector3 ledgeTarget = bossSpawnPointLedge != null
@@ -594,8 +685,38 @@ public class GreedAI : MonoBehaviour
 
         yield return StartCoroutine(FacePlayerOverTime(0.25f));
 
-        SpawnPhase3Tentacles();
+        if (!phase3DialoguePlayed)
+        {
+            phase3DialoguePlayed = true;
+            yield return StartCoroutine(PlayPhaseDialogue(phase3DialogueClip));
+        }
 
+        SpawnPhase3Tentacles();
+        StartAttackVoiceCycle();
+
+        isBusy = false;
+        isTransitioning = false;
+    }
+    private IEnumerator TransitionToPhase4()
+    {
+        isTransitioning = true;
+        isBusy = true;
+        isInvulnerable = true;
+
+        StopAttackVoiceCycle();
+        SpawnPhase4Skeletons();
+
+        yield return StartCoroutine(FacePlayerOverTime(0.25f));
+
+        if (!phase4DialoguePlayed)
+        {
+            phase4DialoguePlayed = true;
+            yield return StartCoroutine(PlayPhaseDialogue(phase4DialogueClip));
+        }
+
+        StartAttackVoiceCycle();
+
+        isInvulnerable = false;
         isBusy = false;
         isTransitioning = false;
     }
@@ -613,17 +734,72 @@ public class GreedAI : MonoBehaviour
         isBusy = false;
     }
 
-    private IEnumerator TransitionToPhase4()
+    private IEnumerator PlayPhaseDialogue(AudioClip clip)
     {
-        isTransitioning = true;
-        isBusy = true;
+        if (clip == null)
+            yield break;
 
-        SpawnPhase4Skeletons();
+        if (dialogueAudioSource == null)
+            yield break;
 
-        yield return new WaitForSeconds(0.5f);
+        dialogueAudioSource.Stop();
+        dialogueAudioSource.clip = clip;
+        dialogueAudioSource.volume = dialogueVolume;
+        dialogueAudioSource.Play();
 
-        isBusy = false;
-        isTransitioning = false;
+        while (dialogueAudioSource.isPlaying)
+            yield return null;
+    }
+
+    private void StartAttackVoiceCycle()
+    {
+        StopAttackVoiceCycle();
+        attackVoiceRoutine = StartCoroutine(AttackVoiceLoop());
+    }
+
+    private void StopAttackVoiceCycle()
+    {
+        if (attackVoiceRoutine != null)
+        {
+            StopCoroutine(attackVoiceRoutine);
+            attackVoiceRoutine = null;
+        }
+    }
+
+    private IEnumerator AttackVoiceLoop()
+    {
+        float initialDelay = Random.Range(attackVoiceIntervalRange.x, attackVoiceIntervalRange.y);
+        yield return new WaitForSeconds(initialDelay);
+
+        while (!isDead)
+        {
+            if (attackVoiceClips != null && attackVoiceClips.Length > 0)
+            {
+                AudioClip clip = attackVoiceClips[attackVoiceIndex % attackVoiceClips.Length];
+                attackVoiceIndex++;
+
+                yield return StartCoroutine(PlayQueuedDialogueClip(clip, attackVoiceVolume));
+            }
+
+            float wait = Random.Range(attackVoiceIntervalRange.x, attackVoiceIntervalRange.y);
+            yield return new WaitForSeconds(wait);
+        }
+    }
+
+    private IEnumerator PlayQueuedDialogueClip(AudioClip clip, float volume)
+    {
+        if (clip == null || dialogueAudioSource == null)
+            yield break;
+
+        while (dialogueAudioSource.isPlaying)
+            yield return null;
+
+        dialogueAudioSource.clip = clip;
+        dialogueAudioSource.volume = volume;
+        dialogueAudioSource.Play();
+
+        while (dialogueAudioSource.isPlaying)
+            yield return null;
     }
 
     #endregion
@@ -1276,6 +1452,14 @@ public class GreedAI : MonoBehaviour
         walkAudioSource.minDistance = 4f;
         walkAudioSource.maxDistance = 20f;
         walkAudioSource.volume = footstepVolume;
+
+        dialogueAudioSource = gameObject.AddComponent<AudioSource>();
+        dialogueAudioSource.playOnAwake = false;
+        dialogueAudioSource.loop = false;
+        dialogueAudioSource.spatialBlend = 1f;
+        dialogueAudioSource.minDistance = 6f;
+        dialogueAudioSource.maxDistance = 35f;
+        dialogueAudioSource.volume = dialogueVolume;
     }
 
     private void UpdateWalkAudio()
@@ -1391,6 +1575,7 @@ public class GreedAI : MonoBehaviour
 
         StopAllCoroutines();
         StopMoving();
+        StopAttackVoiceCycle();
 
         RestoreArenaLights();
         ClearAllSpawnedObjects();
@@ -1399,16 +1584,89 @@ public class GreedAI : MonoBehaviour
         if (walkAudioSource != null) walkAudioSource.Stop();
         if (randomVoiceRoutine != null) StopCoroutine(randomVoiceRoutine);
 
+        StartCoroutine(HandleDeathSequence());
+    }
+
+    private IEnumerator HandleDeathSequence()
+    {
+        if (dialogueAudioSource != null && dialogueAudioSource.isPlaying)
+            yield return StartCoroutine(FadeOutAudio(dialogueAudioSource, deathFadeOutDuration));
+
+        animator.SetBool(AnimDeath, true);
+        animator.SetTrigger(AnimDeath);
+        animator.SetBool(AnimRunning, false);
+
+        if (deathDialogueClip != null && dialogueAudioSource != null)
+        {
+            dialogueAudioSource.clip = deathDialogueClip;
+            dialogueAudioSource.volume = deathDialogueVolume;
+            dialogueAudioSource.Play();
+        }
+
+        OpenBossGates();
+        SpawnBossChest();
+
         if (musicAudioSource != null && previousBackgroundClip != null)
         {
             musicAudioSource.clip = previousBackgroundClip;
             musicAudioSource.loop = true;
             musicAudioSource.Play();
         }
+    }
 
-        animator.SetBool(AnimDeath, true);
-        animator.SetTrigger(AnimDeath);
-        animator.SetBool(AnimRunning, false);
+    private IEnumerator FadeOutAudio(AudioSource source, float duration)
+    {
+        if (source == null) yield break;
+
+        float startVolume = source.volume;
+        float t = 0f;
+
+        while (t < duration && source != null)
+        {
+            t += Time.deltaTime;
+            source.volume = Mathf.Lerp(startVolume, 0f, t / duration);
+            yield return null;
+        }
+
+        if (source != null)
+        {
+            source.Stop();
+            source.volume = startVolume;
+        }
+    }
+
+    private void SpawnBossChest()
+    {
+        if (bossChestPrefabRef != null && bossChestSpawnPointRef != null)
+            Instantiate(bossChestPrefabRef, bossChestSpawnPointRef.position, bossChestSpawnPointRef.rotation);
+    }
+
+    private void OpenBossGates()
+    {
+        if (gateAudioSourceRef != null && largeGateClipRef != null)
+            gateAudioSourceRef.PlayOneShot(largeGateClipRef);
+
+        if (basementDoorLeftRef != null)
+            StartCoroutine(MoveDoorZ(basementDoorLeftRef, -doorMoveDistanceZRef, doorMoveDurationRef));
+
+        if (basementDoorRightRef != null)
+            StartCoroutine(MoveDoorZ(basementDoorRightRef, doorMoveDistanceZRef, doorMoveDurationRef));
+    }
+
+    private IEnumerator MoveDoorZ(Transform door, float zOffset, float duration)
+    {
+        Vector3 start = door.position;
+        Vector3 end = start + new Vector3(0f, 0f, zOffset);
+
+        float t = 0f;
+        while (t < duration)
+        {
+            t += Time.deltaTime;
+            door.position = Vector3.Lerp(start, end, t / duration);
+            yield return null;
+        }
+
+        door.position = end;
     }
 
     private void RecalculateScaledStats()
