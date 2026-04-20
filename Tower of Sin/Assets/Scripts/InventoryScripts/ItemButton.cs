@@ -7,6 +7,7 @@ using System;
 using System.Diagnostics;
 
 using TMPro;
+using System.Drawing;
 
 
 public class ItemButton : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
@@ -15,6 +16,7 @@ public class ItemButton : MonoBehaviour, IPointerClickHandler, IPointerEnterHand
 
     public GameObject itemStatsPanel;
     public TextMeshProUGUI itemStatsText;
+    public RawImage itemPicture;
 
     public void OnPointerClick(PointerEventData eventData)
     {
@@ -44,6 +46,9 @@ public class ItemButton : MonoBehaviour, IPointerClickHandler, IPointerEnterHand
             string itemText = item.name + "\nATK: +" + item.damage + "\nDEF: +" + item.defense + "\nHP: +" + item.health;
 
             itemStatsText.text = itemText;
+            UnityEngine.Color hue = getColor(item.rank);
+            itemPicture.texture = item.icon;
+            itemPicture.color = hue;
         }
 
     }
@@ -55,5 +60,24 @@ public class ItemButton : MonoBehaviour, IPointerClickHandler, IPointerEnterHand
             itemStatsPanel.SetActive(false);
         }
 
+    }
+
+    UnityEngine.Color getColor(Rarity rank)
+    {
+        switch (rank)
+        {
+            case Rarity.Common:
+                return UnityEngine.Color.white;
+            case Rarity.Uncommon:
+                return UnityEngine.Color.green;
+            case Rarity.Rare:
+                return UnityEngine.Color.blue;
+            case Rarity.Epic:
+                return UnityEngine.Color.magenta;
+            case Rarity.Legendary:
+                return UnityEngine.Color.yellow;
+            default:
+                return UnityEngine.Color.white;
+        }
     }
 }

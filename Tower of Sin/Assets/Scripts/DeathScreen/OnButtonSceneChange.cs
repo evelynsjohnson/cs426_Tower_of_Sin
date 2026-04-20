@@ -1,11 +1,19 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class OnButtonSceneChange : MonoBehaviour
 {
     public string sceneName;
-    // when a raw image button is clicked, change the scene
     public void ChangeScene(string sceneName)
     {
-        UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
+        if (sceneName == "Death_Realm")
+        {
+            PlayerHealth ph = FindObjectOfType<PlayerHealth>();
+            if (ph != null)
+                ph.ResetForNewRun();
+        }
+
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(sceneName);
     }
 }

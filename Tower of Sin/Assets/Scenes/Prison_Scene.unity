@@ -650,8 +650,10 @@ MonoBehaviour:
     damage: 5
     defense: 2
     name: swordTest
+    rank: 0
   itemStatsPanel: {fileID: 315978038}
   itemStatsText: {fileID: 1115184264}
+  itemPicture: {fileID: 922184344}
 --- !u!1001 &17369334
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1024,8 +1026,10 @@ MonoBehaviour:
     damage: 2
     defense: 5
     name: pantTest
+    rank: 3
   itemStatsPanel: {fileID: 315978038}
   itemStatsText: {fileID: 1115184264}
+  itemPicture: {fileID: 922184344}
 --- !u!114 &25475860
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7802,6 +7806,7 @@ RectTransform:
   m_Children:
   - {fileID: 738874258}
   - {fileID: 1115184263}
+  - {fileID: 922184343}
   m_Father: {fileID: 1004075639}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -23724,8 +23729,10 @@ MonoBehaviour:
     damage: 2
     defense: 2
     name: pendatnTest
+    rank: 0
   itemStatsPanel: {fileID: 315978038}
   itemStatsText: {fileID: 1115184264}
+  itemPicture: {fileID: 922184344}
 --- !u!114 &892573723
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -24319,6 +24326,78 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 909283335}
+  m_CullTransparentMesh: 1
+--- !u!1 &922184342
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 922184343}
+  - component: {fileID: 922184345}
+  - component: {fileID: 922184344}
+  m_Layer: 5
+  m_Name: ItemPicture
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &922184343
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 922184342}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 315978039}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -230, y: 140}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &922184344
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 922184342}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.RawImage
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Texture: {fileID: 2800000, guid: a9cc9399cf2d7764784c622ac648a546, type: 3}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+--- !u!222 &922184345
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 922184342}
   m_CullTransparentMesh: 1
 --- !u!4 &929569656 stripped
 Transform:
@@ -25474,8 +25553,10 @@ MonoBehaviour:
     damage: 1
     defense: 4
     name: helmetTest
+    rank: 2
   itemStatsPanel: {fileID: 315978038}
   itemStatsText: {fileID: 1115184264}
+  itemPicture: {fileID: 922184344}
 --- !u!114 &953945686
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28848,8 +28929,10 @@ MonoBehaviour:
     damage: 2
     defense: 2
     name: ringTest
+    rank: 1
   itemStatsPanel: {fileID: 315978038}
   itemStatsText: {fileID: 1115184264}
+  itemPicture: {fileID: 922184344}
 --- !u!114 &1076561789
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -29590,7 +29673,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: -270, y: 30}
+  m_AnchoredPosition: {x: -265, y: 30}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &1115184264
@@ -29640,8 +29723,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 32
+  m_fontSizeBase: 32
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -40081,8 +40164,10 @@ MonoBehaviour:
     damage: 2
     defense: 6
     name: chestTest
+    rank: 4
   itemStatsPanel: {fileID: 315978038}
   itemStatsText: {fileID: 1115184264}
+  itemPicture: {fileID: 922184344}
 --- !u!114 &1594769935
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -49380,8 +49465,10 @@ MonoBehaviour:
     damage: 1
     defense: 2
     name: bootTest
+    rank: 1
   itemStatsPanel: {fileID: 315978038}
   itemStatsText: {fileID: 1115184264}
+  itemPicture: {fileID: 922184344}
 --- !u!114 &2040186410
 MonoBehaviour:
   m_ObjectHideFlags: 0

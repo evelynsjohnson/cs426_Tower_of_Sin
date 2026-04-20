@@ -62,7 +62,7 @@ public class EnvyAI : MonoBehaviour
     [SerializeField] private string playerTag = "Player";
 
     [SerializeField] private float teleportSearchRadius = 25f;
-    [SerializeField] private float navMeshSampleDistance = 8f;
+    [SerializeField] private float navMeshSampleDistance = 3f;
     [SerializeField] private int teleportAttempts = 20;
 
     [Header("Attack Timing")]
@@ -122,6 +122,8 @@ public class EnvyAI : MonoBehaviour
     private bool introPlayed = false;
     private bool phaseTwoVoicePending = false;
     private bool deathVoiceStarted = false;
+    private bool introStarted = false;
+    private bool introFinished = false;
 
     private readonly List<AudioClip> attackVoiceClips = new List<AudioClip>();
     private int nextAttackVoiceIndex = 0;
@@ -234,6 +236,13 @@ public class EnvyAI : MonoBehaviour
         robotNoiseSource = Create3DAudioSource("RobotNoiseSource");
         robotNoise2Source = Create3DAudioSource("RobotNoise2Source");
         voiceSource = Create3DAudioSource("VoiceSource");
+
+        if (voiceSource != null)
+        {
+            voiceSource.spatialBlend = 0.2f; 
+            voiceSource.minDistance = 8f;
+            voiceSource.maxDistance = 60f;
+        }
     }
 
     private void StartBossMusic()
@@ -400,6 +409,12 @@ public class EnvyAI : MonoBehaviour
                 }
             }
 
+            if (!introFinished)
+            {
+                yield return null;
+                continue;
+            }
+
             if (player != null && !isBusy)
             {
                 float dist = Vector3.Distance(transform.position, player.position);
@@ -417,10 +432,17 @@ public class EnvyAI : MonoBehaviour
 
     private void PlayIntroAudioOnce()
     {
-        if (introPlayed)
+        if (introStarted)
             return;
 
-        introPlayed = true;
+        introStarted = true;
+        StartCoroutine(PlayIntroRoutine());
+    }
+
+    private IEnumerator PlayIntroRoutine()
+    {
+        if (voiceSource != null)
+            voiceSource.Stop();
 
         if (introAudio != null && voiceSource != null)
         {
@@ -428,7 +450,13 @@ public class EnvyAI : MonoBehaviour
             voiceSource.volume = voiceVolume;
             voiceSource.loop = false;
             voiceSource.Play();
+
+            while (!isDead && voiceSource.isPlaying)
+                yield return null;
         }
+
+        introPlayed = true;
+        introFinished = true;
     }
 
     private void FindPlayerIfNeeded()
@@ -456,6 +484,8 @@ public class EnvyAI : MonoBehaviour
         isDead = false;
         deathHandled = false;
         introPlayed = false;
+        introStarted = false;
+        introFinished = false;
         phaseTwoVoicePending = false;
         deathVoiceStarted = false;
         nextAttackVoiceIndex = 0;
@@ -474,7 +504,7 @@ public class EnvyAI : MonoBehaviour
 
     public void TakeDamage(float damage, int slashChoice)
     {
-        if (isDead || damage <= 0f)
+        if (isDead || damage <= 0f || !introFinished)
             return;
 
         currentHealth -= damage;

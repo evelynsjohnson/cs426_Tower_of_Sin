@@ -9477,21 +9477,21 @@ MonoBehaviour:
   ticktockLoop: {fileID: 8300000, guid: b3e5eb52631215049b63a5c8245684b4, type: 3}
   robotNoise: {fileID: 8300000, guid: aad691b963d3a244293dd8c41203a234, type: 3}
   robotNoise2: {fileID: 8300000, guid: 2b5552d5b18069e41866ca816a2b7066, type: 3}
-  introAudio: {fileID: 8300000, guid: 2a408c215b370f1438ad6989bcfeec8c, type: 3}
-  phaseTwoAudio: {fileID: 8300000, guid: 2a408c215b370f1438ad6989bcfeec8c, type: 3}
+  introAudio: {fileID: 8300000, guid: 2a45fd7fda5f4ff42b8959c69142e649, type: 3}
+  phaseTwoAudio: {fileID: 8300000, guid: ce7d0a53bfc6fe94396b14f9150d459f, type: 3}
   deathAudio: {fileID: 8300000, guid: 2a408c215b370f1438ad6989bcfeec8c, type: 3}
-  attackAudio1: {fileID: 8300000, guid: 2a408c215b370f1438ad6989bcfeec8c, type: 3}
-  attackAudio2: {fileID: 8300000, guid: 2a408c215b370f1438ad6989bcfeec8c, type: 3}
-  attackAudio3: {fileID: 8300000, guid: 2a408c215b370f1438ad6989bcfeec8c, type: 3}
-  attackAudio4: {fileID: 8300000, guid: 2a408c215b370f1438ad6989bcfeec8c, type: 3}
-  attackAudio5: {fileID: 8300000, guid: 2a408c215b370f1438ad6989bcfeec8c, type: 3}
+  attackAudio1: {fileID: 8300000, guid: 9f55e243fb1c082469c3d36ec484a37e, type: 3}
+  attackAudio2: {fileID: 8300000, guid: 1d1b25c746ccaac41bd2c9c95aa0e9bb, type: 3}
+  attackAudio3: {fileID: 0}
+  attackAudio4: {fileID: 0}
+  attackAudio5: {fileID: 0}
   bossMusicClip: {fileID: 8300000, guid: ac46664cd57ac054492fdf44fa4a15a9, type: 3}
   bossMusicVolume: 0.2
-  ticktockVolume: 0.3
-  robotNoiseVolume: 0.3
-  robotNoise2Volume: 0.3
-  voiceVolume: 0.3
-  introTriggerRange: 25
+  ticktockVolume: 0.2
+  robotNoiseVolume: 0.2
+  robotNoise2Volume: 0.2
+  voiceVolume: 1
+  introTriggerRange: 20
   randomRobotNoiseDelay: {x: 5, y: 10}
   randomAttackVoiceDelay: {x: 10, y: 20}
   audioMinDistance: 2
@@ -9522,6 +9522,8 @@ MonoBehaviour:
   circleDamage: 25
   circleLifetime: 2.5
   drawDebugRange: 0
+  alwaysFacePlayer: 1
+  faceTurnSpeed: 720
 --- !u!1 &2300200509507823584
 GameObject:
   m_ObjectHideFlags: 0

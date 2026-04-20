@@ -2396,7 +2396,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
-  m_Volume: 1
+  m_Volume: 0.589
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -2500,12 +2500,12 @@ MonoBehaviour:
   roomCenter: {fileID: 0}
   bossSpawnPoint: {fileID: 0}
   bossSpawnPointLedge: {fileID: 0}
-  wakeRange: 20
+  wakeRange: 15
   attackRange: 7
   phase4MinDistance: 7
   faceSpeed: 10
   baseMaxHP: 800
-  baseAttackDamage: 15
+  baseAttackDamage: 10
   attack1SweepSteps: 30
   attack1SweepDamageWindow: 0.35
   attack1TelegraphTime: 1.1
@@ -2524,11 +2524,8 @@ MonoBehaviour:
   version2PauseBeforeReverse: 0
   phase2LoopPause: 0
   explosionPrefab: {fileID: 1819053320288612861, guid: d67aaed3dcf449b4daa3ef9b53904d01, type: 3}
-  tentaclePrefab: {fileID: 3837758516165033896, guid: 34af29cc88d35e14d82a46a79f81efce, type: 3}
-  phase3TentacleCount: 5
-  tentacleSpawnRadiusNearPlayer: 4
-  tentacleCornerInset: 3
-  skeletonPrefab: {fileID: 7923153878451664929, guid: 9c02b42bcfccb5041961c7efbafa0f4e, type: 3}
+  phase4LoopPause: 7
+  skeletonPrefab: {fileID: 6772814150775830934, guid: c97a30f24e51ff94ab310a9680330b6a, type: 3}
   skeletonSpawnCount: 6
   navmeshSpawnRadius: 30
   bossHealthBarFill: {fileID: 0}
@@ -2556,6 +2553,20 @@ MonoBehaviour:
   oneShotSpatialBlend: 1
   oneShotMinDistance: 6
   oneShotMaxDistance: 35
+  introDialogueClip: {fileID: 8300000, guid: 552f1e6f5a1557e4dbed5200fde57e55, type: 3}
+  phase2DialogueClip: {fileID: 0}
+  phase4DialogueClip: {fileID: 0}
+  deathDialogueClip: {fileID: 0}
+  attackVoiceClips:
+  - {fileID: 8300000, guid: b9a7a8f8d3500534b9403426d902f5ac, type: 3}
+  - {fileID: 8300000, guid: 3cefc40bce363314db5155141f10a4eb, type: 3}
+  - {fileID: 8300000, guid: 4931e84a6acd3a74ba202d822e769834, type: 3}
+  - {fileID: 8300000, guid: 590aebc065ef50a4c93a67b1907f4a8e, type: 3}
+  attackVoiceIntervalRange: {x: 5, y: 10}
+  dialogueVolume: 1
+  deathDialogueVolume: 1
+  attackVoiceVolume: 1
+  deathFadeOutDuration: 0.25
   cannonVolume: 0.116
   ambientVolume: 0.122
   randomVoiceVolume: 0.116
