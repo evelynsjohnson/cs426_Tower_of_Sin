@@ -6,6 +6,9 @@ Group members: Evelyn Johnson, Mario Tinoco, Soham Hisabia
 
 
 ## Name: Soham Hisabia
+My main contribution to the beta release was on the boss side of the project, especially Lust, Pride, Sloth, and Mutant. In the alpha stage, these bosses did not work properly, so a big part of my work was fixing earlier issues and making them function more reliably in gameplay. I worked on correcting the boss animation controllers and improving the animation flow so idle, walking or chase, attack, special state, and death animations were connected more clearly and triggered at the right times. I also improved the encounter logic by tuning movement, aggro range, attack range, cooldowns, damage timing, and overall responsiveness so the bosses felt more polished and readable instead of inconsistent or unfinished.
+
+On the visual side, I also worked on boss materials and shader related polish in Unity. This included applying and correcting textures, checking material assignments, and improving the overall presentation of the boss models so they looked more complete for the beta release. I worked with boss specific visual polish in URP, including texture setup and material adjustments, and focused on making the bosses easier to read during walking, attacking, phase changes, and death. Overall, my work helped move the boss encounters from a rough alpha state, where they were not functioning properly, into a more stable, playable, and polished beta state by improving both their gameplay behavior and their visual presentation.
 
 
 ## Name: Evelyn Johnson
