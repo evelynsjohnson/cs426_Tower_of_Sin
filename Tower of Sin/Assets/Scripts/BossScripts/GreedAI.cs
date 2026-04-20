@@ -12,7 +12,6 @@ public class GreedAI : MonoBehaviour
         Dormant,
         Phase1,
         Phase2,
-        Phase3,
         Phase4,
         Dead
     }
@@ -61,12 +60,7 @@ public class GreedAI : MonoBehaviour
     [SerializeField] private float phase2LoopPause = 1f;
     [SerializeField] private GameObject explosionPrefab;
 
-    [Header("Phase 3")]
-    [SerializeField] private GameObject tentaclePrefab;
-    [SerializeField] private int phase3TentacleCount = 5;
-    [SerializeField] private float tentacleSpawnRadiusNearPlayer = 4f;
-    [SerializeField] private float tentacleCornerInset = 3f;
-    [SerializeField] private float phase3And4LoopPause = 7f;
+    [SerializeField] private float phase4LoopPause = 7f;
 
     [Header("Phase 4")]
     [SerializeField] private GameObject skeletonPrefab;
@@ -86,6 +80,10 @@ public class GreedAI : MonoBehaviour
     [SerializeField] private Color bossLightColor = new Color(1f, 0.55f, 0.12f);
     [SerializeField] private float lightIntensityMultiplier = 1.25f;
 
+    [Header("Phase 4")]
+    [SerializeField] private float phase4MinPhase1Interval = 4f;
+    [SerializeField] private float phase4MaxPhase1Interval = 9f;
+
     [Header("Audio")]
     [SerializeField] private AudioClip cannonFireClip;
     [SerializeField] private AudioClip bossLoopClip;
@@ -99,7 +97,6 @@ public class GreedAI : MonoBehaviour
 
     [SerializeField] private AudioClip introDialogueClip;
     [SerializeField] private AudioClip phase2DialogueClip;
-    [SerializeField] private AudioClip phase3DialogueClip;
     [SerializeField] private AudioClip phase4DialogueClip;
     [SerializeField] private AudioClip deathDialogueClip;
 
@@ -123,7 +120,6 @@ public class GreedAI : MonoBehaviour
     private Coroutine attackVoiceRoutine;
     private bool introDialoguePlayed = false;
     private bool phase2DialoguePlayed = false;
-    private bool phase3DialoguePlayed = false;
     private bool phase4DialoguePlayed = false;
     private int attackVoiceIndex = 0;
 
@@ -162,7 +158,6 @@ public class GreedAI : MonoBehaviour
     private bool isTransitioning = false;
     private bool phase2PatternToggle = false;
     private bool didEnterPhase2 = false;
-    private bool didEnterPhase3 = false;
     private bool didEnterPhase4 = false;
 
     private AudioSource loopAudioSource;
@@ -177,7 +172,6 @@ public class GreedAI : MonoBehaviour
 
     private readonly List<GameObject> spawnedTelegraphs = new List<GameObject>();
     private readonly List<GameObject> spawnedExplosions = new List<GameObject>();
-    private readonly List<GameObject> spawnedTentacles = new List<GameObject>();
     private readonly List<GameObject> spawnedSkeletons = new List<GameObject>();
 
     public void SetSceneReferences(
@@ -373,28 +367,6 @@ public class GreedAI : MonoBehaviour
         TakeDamage((float)amount);
     }
 
-    public void NotifyTentacleDied(GameObject tentacle)
-    {
-        if (tentacle != null)
-            spawnedTentacles.Remove(tentacle);
-
-        if (!isDead)
-        {
-            float hpLoss = maxHP * 0.05f;
-            currentHP = Mathf.Max(0f, currentHP - hpLoss);
-            UpdateBossUI();
-
-            if (currentHP <= 0f)
-            {
-                Die();
-                return;
-            }
-        }
-
-        if (didEnterPhase3 && spawnedTentacles.Count == 0)
-            StartCoroutine(EndPhase3Invulnerability());
-    }
-
     #endregion
 
     #region Boss Brain
@@ -419,9 +391,6 @@ public class GreedAI : MonoBehaviour
                     break;
                 case BossPhase.Phase2:
                     yield return HandlePhase2();
-                    break;
-                case BossPhase.Phase3:
-                    yield return HandlePhase3();
                     break;
                 case BossPhase.Phase4:
                     yield return HandlePhase4();
@@ -488,7 +457,6 @@ public class GreedAI : MonoBehaviour
             yield return null;
         }
     }
-
     private IEnumerator HandlePhase2()
     {
         if (!isTransitioning)
@@ -496,12 +464,6 @@ public class GreedAI : MonoBehaviour
 
         while (currentPhase == BossPhase.Phase2 && !isDead)
         {
-            if (requestedPhase == BossPhase.Phase3 && !isBusy)
-            {
-                currentPhase = BossPhase.Phase3;
-                yield break;
-            }
-
             if (requestedPhase == BossPhase.Phase4 && !isBusy)
             {
                 currentPhase = BossPhase.Phase4;
@@ -523,19 +485,15 @@ public class GreedAI : MonoBehaviour
         }
     }
 
-    private IEnumerator HandlePhase3()
+    private IEnumerator HandlePhase4()
     {
         if (!isTransitioning)
-            yield return StartCoroutine(TransitionToPhase3());
+            yield return StartCoroutine(TransitionToPhase4());
 
-        while (currentPhase == BossPhase.Phase3 && !isDead)
+        Coroutine extraPhase1Routine = StartCoroutine(Phase4RandomConeRoutine());
+
+        while (currentPhase == BossPhase.Phase4 && !isDead)
         {
-            if (requestedPhase == BossPhase.Phase4 && !isBusy)
-            {
-                currentPhase = BossPhase.Phase4;
-                yield break;
-            }
-
             if (!isBusy)
             {
                 if (!phase2PatternToggle)
@@ -544,47 +502,55 @@ public class GreedAI : MonoBehaviour
                     yield return StartCoroutine(Phase2Version2_Columns());
 
                 phase2PatternToggle = !phase2PatternToggle;
-                yield return new WaitForSeconds(phase3And4LoopPause);
-            }
-
-            yield return null;
-        }
-    }
-
-    private IEnumerator HandlePhase4()
-    {
-        if (!isTransitioning)
-            yield return StartCoroutine(TransitionToPhase4());
-
-        int cycleIndex = 0;
-
-        while (currentPhase == BossPhase.Phase4 && !isDead)
-        {
-            if (!isBusy)
-            {
-                switch (cycleIndex)
-                {
-                    case 0:
-                        yield return StartCoroutine(Attack1ConeSweep());
-                        break;
-                    case 1:
-                        yield return StartCoroutine(Phase2Version1_Columns());
-                        break;
-                    case 2:
-                        yield return StartCoroutine(Phase2Version2_Columns());
-                        break;
-                }
-
-                cycleIndex = (cycleIndex + 1) % 3;
-                yield return new WaitForSeconds(phase3And4LoopPause);
+                yield return new WaitForSeconds(phase4LoopPause);
             }
             else
             {
                 MaintainPhase4Distance();
+                yield return null;
             }
-
-            yield return null;
         }
+
+        if (extraPhase1Routine != null)
+            StopCoroutine(extraPhase1Routine);
+    }
+    private IEnumerator Phase4RandomConeRoutine()
+    {
+        while (currentPhase == BossPhase.Phase4 && !isDead)
+        {
+            float wait = Random.Range(phase4MinPhase1Interval, phase4MaxPhase1Interval);
+            yield return new WaitForSeconds(wait);
+
+            if (currentPhase != BossPhase.Phase4 || isDead)
+                yield break;
+
+            StartCoroutine(Phase4ConcurrentConeAttack());
+        }
+    }
+
+    private IEnumerator Phase4ConcurrentConeAttack()
+    {
+        if (isDead || player == null)
+            yield break;
+
+        Vector3 attackForward = GetFlatDirectionToPlayer();
+        if (attackForward.sqrMagnitude < 0.001f)
+            attackForward = transform.forward;
+
+        GameObject cone = SpawnConeTelegraph(attackForward);
+        yield return new WaitForSeconds(attack1TelegraphTime);
+
+        animator.ResetTrigger(AnimAttack1);
+        animator.SetTrigger(AnimAttack1);
+        PlayAttack1TriggerSound();
+
+        yield return new WaitForSeconds(attack1DamageStartDelay);
+        yield return StartCoroutine(DealSweepingConeDamage(attackForward));
+
+        yield return new WaitForSeconds(attack1ActiveTime);
+
+        if (cone != null)
+            Destroy(cone);
     }
 
     #endregion
@@ -618,13 +584,7 @@ public class GreedAI : MonoBehaviour
             requestedPhase = BossPhase.Phase2;
         }
 
-        if (!didEnterPhase3 && hpPercent <= 0.50f)
-        {
-            didEnterPhase3 = true;
-            requestedPhase = BossPhase.Phase3;
-        }
-
-        if (!didEnterPhase4 && hpPercent <= 0.25f)
+        if (!didEnterPhase4 && hpPercent <= 0.5f)
         {
             didEnterPhase4 = true;
             requestedPhase = BossPhase.Phase4;
@@ -668,35 +628,7 @@ public class GreedAI : MonoBehaviour
         isBusy = false;
         isTransitioning = false;
     }
-    private IEnumerator TransitionToPhase3()
-    {
-        isTransitioning = true;
-        isBusy = true;
-        isInvulnerable = true;
 
-        StopAttackVoiceCycle();
-        StopMoving();
-
-        Vector3 ledgeTarget = bossSpawnPointLedge != null
-            ? bossSpawnPointLedge.position
-            : (ledgePointOverride != null ? ledgePointOverride.position : transform.position);
-
-        SafeTeleportTo(ledgeTarget, false);
-
-        yield return StartCoroutine(FacePlayerOverTime(0.25f));
-
-        if (!phase3DialoguePlayed)
-        {
-            phase3DialoguePlayed = true;
-            yield return StartCoroutine(PlayPhaseDialogue(phase3DialogueClip));
-        }
-
-        SpawnPhase3Tentacles();
-        StartAttackVoiceCycle();
-
-        isBusy = false;
-        isTransitioning = false;
-    }
     private IEnumerator TransitionToPhase4()
     {
         isTransitioning = true;
@@ -721,18 +653,6 @@ public class GreedAI : MonoBehaviour
         isTransitioning = false;
     }
 
-    private IEnumerator EndPhase3Invulnerability()
-    {
-        isBusy = true;
-
-        Vector3 target = bossSpawnPoint != null ? bossSpawnPoint.position : originalSpawnPoint;
-        SafeTeleportTo(target, true);
-
-        yield return StartCoroutine(FacePlayerOverTime(0.25f));
-
-        isInvulnerable = false;
-        isBusy = false;
-    }
 
     private IEnumerator PlayPhaseDialogue(AudioClip clip)
     {
@@ -1220,45 +1140,6 @@ public class GreedAI : MonoBehaviour
 
     #region Phase 3 / 4 Spawning
 
-    private void SpawnPhase3Tentacles()
-    {
-        ClearDeadRefs(spawnedTentacles);
-
-        if (tentaclePrefab == null || roomCenter == null) return;
-
-        List<Vector3> positions = new List<Vector3>();
-
-        float halfW = roomWidth * 0.5f - tentacleCornerInset;
-        float halfL = roomLength * 0.5f - tentacleCornerInset;
-        Vector3 c = roomCenter.position;
-
-        positions.Add(new Vector3(c.x - halfW, c.y, c.z - halfL));
-        positions.Add(new Vector3(c.x - halfW, c.y, c.z + halfL));
-        positions.Add(new Vector3(c.x + halfW, c.y, c.z - halfL));
-        positions.Add(new Vector3(c.x + halfW, c.y, c.z + halfL));
-
-        if (player != null)
-        {
-            Vector3 nearPlayer = player.position + Random.insideUnitSphere * tentacleSpawnRadiusNearPlayer;
-            nearPlayer.y = c.y;
-            positions.Add(nearPlayer);
-        }
-
-        int count = Mathf.Min(phase3TentacleCount, positions.Count);
-        for (int i = 0; i < count; i++)
-        {
-            Vector3 valid = SampleNavmeshPoint(positions[i], 5f, positions[i]);
-            GameObject t = Instantiate(tentaclePrefab, valid, Quaternion.identity);
-            spawnedTentacles.Add(t);
-
-            TentacleBossUnit tentacleUnit = t.GetComponent<TentacleBossUnit>();
-            if (tentacleUnit != null)
-            {
-                float tentacleHP = 100f * (1f + 0.05f * GetScalingSteps());
-                tentacleUnit.Initialize(this, tentacleHP, player);
-            }
-        }
-    }
 
     private void SpawnPhase4Skeletons()
     {
@@ -1718,7 +1599,6 @@ public class GreedAI : MonoBehaviour
     {
         DestroyAllInList(spawnedTelegraphs);
         DestroyAllInList(spawnedExplosions);
-        DestroyAllInList(spawnedTentacles);
         DestroyAllInList(spawnedSkeletons);
     }
 

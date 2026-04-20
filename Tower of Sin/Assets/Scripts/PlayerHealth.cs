@@ -27,6 +27,9 @@ public class PlayerHealth : MonoBehaviour
     public CanvasGroup deathScreenCanvasGroup;
     public float uiFadeDuration = 1.5f;
 
+    public string prisonSceneName = "Prison_Scene";
+    private int lastAutoHealFloor = -1;
+
     private bool isDead = false;
     private bool deathRoutineRunning = false;
 
@@ -76,7 +79,37 @@ public class PlayerHealth : MonoBehaviour
                 targetFill,
                 Time.deltaTime * drainSpeed
             );
+
+            CheckPrisonFullHeal();
         }
+    }
+
+    private void CheckPrisonFullHeal()
+    {
+        if (isDead || deathRoutineRunning)
+            return;
+
+        if (SceneManager.GetActiveScene().name != prisonSceneName)
+            return;
+
+        int floor = FloorTextController.floorNumber;
+
+        // Heals on floors 5, 6, 10, 12, 15, 18, etc.
+        bool shouldHealThisFloor = (floor >= 0) && (floor % 5 == 0);
+
+        if (!shouldHealThisFloor)
+            return;
+
+        if (lastAutoHealFloor == floor)
+            return;
+
+        currentHealth = maxHealth;
+
+        if (healthBarFill != null)
+            healthBarFill.fillAmount = 1f;
+
+        UpdateUI();
+        lastAutoHealFloor = floor;
     }
 
     public void TakeDamage(float damage)
@@ -124,15 +157,11 @@ public class PlayerHealth : MonoBehaviour
 
         yield return new WaitForSeconds(deathAnimationDuration);
 
-        // If you fade UI in the same scene before changing scene, keep this:
         if (gameplayUICanvasGroup != null && deathScreenCanvasGroup != null)
             yield return StartCoroutine(FadeBetweenUI(gameplayUICanvasGroup, deathScreenCanvasGroup, uiFadeDuration));
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-
-        // Load death realm after death anim finishes
-        SceneManager.LoadScene("Death_Realm");
     }
 
     private IEnumerator FadeBetweenUI(CanvasGroup fromUI, CanvasGroup toUI, float duration)
@@ -222,6 +251,7 @@ public class PlayerHealth : MonoBehaviour
     {
         isDead = false;
         deathRoutineRunning = false;
+        lastAutoHealFloor = -1;
 
         float bonus = 0f;
         if (healthBonusText != null)
@@ -261,16 +291,20 @@ public class PlayerHealth : MonoBehaviour
             rb = GetComponent<Rigidbody>();
 
         if (rb != null)
+        {
             rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
 
-        // Reset animator so it leaves death state and returns to idle normally
         if (playerAnimator == null)
             playerAnimator = GetComponentInChildren<Animator>();
 
         if (playerAnimator != null)
         {
+            playerAnimator.ResetTrigger(deathTriggerName);
             playerAnimator.Rebind();
             playerAnimator.Update(0f);
+            playerAnimator.Play("Idle", 0, 0f);
         }
 
         if (gameplayUICanvasGroup != null)
@@ -278,6 +312,7 @@ public class PlayerHealth : MonoBehaviour
             gameplayUICanvasGroup.alpha = 1f;
             gameplayUICanvasGroup.interactable = true;
             gameplayUICanvasGroup.blocksRaycasts = true;
+            gameplayUICanvasGroup.gameObject.SetActive(true);
         }
 
         if (deathScreenCanvasGroup != null)
@@ -287,6 +322,9 @@ public class PlayerHealth : MonoBehaviour
             deathScreenCanvasGroup.blocksRaycasts = false;
             deathScreenCanvasGroup.gameObject.SetActive(false);
         }
+
+        isDead = false;
+        deathRoutineRunning = false;
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;

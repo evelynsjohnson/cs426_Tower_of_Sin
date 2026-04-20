@@ -4,30 +4,16 @@ using UnityEngine.SceneManagement;
 public class OnButtonSceneChange : MonoBehaviour
 {
     public string sceneName;
-
-    public void ChangeScene()
+    public void ChangeScene(string sceneName)
     {
-        SceneManager.sceneLoaded += OnSceneLoaded;
-        SceneManager.LoadScene(sceneName);
-    }
-
-    public void ChangeScene(string targetSceneName)
-    {
-        SceneManager.sceneLoaded += OnSceneLoaded;
-        SceneManager.LoadScene(targetSceneName);
-    }
-
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        // Reset player whenever entering the death realm or prison,
-        // depending on how your flow works.
-        if (scene.name == "Death_Realm" || scene.name == "Prison")
+        if (sceneName == "Death_Realm")
         {
-            PlayerHealth ph = FindAnyObjectByType<PlayerHealth>();
+            PlayerHealth ph = FindObjectOfType<PlayerHealth>();
             if (ph != null)
                 ph.ResetForNewRun();
         }
 
-        SceneManager.sceneLoaded -= OnSceneLoaded;
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(sceneName);
     }
 }

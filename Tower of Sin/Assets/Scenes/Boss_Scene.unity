@@ -4570,6 +4570,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BossSpawner
   bossPrefabs:
   - {fileID: 2730658654648739784, guid: aa70f419a48029e4eb9f6f8eeb6d3843, type: 3}
+  - {fileID: 2730658654648739784, guid: aa70f419a48029e4eb9f6f8eeb6d3843, type: 3}
   currentFloor: 5
   bossSpawnPoint: {fileID: 1215559007}
   bossSpawnPointLedge: {fileID: 336447961}
@@ -4586,8 +4587,8 @@ MonoBehaviour:
   bossHealthBarFill: {fileID: 1257694660}
   bossHealthText: {fileID: 1081649638}
   bossHealthUIRoot: {fileID: 877502356}
-  doorMoveDistanceZ: 1.5
-  doorMoveDuration: 1.5
+  doorMoveDistanceZ: 1
+  doorMoveDuration: 1
   roomCenter: {fileID: 203339400}
 --- !u!1001 &543942838
 PrefabInstance:
@@ -16513,14 +16514,14 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 213804884}
+  - {fileID: 1239185657}
+  - {fileID: 1769859245}
+  - {fileID: 203339400}
   - {fileID: 212245515}
   - {fileID: 556127281}
-  - {fileID: 1239185657}
-  - {fileID: 543289513}
   - {fileID: 524120951}
-  - {fileID: 213804884}
+  - {fileID: 543289513}
   - {fileID: 1284769641}
   - {fileID: 271797449}
-  - {fileID: 1769859245}
   - {fileID: 877502360}
-  - {fileID: 203339400}
