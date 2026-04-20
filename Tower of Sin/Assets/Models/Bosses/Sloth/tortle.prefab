@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 6f0e25127d371264db507316882cd02e, type: 3}
       propertyPath: m_LocalScale.x
-      value: 1
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6f0e25127d371264db507316882cd02e, type: 3}
       propertyPath: m_LocalScale.y
-      value: 1
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6f0e25127d371264db507316882cd02e, type: 3}
       propertyPath: m_LocalScale.z
-      value: 1
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6f0e25127d371264db507316882cd02e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -247,11 +247,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f87b2307d78ac2b4f95c88dce88d4094, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SlothAI
-  maxHealth: 900
+  maxHealth: 800
   phase2Threshold: 0.4
-  torporHealPercent: 0.2
-  torporDuration: 4
-  damageToPlayer: 20
+  torporHealPercent: 0
+  torporDuration: 2.5
+  damageToPlayer: 10
   uiCanvasObject: {fileID: 0}
   healthText: {fileID: 0}
   healthBarFill: {fileID: 0}
@@ -260,11 +260,13 @@ MonoBehaviour:
   bossHealthBarFill: {fileID: 0}
   bossHealthText: {fileID: 0}
   bossHealthUIRoot: {fileID: 0}
+  bossLightColor: {r: 0.45, g: 0.95, b: 0.45, a: 1}
+  lightIntensityMultiplier: 1.2
   walkSpeed: 1
   aggroRadius: 16
   attackRadius: 2.5
-  attackCooldown: 2.5
-  attackDmgDelay: 0.5
+  attackCooldown: 3.2
+  attackDmgDelay: 1
   hitSound: {fileID: 0}
   missSound: {fileID: 0}
   idleSound: {fileID: 0}

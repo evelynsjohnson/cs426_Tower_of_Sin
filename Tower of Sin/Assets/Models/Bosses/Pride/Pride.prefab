@@ -358,7 +358,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 11.016556, y: 0.000000049730843, z: -7.8681436}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1.5}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2198407103360253922}
@@ -557,11 +557,16 @@ MonoBehaviour:
   healthBarFill: {fileID: 0}
   healthDrainSpeed: 5
   deathAnimationDuration: 2.5
+  bossHealthBarFill: {fileID: 0}
+  bossHealthText: {fileID: 0}
+  bossHealthUIRoot: {fileID: 0}
+  bossLightColor: {r: 0.9, g: 0.65, b: 1, a: 1}
+  lightIntensityMultiplier: 1.2
   walkSpeed: 3.5
   aggroRadius: 18
   attackRadius: 2.5
-  attackCooldown: 2.2
-  attackDmgDelay: 0.45
+  attackCooldown: 3.2
+  attackDmgDelay: 1.05
   turnSpeedDegPerSec: 540
   bossMusic: {fileID: 0}
   hitSound: {fileID: 0}

@@ -59,12 +59,16 @@ public class PrideAI : MonoBehaviour
     [SerializeField] private TMP_Text bossHealthText;
     [SerializeField] private GameObject bossHealthUIRoot;
 
+    [Header("Arena Death Effects")]
+    [SerializeField] private Color bossLightColor = new Color(0.9f, 0.65f, 1f);
+    [SerializeField] private float lightIntensityMultiplier = 1.2f;
+
     // ── Movement ──────────────────────────────────────────────────────────────
     public float walkSpeed      = 3.5f;
     public float aggroRadius    = 18f;
     public float attackRadius   = 2.5f;
-    public float attackCooldown = 3.2f;  // >= attack anim length (3.0s Thrust Slash)
-    public float attackDmgDelay = 0.45f;
+    public float attackCooldown = 3.2f;  // keep >= attack anim length
+    public float attackDmgDelay = 1.05f; // damage lands closer to visible hand swing
     public float turnSpeedDegPerSec = 540f;
 
     // ── Audio ─────────────────────────────────────────────────────────────────
@@ -91,6 +95,17 @@ public class PrideAI : MonoBehaviour
     private AudioSource  walkSource;
     private AudioSource  musicSource;
     private bool warnedNavMeshMissing = false;
+    private Light[] arenaLights = new Light[0];
+    private Color[] originalLightColors = new Color[0];
+    private float[] originalLightIntensities = new float[0];
+    private Transform basementDoorLeftRef;
+    private Transform basementDoorRightRef;
+    private AudioSource gateAudioSourceRef;
+    private AudioClip largeGateClipRef;
+    private GameObject bossChestPrefabRef;
+    private Transform bossChestSpawnPointRef;
+    private float doorMoveDistanceZRef = 1f;
+    private float doorMoveDurationRef = 3f;
 
     // ── State ─────────────────────────────────────────────────────────────────
     private bool  isDead         = false;
@@ -101,13 +116,66 @@ public class PrideAI : MonoBehaviour
 
     public void SetupArenaReferences(Image sharedHealthBarFill, TMP_Text sharedHealthText, GameObject sharedHealthUIRoot)
     {
+        SetupArenaReferences(
+            sharedHealthBarFill,
+            sharedHealthText,
+            sharedHealthUIRoot,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            1f,
+            3f
+        );
+    }
+
+    public void SetupArenaReferences(
+        Image sharedHealthBarFill,
+        TMP_Text sharedHealthText,
+        GameObject sharedHealthUIRoot,
+        Light[] lights,
+        Transform basementDoorLeft,
+        Transform basementDoorRight,
+        AudioSource gateAudioSource,
+        AudioClip largeGateClip,
+        GameObject bossChestPrefab,
+        Transform bossChestSpawnPoint,
+        float doorMoveDistanceZ,
+        float doorMoveDuration)
+    {
         bossHealthBarFill = sharedHealthBarFill;
         bossHealthText = sharedHealthText;
         bossHealthUIRoot = sharedHealthUIRoot;
+        basementDoorLeftRef = basementDoorLeft;
+        basementDoorRightRef = basementDoorRight;
+        gateAudioSourceRef = gateAudioSource;
+        largeGateClipRef = largeGateClip;
+        bossChestPrefabRef = bossChestPrefab;
+        bossChestSpawnPointRef = bossChestSpawnPoint;
+        doorMoveDistanceZRef = Mathf.Abs(doorMoveDistanceZ);
+        doorMoveDurationRef = Mathf.Max(0.1f, doorMoveDuration);
+
+        arenaLights = lights ?? new Light[0];
+        originalLightColors = new Color[arenaLights.Length];
+        originalLightIntensities = new float[arenaLights.Length];
+        for (int i = 0; i < arenaLights.Length; i++)
+        {
+            if (arenaLights[i] == null) continue;
+            originalLightColors[i] = arenaLights[i].color;
+            originalLightIntensities[i] = arenaLights[i].intensity;
+        }
 
         if (bossHealthUIRoot != null)
             bossHealthUIRoot.SetActive(true);
 
+        // When shared top-of-screen boss UI is used, hide any world-space HP UI.
+        if ((bossHealthBarFill != null || bossHealthText != null || bossHealthUIRoot != null) && uiCanvasObject != null)
+            uiCanvasObject.SetActive(false);
+
+        ApplyBossLightState();
         SetHealthBarFillImmediate(1f);
         UpdateHealthUI();
     }
@@ -153,6 +221,8 @@ public class PrideAI : MonoBehaviour
 
         if (Camera.main != null) mainCamera = Camera.main.transform;
         if (bossHealthUIRoot != null) bossHealthUIRoot.SetActive(true);
+        if ((bossHealthBarFill != null || bossHealthText != null || bossHealthUIRoot != null) && uiCanvasObject != null)
+            uiCanvasObject.SetActive(false);
         SetHealthBarFillImmediate(1f);
 
         if (bossMusic != null)
@@ -297,7 +367,7 @@ public class PrideAI : MonoBehaviour
 
         animator?.SetTrigger("attack");
 
-        yield return new WaitForSeconds(attackDmgDelay);
+        yield return new WaitForSeconds(Mathf.Max(0f, attackDmgDelay));
 
         if (!isDead && player != null)
         {
@@ -313,7 +383,8 @@ public class PrideAI : MonoBehaviour
             }
         }
 
-        nextAttackTime = Time.time + (attackCooldown - attackDmgDelay);
+        // Cooldown starts after the attack resolves; do not shorten by windup delay.
+        nextAttackTime = Time.time + Mathf.Max(0.1f, attackCooldown);
         isAttacking    = false;
         if (agent != null) agent.isStopped = false;
     }
@@ -368,6 +439,7 @@ public class PrideAI : MonoBehaviour
         if (healthPotionPrefab != null && Random.Range(0f, 100f) < healthPotChance)
             Instantiate(healthPotionPrefab, transform.position + Vector3.up * 0.2f, Quaternion.identity);
 
+        HandleArenaDefeatRewards();
         StartCoroutine(HideUIAfterDeath());
     }
 
@@ -476,5 +548,71 @@ public class PrideAI : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, aggroRadius);
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, attackRadius);
+    }
+
+    private void HandleArenaDefeatRewards()
+    {
+        RestoreArenaLights();
+
+        if (bossChestPrefabRef != null && bossChestSpawnPointRef != null)
+            Instantiate(bossChestPrefabRef, bossChestSpawnPointRef.position, bossChestSpawnPointRef.rotation);
+
+        if (gateAudioSourceRef != null)
+        {
+            if (largeGateClipRef != null) gateAudioSourceRef.PlayOneShot(largeGateClipRef);
+            else gateAudioSourceRef.Play();
+        }
+
+        if (basementDoorLeftRef != null)
+            StartCoroutine(MoveDoorZ(basementDoorLeftRef, -doorMoveDistanceZRef, doorMoveDurationRef));
+        if (basementDoorRightRef != null)
+            StartCoroutine(MoveDoorZ(basementDoorRightRef, doorMoveDistanceZRef, doorMoveDurationRef));
+    }
+
+    private void ApplyBossLightState()
+    {
+        if (arenaLights == null) return;
+        for (int i = 0; i < arenaLights.Length; i++)
+        {
+            if (arenaLights[i] == null) continue;
+            arenaLights[i].color = bossLightColor;
+            float baseIntensity = (originalLightIntensities != null && i < originalLightIntensities.Length)
+                ? originalLightIntensities[i]
+                : arenaLights[i].intensity;
+            arenaLights[i].intensity = baseIntensity * lightIntensityMultiplier;
+        }
+    }
+
+    private void RestoreArenaLights()
+    {
+        if (arenaLights == null) return;
+        for (int i = 0; i < arenaLights.Length; i++)
+        {
+            if (arenaLights[i] == null) continue;
+            if (originalLightColors != null && i < originalLightColors.Length)
+                arenaLights[i].color = originalLightColors[i];
+            if (originalLightIntensities != null && i < originalLightIntensities.Length)
+                arenaLights[i].intensity = originalLightIntensities[i];
+        }
+    }
+
+    private IEnumerator MoveDoorZ(Transform door, float zOffset, float duration)
+    {
+        if (door == null) yield break;
+
+        Vector3 start = door.position;
+        Vector3 end = start + new Vector3(0f, 0f, zOffset);
+        float elapsed = 0f;
+        float safeDuration = Mathf.Max(0.1f, duration);
+
+        while (elapsed < safeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / safeDuration);
+            door.position = Vector3.Lerp(start, end, Mathf.SmoothStep(0f, 1f, t));
+            yield return null;
+        }
+
+        door.position = end;
     }
 }

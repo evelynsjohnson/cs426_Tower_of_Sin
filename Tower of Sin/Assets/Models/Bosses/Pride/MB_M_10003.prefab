@@ -2354,8 +2354,8 @@ MonoBehaviour:
   walkSpeed: 3.5
   aggroRadius: 18
   attackRadius: 2.5
-  attackCooldown: 2.2
-  attackDmgDelay: 0.45
+  attackCooldown: 3.2
+  attackDmgDelay: 1.05
   bossMusic: {fileID: 8300000, guid: ac46664cd57ac054492fdf44fa4a15a9, type: 3}
   hitSound: {fileID: 0}
   missSound: {fileID: 0}

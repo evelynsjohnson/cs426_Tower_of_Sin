@@ -9,20 +9,20 @@ using System.Collections;
 public class SlothAI : MonoBehaviour
 {
     // Health & phase
-    public float maxHealth = 900f;
+    public float maxHealth = 800f;
     private float currentHealth;
     private int currentPhase = 1;
     private bool phase2Triggered = false;
     public float phase2Threshold = 0.40f;
 
     // Torpor
-    public float torporHealPercent = 0.20f;
-    public float torporDuration = 4f;
+    public float torporHealPercent = 0.00f;
+    public float torporDuration = 2.5f;
     private bool torpored = false;
     private bool torporDone = false;
 
     // Damage
-    public float damageToPlayer = 20f;
+    public float damageToPlayer = 10f;
     private float damageMultiplier = 1f;
 
     // UI
@@ -37,12 +37,16 @@ public class SlothAI : MonoBehaviour
     [SerializeField] private TMP_Text bossHealthText;
     [SerializeField] private GameObject bossHealthUIRoot;
 
+    [Header("Arena Death Effects")]
+    [SerializeField] private Color bossLightColor = new Color(0.45f, 0.95f, 0.45f);
+    [SerializeField] private float lightIntensityMultiplier = 1.2f;
+
     // Movement
     public float walkSpeed = 1.0f;   // very slow
     public float aggroRadius = 16f;
     public float attackRadius = 2.5f;
-    public float attackCooldown = 2.5f;
-    public float attackDmgDelay = 0.5f;
+    public float attackCooldown = 3.2f;
+    public float attackDmgDelay = 1.0f;
 
     // Audio
     public AudioClip hitSound;
@@ -64,6 +68,17 @@ public class SlothAI : MonoBehaviour
     private PlayerHealth playerHealthScript;
     private AudioSource sfxSource;
     private AudioSource walkSource;
+    private Light[] arenaLights = new Light[0];
+    private Color[] originalLightColors = new Color[0];
+    private float[] originalLightIntensities = new float[0];
+    private Transform basementDoorLeftRef;
+    private Transform basementDoorRightRef;
+    private AudioSource gateAudioSourceRef;
+    private AudioClip largeGateClipRef;
+    private GameObject bossChestPrefabRef;
+    private Transform bossChestSpawnPointRef;
+    private float doorMoveDistanceZRef = 1f;
+    private float doorMoveDurationRef = 3f;
 
     // State
     private bool isDead = false;
@@ -80,19 +95,72 @@ public class SlothAI : MonoBehaviour
 
     public void SetupArenaReferences(Image sharedHealthBarFill, TMP_Text sharedHealthText, GameObject sharedHealthUIRoot)
     {
+        SetupArenaReferences(
+            sharedHealthBarFill,
+            sharedHealthText,
+            sharedHealthUIRoot,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            1f,
+            3f
+        );
+    }
+
+    public void SetupArenaReferences(
+        Image sharedHealthBarFill,
+        TMP_Text sharedHealthText,
+        GameObject sharedHealthUIRoot,
+        Light[] lights,
+        Transform basementDoorLeft,
+        Transform basementDoorRight,
+        AudioSource gateAudioSource,
+        AudioClip largeGateClip,
+        GameObject bossChestPrefab,
+        Transform bossChestSpawnPoint,
+        float doorMoveDistanceZ,
+        float doorMoveDuration)
+    {
         bossHealthBarFill = sharedHealthBarFill;
         bossHealthText = sharedHealthText;
         bossHealthUIRoot = sharedHealthUIRoot;
+        basementDoorLeftRef = basementDoorLeft;
+        basementDoorRightRef = basementDoorRight;
+        gateAudioSourceRef = gateAudioSource;
+        largeGateClipRef = largeGateClip;
+        bossChestPrefabRef = bossChestPrefab;
+        bossChestSpawnPointRef = bossChestSpawnPoint;
+        doorMoveDistanceZRef = Mathf.Abs(doorMoveDistanceZ);
+        doorMoveDurationRef = Mathf.Max(0.1f, doorMoveDuration);
+
+        arenaLights = lights ?? new Light[0];
+        originalLightColors = new Color[arenaLights.Length];
+        originalLightIntensities = new float[arenaLights.Length];
+        for (int i = 0; i < arenaLights.Length; i++)
+        {
+            if (arenaLights[i] == null) continue;
+            originalLightColors[i] = arenaLights[i].color;
+            originalLightIntensities[i] = arenaLights[i].intensity;
+        }
 
         if (bossHealthUIRoot != null)
             bossHealthUIRoot.SetActive(true);
 
+        // When shared top-of-screen boss UI is used, hide any world-space HP UI.
+        if ((bossHealthBarFill != null || bossHealthText != null || bossHealthUIRoot != null) && uiCanvasObject != null)
+            uiCanvasObject.SetActive(false);
+
+        ApplyBossLightState();
         UpdateHealthUI();
     }
 
     private float GetScaledHealthForFloor(int floor)
     {
-        return 900f + ((floor - 1) * 35f);
+        return 800f + ((floor - 1) * 25f);
     }
 
     void Start()
@@ -130,6 +198,8 @@ public class SlothAI : MonoBehaviour
 
         if (Camera.main != null) mainCamera = Camera.main.transform;
         if (bossHealthUIRoot != null) bossHealthUIRoot.SetActive(true);
+        if ((bossHealthBarFill != null || bossHealthText != null || bossHealthUIRoot != null) && uiCanvasObject != null)
+            uiCanvasObject.SetActive(false);
         SetHealthBarFillImmediate(1f);
 
         idleAudioTimer = Random.Range(3f, 7f);
@@ -212,12 +282,16 @@ public class SlothAI : MonoBehaviour
         animator?.SetTrigger("roar");
 
         float elapsed = 0f;
-        float healTotal = maxHealth * torporHealPercent;
+        float healTotal = Mathf.Max(0f, maxHealth * torporHealPercent);
+        float healPerSecond = torporDuration > 0f ? (healTotal / torporDuration) : 0f;
 
         while (elapsed < torporDuration)
         {
-            currentHealth = Mathf.Min(maxHealth, currentHealth + (healTotal / torporDuration) * Time.deltaTime);
-            UpdateHealthUI();
+            if (healPerSecond > 0f)
+            {
+                currentHealth = Mathf.Min(maxHealth, currentHealth + healPerSecond * Time.deltaTime);
+                UpdateHealthUI();
+            }
             elapsed += Time.deltaTime;
             yield return null;
         }
@@ -228,10 +302,10 @@ public class SlothAI : MonoBehaviour
 
         if (agent != null) agent.isStopped = false;
 
-        // wake up slightly stronger, still slow
+        // Wake up slightly stronger, but avoid sharp difficulty spikes.
         agent.speed = walkSpeed * 1.15f;
-        attackCooldown *= 0.8f;
-        damageMultiplier *= 1.2f;
+        attackCooldown *= 0.95f;
+        damageMultiplier *= 1.1f;
     }
 
     private IEnumerator AttackRoutine()
@@ -246,7 +320,7 @@ public class SlothAI : MonoBehaviour
         else
             animator?.SetTrigger("attack2");
 
-        yield return new WaitForSeconds(attackDmgDelay);
+        yield return new WaitForSeconds(Mathf.Max(0f, attackDmgDelay));
 
         if (!isDead && player != null)
         {
@@ -263,7 +337,7 @@ public class SlothAI : MonoBehaviour
             }
         }
 
-        nextAttackTime = Time.time + (attackCooldown - attackDmgDelay);
+        nextAttackTime = Time.time + Mathf.Max(0.1f, attackCooldown);
         isAttacking = false;
 
         if (agent != null) agent.isStopped = false;
@@ -301,6 +375,7 @@ public class SlothAI : MonoBehaviour
         if (healthPotionPrefab != null && Random.Range(0f, 100f) < healthPotChance)
             Instantiate(healthPotionPrefab, transform.position + Vector3.up * 0.2f, Quaternion.identity);
 
+        HandleArenaDefeatRewards();
         StartCoroutine(HideUIAfterDeath());
     }
 
@@ -380,5 +455,71 @@ public class SlothAI : MonoBehaviour
 
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, attackRadius);
+    }
+
+    private void HandleArenaDefeatRewards()
+    {
+        RestoreArenaLights();
+
+        if (bossChestPrefabRef != null && bossChestSpawnPointRef != null)
+            Instantiate(bossChestPrefabRef, bossChestSpawnPointRef.position, bossChestSpawnPointRef.rotation);
+
+        if (gateAudioSourceRef != null)
+        {
+            if (largeGateClipRef != null) gateAudioSourceRef.PlayOneShot(largeGateClipRef);
+            else gateAudioSourceRef.Play();
+        }
+
+        if (basementDoorLeftRef != null)
+            StartCoroutine(MoveDoorZ(basementDoorLeftRef, -doorMoveDistanceZRef, doorMoveDurationRef));
+        if (basementDoorRightRef != null)
+            StartCoroutine(MoveDoorZ(basementDoorRightRef, doorMoveDistanceZRef, doorMoveDurationRef));
+    }
+
+    private void ApplyBossLightState()
+    {
+        if (arenaLights == null) return;
+        for (int i = 0; i < arenaLights.Length; i++)
+        {
+            if (arenaLights[i] == null) continue;
+            arenaLights[i].color = bossLightColor;
+            float baseIntensity = (originalLightIntensities != null && i < originalLightIntensities.Length)
+                ? originalLightIntensities[i]
+                : arenaLights[i].intensity;
+            arenaLights[i].intensity = baseIntensity * lightIntensityMultiplier;
+        }
+    }
+
+    private void RestoreArenaLights()
+    {
+        if (arenaLights == null) return;
+        for (int i = 0; i < arenaLights.Length; i++)
+        {
+            if (arenaLights[i] == null) continue;
+            if (originalLightColors != null && i < originalLightColors.Length)
+                arenaLights[i].color = originalLightColors[i];
+            if (originalLightIntensities != null && i < originalLightIntensities.Length)
+                arenaLights[i].intensity = originalLightIntensities[i];
+        }
+    }
+
+    private IEnumerator MoveDoorZ(Transform door, float zOffset, float duration)
+    {
+        if (door == null) yield break;
+
+        Vector3 start = door.position;
+        Vector3 end = start + new Vector3(0f, 0f, zOffset);
+        float elapsed = 0f;
+        float safeDuration = Mathf.Max(0.1f, duration);
+
+        while (elapsed < safeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / safeDuration);
+            door.position = Vector3.Lerp(start, end, Mathf.SmoothStep(0f, 1f, t));
+            yield return null;
+        }
+
+        door.position = end;
     }
 }

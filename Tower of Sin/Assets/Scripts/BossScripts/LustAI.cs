@@ -58,13 +58,16 @@ public class LustAI : MonoBehaviour
     [SerializeField] private TMP_Text bossHealthText;
     [SerializeField] private GameObject bossHealthUIRoot;
 
+    [Header("Arena Death Effects")]
+    [SerializeField] private Color bossLightColor = new Color(1f, 0.4f, 0.8f);
+    [SerializeField] private float lightIntensityMultiplier = 1.2f;
+
     // ── Movement ──────────────────────────────────────────────────────────────
     public float walkSpeed      = 3.5f;   // slower chase speed for clearer walk readability
     public float aggroRadius    = 18f;
     public float attackRadius   = 2.5f;
     public float attackCooldown = 1.8f;
     public float attackDmgDelay = 0.35f;
-    public float minChaseTimeBeforeAttack = 0.35f;
     public float repathInterval = 0.2f;
     public float repathDistanceThreshold = 0.75f;
 
@@ -90,6 +93,17 @@ public class LustAI : MonoBehaviour
     private FirstPersonMovement playerMovement;
     private AudioSource  sfxSource;
     private AudioSource  walkSource;
+    private Light[] arenaLights = new Light[0];
+    private Color[] originalLightColors = new Color[0];
+    private float[] originalLightIntensities = new float[0];
+    private Transform basementDoorLeftRef;
+    private Transform basementDoorRightRef;
+    private AudioSource gateAudioSourceRef;
+    private AudioClip largeGateClipRef;
+    private GameObject bossChestPrefabRef;
+    private Transform bossChestSpawnPointRef;
+    private float doorMoveDistanceZRef = 1f;
+    private float doorMoveDurationRef = 3f;
 
     // ── State ─────────────────────────────────────────────────────────────────
     private bool  isDead         = false;
@@ -97,20 +111,72 @@ public class LustAI : MonoBehaviour
     private bool  hasSeenPlayer  = false;
     private float nextAttackTime = 0f;
     private float idleAudioTimer = 0f;
-    private float chaseTimer     = 0f;
     private float nextRepathTime = 0f;
     private Vector3 lastChaseTarget;
     private bool hasChaseTarget = false;
 
     public void SetupArenaReferences(Image sharedHealthBarFill, TMP_Text sharedHealthText, GameObject sharedHealthUIRoot)
     {
+        SetupArenaReferences(
+            sharedHealthBarFill,
+            sharedHealthText,
+            sharedHealthUIRoot,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            1f,
+            3f
+        );
+    }
+
+    public void SetupArenaReferences(
+        Image sharedHealthBarFill,
+        TMP_Text sharedHealthText,
+        GameObject sharedHealthUIRoot,
+        Light[] lights,
+        Transform basementDoorLeft,
+        Transform basementDoorRight,
+        AudioSource gateAudioSource,
+        AudioClip largeGateClip,
+        GameObject bossChestPrefab,
+        Transform bossChestSpawnPoint,
+        float doorMoveDistanceZ,
+        float doorMoveDuration)
+    {
         bossHealthBarFill = sharedHealthBarFill;
         bossHealthText = sharedHealthText;
         bossHealthUIRoot = sharedHealthUIRoot;
+        basementDoorLeftRef = basementDoorLeft;
+        basementDoorRightRef = basementDoorRight;
+        gateAudioSourceRef = gateAudioSource;
+        largeGateClipRef = largeGateClip;
+        bossChestPrefabRef = bossChestPrefab;
+        bossChestSpawnPointRef = bossChestSpawnPoint;
+        doorMoveDistanceZRef = Mathf.Abs(doorMoveDistanceZ);
+        doorMoveDurationRef = Mathf.Max(0.1f, doorMoveDuration);
+
+        arenaLights = lights ?? new Light[0];
+        originalLightColors = new Color[arenaLights.Length];
+        originalLightIntensities = new float[arenaLights.Length];
+        for (int i = 0; i < arenaLights.Length; i++)
+        {
+            if (arenaLights[i] == null) continue;
+            originalLightColors[i] = arenaLights[i].color;
+            originalLightIntensities[i] = arenaLights[i].intensity;
+        }
 
         if (bossHealthUIRoot != null)
             bossHealthUIRoot.SetActive(true);
 
+        // When shared top-of-screen boss UI is used, hide any world-space HP UI.
+        if ((bossHealthBarFill != null || bossHealthText != null || bossHealthUIRoot != null) && uiCanvasObject != null)
+            uiCanvasObject.SetActive(false);
+
+        ApplyBossLightState();
         SetHealthBarFillImmediate(1f);
         UpdateHealthUI();
     }
@@ -150,6 +216,8 @@ public class LustAI : MonoBehaviour
 
         if (Camera.main != null) mainCamera = Camera.main.transform;
         if (bossHealthUIRoot != null) bossHealthUIRoot.SetActive(true);
+        if ((bossHealthBarFill != null || bossHealthText != null || bossHealthUIRoot != null) && uiCanvasObject != null)
+            uiCanvasObject.SetActive(false);
         SetHealthBarFillImmediate(1f);
 
         idleAudioTimer = Random.Range(3f, 7f);
@@ -192,12 +260,7 @@ public class LustAI : MonoBehaviour
         {
             FacePlayer();
 
-            if (dist > attackRadius)
-            {
-                chaseTimer += dt;
-            }
-
-            if (dist <= attackRadius && Time.time >= nextAttackTime && chaseTimer >= minChaseTimeBeforeAttack)
+            if (dist <= attackRadius && Time.time >= nextAttackTime)
                 StartCoroutine(AttackRoutine());
             else if (dist > attackRadius)
             {
@@ -227,7 +290,6 @@ public class LustAI : MonoBehaviour
         }
         else
         {
-            chaseTimer = 0f;
             nextRepathTime = 0f;
             hasChaseTarget = false;
             agent.isStopped = true;
@@ -337,7 +399,6 @@ public class LustAI : MonoBehaviour
 
         nextAttackTime = Time.time + (attackCooldown - attackDmgDelay);
         isAttacking    = false;
-        chaseTimer     = 0f;
         if (agent != null) agent.isStopped = false;
     }
 
@@ -381,6 +442,7 @@ public class LustAI : MonoBehaviour
         if (healthPotionPrefab != null && Random.Range(0f, 100f) < healthPotChance)
             Instantiate(healthPotionPrefab, transform.position + Vector3.up * 0.2f, Quaternion.identity);
 
+        HandleArenaDefeatRewards();
         StartCoroutine(HideUIAfterDeath());
     }
 
@@ -454,6 +516,72 @@ public class LustAI : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, aggroRadius);
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, attackRadius);
+    }
+
+    private void HandleArenaDefeatRewards()
+    {
+        RestoreArenaLights();
+
+        if (bossChestPrefabRef != null && bossChestSpawnPointRef != null)
+            Instantiate(bossChestPrefabRef, bossChestSpawnPointRef.position, bossChestSpawnPointRef.rotation);
+
+        if (gateAudioSourceRef != null)
+        {
+            if (largeGateClipRef != null) gateAudioSourceRef.PlayOneShot(largeGateClipRef);
+            else gateAudioSourceRef.Play();
+        }
+
+        if (basementDoorLeftRef != null)
+            StartCoroutine(MoveDoorZ(basementDoorLeftRef, -doorMoveDistanceZRef, doorMoveDurationRef));
+        if (basementDoorRightRef != null)
+            StartCoroutine(MoveDoorZ(basementDoorRightRef, doorMoveDistanceZRef, doorMoveDurationRef));
+    }
+
+    private void ApplyBossLightState()
+    {
+        if (arenaLights == null) return;
+        for (int i = 0; i < arenaLights.Length; i++)
+        {
+            if (arenaLights[i] == null) continue;
+            arenaLights[i].color = bossLightColor;
+            float baseIntensity = (originalLightIntensities != null && i < originalLightIntensities.Length)
+                ? originalLightIntensities[i]
+                : arenaLights[i].intensity;
+            arenaLights[i].intensity = baseIntensity * lightIntensityMultiplier;
+        }
+    }
+
+    private void RestoreArenaLights()
+    {
+        if (arenaLights == null) return;
+        for (int i = 0; i < arenaLights.Length; i++)
+        {
+            if (arenaLights[i] == null) continue;
+            if (originalLightColors != null && i < originalLightColors.Length)
+                arenaLights[i].color = originalLightColors[i];
+            if (originalLightIntensities != null && i < originalLightIntensities.Length)
+                arenaLights[i].intensity = originalLightIntensities[i];
+        }
+    }
+
+    private IEnumerator MoveDoorZ(Transform door, float zOffset, float duration)
+    {
+        if (door == null) yield break;
+
+        Vector3 start = door.position;
+        Vector3 end = start + new Vector3(0f, 0f, zOffset);
+        float elapsed = 0f;
+        float safeDuration = Mathf.Max(0.1f, duration);
+
+        while (elapsed < safeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / safeDuration);
+            door.position = Vector3.Lerp(start, end, Mathf.SmoothStep(0f, 1f, t));
+            yield return null;
+        }
+
+        door.position = end;
     }
 }
 

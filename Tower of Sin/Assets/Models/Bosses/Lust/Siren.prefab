@@ -9,6 +9,18 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: f5bc7467adaca4248931bf2c690f3873, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: f5bc7467adaca4248931bf2c690f3873, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: f5bc7467adaca4248931bf2c690f3873, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: f5bc7467adaca4248931bf2c690f3873, type: 3}
       propertyPath: m_LocalPosition.x
       value: 11.559827
       objectReference: {fileID: 0}
@@ -262,12 +274,19 @@ MonoBehaviour:
   healthBarFill: {fileID: 0}
   healthDrainSpeed: 5
   deathAnimationDuration: 2.5
+  bossHealthBarFill: {fileID: 0}
+  bossHealthText: {fileID: 0}
+  bossHealthUIRoot: {fileID: 0}
+  bossLightColor: {r: 1, g: 0.4, b: 0.8, a: 1}
+  lightIntensityMultiplier: 1.2
   walkSpeed: 6
   aggroRadius: 18
   attackRadius: 2.5
   attackCooldown: 1.8
   attackDmgDelay: 0.35
   minChaseTimeBeforeAttack: 0.55
+  repathInterval: 0.2
+  repathDistanceThreshold: 0.75
   hitSound: {fileID: 0}
   missSound: {fileID: 0}
   idleSound: {fileID: 0}

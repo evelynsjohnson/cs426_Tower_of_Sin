@@ -63,6 +63,10 @@ public class WrathAI : MonoBehaviour
     [SerializeField] private TMP_Text bossHealthText;
     [SerializeField] private GameObject bossHealthUIRoot;
 
+    [Header("Arena Death Effects")]
+    [SerializeField] private Color bossLightColor = new Color(1f, 0.45f, 0.25f);
+    [SerializeField] private float lightIntensityMultiplier = 1.2f;
+
     // ── Movement ──────────────────────────────────────────────────────────────
     public float walkSpeed          = 3.0f;
     public float runSpeed           = 5.5f;
@@ -118,6 +122,17 @@ public class WrathAI : MonoBehaviour
     private AudioSource  sfxSource;
     private AudioSource  walkSource;
     private AudioSource  musicSource;
+    private Light[] arenaLights = new Light[0];
+    private Color[] originalLightColors = new Color[0];
+    private float[] originalLightIntensities = new float[0];
+    private Transform basementDoorLeftRef;
+    private Transform basementDoorRightRef;
+    private AudioSource gateAudioSourceRef;
+    private AudioClip largeGateClipRef;
+    private GameObject bossChestPrefabRef;
+    private Transform bossChestSpawnPointRef;
+    private float doorMoveDistanceZRef = 1f;
+    private float doorMoveDurationRef = 3f;
 
     // ── Runtime state ─────────────────────────────────────────────────────────
     private bool       isDead            = false;
@@ -132,13 +147,66 @@ public class WrathAI : MonoBehaviour
 
     public void SetupArenaReferences(Image sharedHealthBarFill, TMP_Text sharedHealthText, GameObject sharedHealthUIRoot)
     {
+        SetupArenaReferences(
+            sharedHealthBarFill,
+            sharedHealthText,
+            sharedHealthUIRoot,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            1f,
+            3f
+        );
+    }
+
+    public void SetupArenaReferences(
+        Image sharedHealthBarFill,
+        TMP_Text sharedHealthText,
+        GameObject sharedHealthUIRoot,
+        Light[] lights,
+        Transform basementDoorLeft,
+        Transform basementDoorRight,
+        AudioSource gateAudioSource,
+        AudioClip largeGateClip,
+        GameObject bossChestPrefab,
+        Transform bossChestSpawnPoint,
+        float doorMoveDistanceZ,
+        float doorMoveDuration)
+    {
         bossHealthBarFill = sharedHealthBarFill;
         bossHealthText = sharedHealthText;
         bossHealthUIRoot = sharedHealthUIRoot;
+        basementDoorLeftRef = basementDoorLeft;
+        basementDoorRightRef = basementDoorRight;
+        gateAudioSourceRef = gateAudioSource;
+        largeGateClipRef = largeGateClip;
+        bossChestPrefabRef = bossChestPrefab;
+        bossChestSpawnPointRef = bossChestSpawnPoint;
+        doorMoveDistanceZRef = Mathf.Abs(doorMoveDistanceZ);
+        doorMoveDurationRef = Mathf.Max(0.1f, doorMoveDuration);
+
+        arenaLights = lights ?? new Light[0];
+        originalLightColors = new Color[arenaLights.Length];
+        originalLightIntensities = new float[arenaLights.Length];
+        for (int i = 0; i < arenaLights.Length; i++)
+        {
+            if (arenaLights[i] == null) continue;
+            originalLightColors[i] = arenaLights[i].color;
+            originalLightIntensities[i] = arenaLights[i].intensity;
+        }
 
         if (bossHealthUIRoot != null)
             bossHealthUIRoot.SetActive(true);
 
+        // When shared top-of-screen boss UI is used, hide any world-space HP UI.
+        if ((bossHealthBarFill != null || bossHealthText != null || bossHealthUIRoot != null) && uiCanvasObject != null)
+            uiCanvasObject.SetActive(false);
+
+        ApplyBossLightState();
         SetHealthBarFillImmediate(1f);
         UpdateHealthUI();
     }
@@ -178,6 +246,8 @@ public class WrathAI : MonoBehaviour
 
         if (Camera.main != null) mainCamera = Camera.main.transform;
         if (bossHealthUIRoot != null) bossHealthUIRoot.SetActive(true);
+        if ((bossHealthBarFill != null || bossHealthText != null || bossHealthUIRoot != null) && uiCanvasObject != null)
+            uiCanvasObject.SetActive(false);
         SetHealthBarFillImmediate(1f);
 
         if (bossMusic != null)
@@ -590,6 +660,7 @@ public class WrathAI : MonoBehaviour
         if (healthPotionPrefab != null && Random.Range(0f, 100f) < healthPotChance)
             Instantiate(healthPotionPrefab, transform.position + Vector3.up * 0.2f, Quaternion.identity);
 
+        HandleArenaDefeatRewards();
         StartCoroutine(HideUIAfterDeath());
     }
 
@@ -673,5 +744,71 @@ public class WrathAI : MonoBehaviour
 
         Gizmos.color = Color.magenta;
         Gizmos.DrawWireSphere(transform.position, slamRadius);
+    }
+
+    private void HandleArenaDefeatRewards()
+    {
+        RestoreArenaLights();
+
+        if (bossChestPrefabRef != null && bossChestSpawnPointRef != null)
+            Instantiate(bossChestPrefabRef, bossChestSpawnPointRef.position, bossChestSpawnPointRef.rotation);
+
+        if (gateAudioSourceRef != null)
+        {
+            if (largeGateClipRef != null) gateAudioSourceRef.PlayOneShot(largeGateClipRef);
+            else gateAudioSourceRef.Play();
+        }
+
+        if (basementDoorLeftRef != null)
+            StartCoroutine(MoveDoorZ(basementDoorLeftRef, -doorMoveDistanceZRef, doorMoveDurationRef));
+        if (basementDoorRightRef != null)
+            StartCoroutine(MoveDoorZ(basementDoorRightRef, doorMoveDistanceZRef, doorMoveDurationRef));
+    }
+
+    private void ApplyBossLightState()
+    {
+        if (arenaLights == null) return;
+        for (int i = 0; i < arenaLights.Length; i++)
+        {
+            if (arenaLights[i] == null) continue;
+            arenaLights[i].color = bossLightColor;
+            float baseIntensity = (originalLightIntensities != null && i < originalLightIntensities.Length)
+                ? originalLightIntensities[i]
+                : arenaLights[i].intensity;
+            arenaLights[i].intensity = baseIntensity * lightIntensityMultiplier;
+        }
+    }
+
+    private void RestoreArenaLights()
+    {
+        if (arenaLights == null) return;
+        for (int i = 0; i < arenaLights.Length; i++)
+        {
+            if (arenaLights[i] == null) continue;
+            if (originalLightColors != null && i < originalLightColors.Length)
+                arenaLights[i].color = originalLightColors[i];
+            if (originalLightIntensities != null && i < originalLightIntensities.Length)
+                arenaLights[i].intensity = originalLightIntensities[i];
+        }
+    }
+
+    private IEnumerator MoveDoorZ(Transform door, float zOffset, float duration)
+    {
+        if (door == null) yield break;
+
+        Vector3 start = door.position;
+        Vector3 end = start + new Vector3(0f, 0f, zOffset);
+        float elapsed = 0f;
+        float safeDuration = Mathf.Max(0.1f, duration);
+
+        while (elapsed < safeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / safeDuration);
+            door.position = Vector3.Lerp(start, end, Mathf.SmoothStep(0f, 1f, t));
+            yield return null;
+        }
+
+        door.position = end;
     }
 }

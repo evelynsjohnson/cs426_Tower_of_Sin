@@ -178,7 +178,16 @@ public class BossSpawner : MonoBehaviour
             slothAI.SetupArenaReferences(
                 bossHealthBarFill,
                 bossHealthText,
-                bossHealthUIRoot
+                bossHealthUIRoot,
+                arenaLights,
+                basementDoorLeft,
+                basementDoorRight,
+                gateAudioSource,
+                largeGateClip,
+                bossChestPrefab,
+                bossChestSpawnPoint,
+                doorMoveDistanceZ,
+                doorMoveDuration
             );
         }
         else if (lustAI != null)
@@ -186,7 +195,16 @@ public class BossSpawner : MonoBehaviour
             lustAI.SetupArenaReferences(
                 bossHealthBarFill,
                 bossHealthText,
-                bossHealthUIRoot
+                bossHealthUIRoot,
+                arenaLights,
+                basementDoorLeft,
+                basementDoorRight,
+                gateAudioSource,
+                largeGateClip,
+                bossChestPrefab,
+                bossChestSpawnPoint,
+                doorMoveDistanceZ,
+                doorMoveDuration
             );
         }
         else if (prideAI != null)
@@ -194,7 +212,16 @@ public class BossSpawner : MonoBehaviour
             prideAI.SetupArenaReferences(
                 bossHealthBarFill,
                 bossHealthText,
-                bossHealthUIRoot
+                bossHealthUIRoot,
+                arenaLights,
+                basementDoorLeft,
+                basementDoorRight,
+                gateAudioSource,
+                largeGateClip,
+                bossChestPrefab,
+                bossChestSpawnPoint,
+                doorMoveDistanceZ,
+                doorMoveDuration
             );
         }
         else if (wrathAI != null)
@@ -202,7 +229,16 @@ public class BossSpawner : MonoBehaviour
             wrathAI.SetupArenaReferences(
                 bossHealthBarFill,
                 bossHealthText,
-                bossHealthUIRoot
+                bossHealthUIRoot,
+                arenaLights,
+                basementDoorLeft,
+                basementDoorRight,
+                gateAudioSource,
+                largeGateClip,
+                bossChestPrefab,
+                bossChestSpawnPoint,
+                doorMoveDistanceZ,
+                doorMoveDuration
             );
         }
         else
