@@ -53,12 +53,20 @@ public class LustAI : MonoBehaviour
     public float       healthDrainSpeed       = 5f;
     public float       deathAnimationDuration = 2.5f;
 
+    [Header("Shared Boss UI (Optional)")]
+    [SerializeField] private Image bossHealthBarFill;
+    [SerializeField] private TMP_Text bossHealthText;
+    [SerializeField] private GameObject bossHealthUIRoot;
+
     // ── Movement ──────────────────────────────────────────────────────────────
-    public float walkSpeed      = 6.0f;   // very fast
+    public float walkSpeed      = 3.5f;   // slower chase speed for clearer walk readability
     public float aggroRadius    = 18f;
     public float attackRadius   = 2.5f;
     public float attackCooldown = 1.8f;
     public float attackDmgDelay = 0.35f;
+    public float minChaseTimeBeforeAttack = 0.35f;
+    public float repathInterval = 0.2f;
+    public float repathDistanceThreshold = 0.75f;
 
     // ── Audio ─────────────────────────────────────────────────────────────────
     public AudioClip hitSound;
@@ -89,6 +97,23 @@ public class LustAI : MonoBehaviour
     private bool  hasSeenPlayer  = false;
     private float nextAttackTime = 0f;
     private float idleAudioTimer = 0f;
+    private float chaseTimer     = 0f;
+    private float nextRepathTime = 0f;
+    private Vector3 lastChaseTarget;
+    private bool hasChaseTarget = false;
+
+    public void SetupArenaReferences(Image sharedHealthBarFill, TMP_Text sharedHealthText, GameObject sharedHealthUIRoot)
+    {
+        bossHealthBarFill = sharedHealthBarFill;
+        bossHealthText = sharedHealthText;
+        bossHealthUIRoot = sharedHealthUIRoot;
+
+        if (bossHealthUIRoot != null)
+            bossHealthUIRoot.SetActive(true);
+
+        SetHealthBarFillImmediate(1f);
+        UpdateHealthUI();
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
     void Start()
@@ -124,7 +149,8 @@ public class LustAI : MonoBehaviour
         }
 
         if (Camera.main != null) mainCamera = Camera.main.transform;
-        if (healthBarFill != null) healthBarFill.fillAmount = 1f;
+        if (bossHealthUIRoot != null) bossHealthUIRoot.SetActive(true);
+        SetHealthBarFillImmediate(1f);
 
         idleAudioTimer = Random.Range(3f, 7f);
         UpdateHealthUI();
@@ -166,24 +192,44 @@ public class LustAI : MonoBehaviour
         {
             FacePlayer();
 
-            if (dist <= attackRadius && Time.time >= nextAttackTime)
+            if (dist > attackRadius)
+            {
+                chaseTimer += dt;
+            }
+
+            if (dist <= attackRadius && Time.time >= nextAttackTime && chaseTimer >= minChaseTimeBeforeAttack)
                 StartCoroutine(AttackRoutine());
             else if (dist > attackRadius)
             {
                 agent.isStopped = false;
-                agent.SetDestination(player.position);
+                if (Time.time >= nextRepathTime)
+                {
+                    Vector3 chaseTarget = player.position;
+                    float thresholdSqr = repathDistanceThreshold * repathDistanceThreshold;
+                    if (!hasChaseTarget || (chaseTarget - lastChaseTarget).sqrMagnitude >= thresholdSqr)
+                    {
+                        agent.SetDestination(chaseTarget);
+                        lastChaseTarget = chaseTarget;
+                        hasChaseTarget = true;
+                    }
+                    nextRepathTime = Time.time + repathInterval;
+                }
                 animator?.SetBool("isWalking", true);
                 if (!walkSource.isPlaying) walkSource.Play();
             }
             else
             {
                 agent.isStopped = true;
+                nextRepathTime = 0f;
                 animator?.SetBool("isWalking", false);
                 walkSource.Pause();
             }
         }
         else
         {
+            chaseTimer = 0f;
+            nextRepathTime = 0f;
+            hasChaseTarget = false;
             agent.isStopped = true;
             animator?.SetBool("isWalking", false);
             walkSource.Pause();
@@ -192,6 +238,9 @@ public class LustAI : MonoBehaviour
 
     void LateUpdate()
     {
+        if (bossHealthBarFill != null)
+            return;
+
         if (uiCanvasObject != null && mainCamera != null)
             uiCanvasObject.transform.LookAt(uiCanvasObject.transform.position + mainCamera.forward);
     }
@@ -249,6 +298,8 @@ public class LustAI : MonoBehaviour
         {
             transform.position = hit.position;
             if (agent != null) agent.Warp(hit.position);
+            hasChaseTarget = false;
+            nextRepathTime = 0f;
         }
 
         if (teleportSound != null) sfxSource.PlayOneShot(teleportSound);
@@ -286,6 +337,7 @@ public class LustAI : MonoBehaviour
 
         nextAttackTime = Time.time + (attackCooldown - attackDmgDelay);
         isAttacking    = false;
+        chaseTimer     = 0f;
         if (agent != null) agent.isStopped = false;
     }
 
@@ -321,7 +373,8 @@ public class LustAI : MonoBehaviour
         if (agent.enabled) agent.enabled = false;
         GetComponent<Collider>().enabled  = false;
 
-        if (healthText != null) healthText.text = "";
+        TMP_Text targetText = bossHealthText != null ? bossHealthText : healthText;
+        if (targetText != null) targetText.text = "";
         walkSource?.Stop();
         sfxSource?.Stop();
 
@@ -334,7 +387,8 @@ public class LustAI : MonoBehaviour
     private IEnumerator HideUIAfterDeath()
     {
         yield return new WaitForSeconds(deathAnimationDuration);
-        if (uiCanvasObject != null) uiCanvasObject.SetActive(false);
+        if (bossHealthUIRoot != null) bossHealthUIRoot.SetActive(false);
+        else if (uiCanvasObject != null) uiCanvasObject.SetActive(false);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -370,14 +424,28 @@ public class LustAI : MonoBehaviour
 
     private void UpdateHealthBar()
     {
-        if (healthBarFill == null) return;
-        healthBarFill.fillAmount = Mathf.Lerp(
-            healthBarFill.fillAmount, currentHealth / maxHealth, Time.deltaTime * healthDrainSpeed);
+        Image targetFill = bossHealthBarFill != null ? bossHealthBarFill : healthBarFill;
+        if (targetFill == null) return;
+
+        targetFill.fillAmount = Mathf.Lerp(
+            targetFill.fillAmount,
+            currentHealth / maxHealth,
+            Time.deltaTime * healthDrainSpeed
+        );
+    }
+
+    private void SetHealthBarFillImmediate(float value)
+    {
+        Image targetFill = bossHealthBarFill != null ? bossHealthBarFill : healthBarFill;
+        if (targetFill != null)
+            targetFill.fillAmount = value;
     }
 
     private void UpdateHealthUI()
     {
-        if (healthText != null) healthText.text = (int)currentHealth + "/" + (int)maxHealth;
+        TMP_Text targetText = bossHealthText != null ? bossHealthText : healthText;
+        if (targetText != null)
+            targetText.text = (int)currentHealth + "/" + (int)maxHealth;
     }
 
     private void OnDrawGizmosSelected()

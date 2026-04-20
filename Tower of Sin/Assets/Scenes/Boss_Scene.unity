@@ -4570,6 +4570,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BossSpawner
   bossPrefabs:
   - {fileID: 2730658654648739784, guid: aa70f419a48029e4eb9f6f8eeb6d3843, type: 3}
+  - {fileID: 6576849777231807368, guid: 7cddfa90880447c45bcd9f4bf37e093b, type: 3}
+  - {fileID: 1817817437369553006, guid: aa1d3c8b1f447594cab6003c063b0539, type: 3}
+  - {fileID: 167928034052775675, guid: 9b37c6335e4093543b95a1c30e58415a, type: 3}
+  - {fileID: 9060477573423771446, guid: 363f5c164a4dd8949a6a57f987008940, type: 3}
   currentFloor: 5
   bossSpawnPoint: {fileID: 1215559007}
   bossSpawnPointLedge: {fileID: 336447961}

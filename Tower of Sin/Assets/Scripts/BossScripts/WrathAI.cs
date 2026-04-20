@@ -58,6 +58,11 @@ public class WrathAI : MonoBehaviour
     public float         healthDrainSpeed       = 5f;
     public float         deathAnimationDuration = 2.5f;
 
+    [Header("Shared Boss UI (Optional)")]
+    [SerializeField] private Image bossHealthBarFill;
+    [SerializeField] private TMP_Text bossHealthText;
+    [SerializeField] private GameObject bossHealthUIRoot;
+
     // ── Movement ──────────────────────────────────────────────────────────────
     public float walkSpeed          = 3.0f;
     public float runSpeed           = 5.5f;
@@ -125,6 +130,19 @@ public class WrathAI : MonoBehaviour
     private float   lastDamageTime       = -999f;
     private float   healDelay            = 8f;
 
+    public void SetupArenaReferences(Image sharedHealthBarFill, TMP_Text sharedHealthText, GameObject sharedHealthUIRoot)
+    {
+        bossHealthBarFill = sharedHealthBarFill;
+        bossHealthText = sharedHealthText;
+        bossHealthUIRoot = sharedHealthUIRoot;
+
+        if (bossHealthUIRoot != null)
+            bossHealthUIRoot.SetActive(true);
+
+        SetHealthBarFillImmediate(1f);
+        UpdateHealthUI();
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     //  Lifecycle
     // ─────────────────────────────────────────────────────────────────────────
@@ -159,7 +177,8 @@ public class WrathAI : MonoBehaviour
         }
 
         if (Camera.main != null) mainCamera = Camera.main.transform;
-        if (healthBarFill != null) healthBarFill.fillAmount = 1f;
+        if (bossHealthUIRoot != null) bossHealthUIRoot.SetActive(true);
+        SetHealthBarFillImmediate(1f);
 
         if (bossMusic != null)
         {
@@ -201,6 +220,9 @@ public class WrathAI : MonoBehaviour
 
     void LateUpdate()
     {
+        if (bossHealthBarFill != null)
+            return;
+
         if (uiCanvasObject != null && mainCamera != null)
             uiCanvasObject.transform.LookAt(uiCanvasObject.transform.position + mainCamera.forward);
     }
@@ -560,7 +582,8 @@ public class WrathAI : MonoBehaviour
         if (agent.enabled) agent.enabled = false;
         GetComponent<Collider>().enabled  = false;
 
-        if (healthText  != null) healthText.text = "";
+        TMP_Text targetText = bossHealthText != null ? bossHealthText : healthText;
+        if (targetText != null) targetText.text = "";
         if (walkSource  != null) walkSource.Stop();
         if (sfxSource   != null) sfxSource.Stop();
 
@@ -573,7 +596,8 @@ public class WrathAI : MonoBehaviour
     private IEnumerator HideUIAfterDeath()
     {
         yield return new WaitForSeconds(deathAnimationDuration);
-        if (uiCanvasObject != null) uiCanvasObject.SetActive(false);
+        if (bossHealthUIRoot != null) bossHealthUIRoot.SetActive(false);
+        else if (uiCanvasObject != null) uiCanvasObject.SetActive(false);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -615,15 +639,24 @@ public class WrathAI : MonoBehaviour
 
     private void UpdateHealthBar()
     {
-        if (healthBarFill == null) return;
+        Image targetFill = bossHealthBarFill != null ? bossHealthBarFill : healthBarFill;
+        if (targetFill == null) return;
         float target = currentHealth / maxHealth;
-        healthBarFill.fillAmount = Mathf.Lerp(healthBarFill.fillAmount, target, Time.deltaTime * healthDrainSpeed);
+        targetFill.fillAmount = Mathf.Lerp(targetFill.fillAmount, target, Time.deltaTime * healthDrainSpeed);
+    }
+
+    private void SetHealthBarFillImmediate(float value)
+    {
+        Image targetFill = bossHealthBarFill != null ? bossHealthBarFill : healthBarFill;
+        if (targetFill != null)
+            targetFill.fillAmount = value;
     }
 
     private void UpdateHealthUI()
     {
-        if (healthText != null)
-            healthText.text = (int)currentHealth + "/" + (int)maxHealth;
+        TMP_Text targetText = bossHealthText != null ? bossHealthText : healthText;
+        if (targetText != null)
+            targetText.text = (int)currentHealth + "/" + (int)maxHealth;
     }
 
     // ─────────────────────────────────────────────────────────────────────────

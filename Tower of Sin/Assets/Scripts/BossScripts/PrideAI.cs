@@ -54,12 +54,18 @@ public class PrideAI : MonoBehaviour
     public float       healthDrainSpeed       = 5f;
     public float       deathAnimationDuration = 2.5f;
 
+    [Header("Shared Boss UI (Optional)")]
+    [SerializeField] private Image bossHealthBarFill;
+    [SerializeField] private TMP_Text bossHealthText;
+    [SerializeField] private GameObject bossHealthUIRoot;
+
     // ── Movement ──────────────────────────────────────────────────────────────
     public float walkSpeed      = 3.5f;
     public float aggroRadius    = 18f;
     public float attackRadius   = 2.5f;
     public float attackCooldown = 3.2f;  // >= attack anim length (3.0s Thrust Slash)
     public float attackDmgDelay = 0.45f;
+    public float turnSpeedDegPerSec = 540f;
 
     // ── Audio ─────────────────────────────────────────────────────────────────
     public AudioClip bossMusic;
@@ -84,6 +90,7 @@ public class PrideAI : MonoBehaviour
     private AudioSource  sfxSource;
     private AudioSource  walkSource;
     private AudioSource  musicSource;
+    private bool warnedNavMeshMissing = false;
 
     // ── State ─────────────────────────────────────────────────────────────────
     private bool  isDead         = false;
@@ -91,6 +98,19 @@ public class PrideAI : MonoBehaviour
     private bool  hasSeenPlayer  = false;
     private float nextAttackTime = 0f;
     private float idleAudioTimer = 0f;
+
+    public void SetupArenaReferences(Image sharedHealthBarFill, TMP_Text sharedHealthText, GameObject sharedHealthUIRoot)
+    {
+        bossHealthBarFill = sharedHealthBarFill;
+        bossHealthText = sharedHealthText;
+        bossHealthUIRoot = sharedHealthUIRoot;
+
+        if (bossHealthUIRoot != null)
+            bossHealthUIRoot.SetActive(true);
+
+        SetHealthBarFillImmediate(1f);
+        UpdateHealthUI();
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
     void Start()
@@ -100,6 +120,15 @@ public class PrideAI : MonoBehaviour
 
         agent       = GetComponent<NavMeshAgent>();
         agent.speed = walkSpeed;
+        // Let NavMeshAgent handle turning while moving.
+        agent.updateRotation = true;
+        agent.angularSpeed = Mathf.Max(agent.angularSpeed, turnSpeedDegPerSec);
+        EnsureAgentOnNavMesh(12f);
+
+        if (animator == null)
+            animator = GetComponent<Animator>();
+        if (animator == null)
+            animator = GetComponentInChildren<Animator>();
 
         sfxSource = GetComponent<AudioSource>();
         sfxSource.spatialBlend = 1f;
@@ -123,7 +152,8 @@ public class PrideAI : MonoBehaviour
         }
 
         if (Camera.main != null) mainCamera = Camera.main.transform;
-        if (healthBarFill != null) healthBarFill.fillAmount = 1f;
+        if (bossHealthUIRoot != null) bossHealthUIRoot.SetActive(true);
+        SetHealthBarFillImmediate(1f);
 
         if (bossMusic != null)
         {
@@ -144,6 +174,13 @@ public class PrideAI : MonoBehaviour
     {
         UpdateHealthBar();
         if (isDead || player == null) return;
+
+        if (!EnsureAgentOnNavMesh())
+        {
+            animator?.SetBool("isWalking", false);
+            walkSource?.Pause();
+            return;
+        }
 
         HandleAudio();
 
@@ -172,7 +209,10 @@ public class PrideAI : MonoBehaviour
             else if (dist > attackRadius)
             {
                 agent.isStopped = false;
-                agent.SetDestination(player.position);
+                Vector3 chaseTarget = player.position;
+                if (NavMesh.SamplePosition(player.position, out NavMeshHit playerHit, 2.5f, NavMesh.AllAreas))
+                    chaseTarget = playerHit.position;
+                agent.SetDestination(chaseTarget);
                 animator?.SetBool("isWalking", true);
                 if (!walkSource.isPlaying) walkSource.Play();
             }
@@ -193,6 +233,9 @@ public class PrideAI : MonoBehaviour
 
     void LateUpdate()
     {
+        if (bossHealthBarFill != null)
+            return;
+
         if (uiCanvasObject != null && mainCamera != null)
             uiCanvasObject.transform.LookAt(uiCanvasObject.transform.position + mainCamera.forward);
     }
@@ -317,7 +360,8 @@ public class PrideAI : MonoBehaviour
         if (agent.enabled) agent.enabled = false;
         GetComponent<Collider>().enabled  = false;
 
-        if (healthText != null) healthText.text = "";
+        TMP_Text targetText = bossHealthText != null ? bossHealthText : healthText;
+        if (targetText != null) targetText.text = "";
         walkSource?.Stop();
         sfxSource?.Stop();
 
@@ -330,7 +374,8 @@ public class PrideAI : MonoBehaviour
     private IEnumerator HideUIAfterDeath()
     {
         yield return new WaitForSeconds(deathAnimationDuration);
-        if (uiCanvasObject != null) uiCanvasObject.SetActive(false);
+        if (bossHealthUIRoot != null) bossHealthUIRoot.SetActive(false);
+        else if (uiCanvasObject != null) uiCanvasObject.SetActive(false);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -340,14 +385,49 @@ public class PrideAI : MonoBehaviour
     private void FacePlayer()
     {
         if (player == null) return;
+
+        // While chasing, let NavMesh steering own rotation.
+        if (agent != null && agent.enabled && !agent.isStopped)
+            return;
+
         Vector3 dir = player.position - transform.position;
         dir.y = 0f;
-        if (dir != Vector3.zero)
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 8f);
+
+        if (dir.sqrMagnitude <= 0.0001f) return;
+
+        Quaternion targetRot = Quaternion.LookRotation(dir.normalized, Vector3.up);
+        transform.rotation = Quaternion.RotateTowards(
+            transform.rotation,
+            targetRot,
+            turnSpeedDegPerSec * Time.deltaTime
+        );
     }
 
     private float FlatDist(Vector3 a, Vector3 b)
         => Vector3.Distance(new Vector3(a.x, 0f, a.z), new Vector3(b.x, 0f, b.z));
+
+    private bool EnsureAgentOnNavMesh(float sampleRadius = 6f)
+    {
+        if (agent == null || !agent.enabled)
+            return false;
+
+        if (agent.isOnNavMesh)
+            return true;
+
+        if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, sampleRadius, NavMesh.AllAreas))
+        {
+            agent.Warp(hit.position);
+            return agent.isOnNavMesh;
+        }
+
+        if (!warnedNavMeshMissing)
+        {
+            Debug.LogWarning($"{name}: PrideAI could not find NavMesh near current position.");
+            warnedNavMeshMissing = true;
+        }
+
+        return false;
+    }
 
     private void HandleAudio()
     {
@@ -366,14 +446,28 @@ public class PrideAI : MonoBehaviour
 
     private void UpdateHealthBar()
     {
-        if (healthBarFill == null) return;
-        healthBarFill.fillAmount = Mathf.Lerp(
-            healthBarFill.fillAmount, currentHealth / maxHealth, Time.deltaTime * healthDrainSpeed);
+        Image targetFill = bossHealthBarFill != null ? bossHealthBarFill : healthBarFill;
+        if (targetFill == null) return;
+
+        targetFill.fillAmount = Mathf.Lerp(
+            targetFill.fillAmount,
+            currentHealth / maxHealth,
+            Time.deltaTime * healthDrainSpeed
+        );
+    }
+
+    private void SetHealthBarFillImmediate(float value)
+    {
+        Image targetFill = bossHealthBarFill != null ? bossHealthBarFill : healthBarFill;
+        if (targetFill != null)
+            targetFill.fillAmount = value;
     }
 
     private void UpdateHealthUI()
     {
-        if (healthText != null) healthText.text = (int)currentHealth + "/" + (int)maxHealth;
+        TMP_Text targetText = bossHealthText != null ? bossHealthText : healthText;
+        if (targetText != null)
+            targetText.text = (int)currentHealth + "/" + (int)maxHealth;
     }
 
     private void OnDrawGizmosSelected()

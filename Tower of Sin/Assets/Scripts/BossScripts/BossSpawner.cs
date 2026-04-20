@@ -75,13 +75,45 @@ public class BossSpawner : MonoBehaviour
         if (envyAI == null)
             envyAI = spawnedBoss.GetComponentInChildren<EnvyAI>();
 
-        // Try GreedAI if EnvyAI wasn't found
+        // Try other boss AIs if EnvyAI wasn't found
         GreedAI greedAI = null;
+        SlothAI slothAI = null;
+        LustAI lustAI = null;
+        PrideAI prideAI = null;
+        WrathAI wrathAI = null;
         if (envyAI == null)
         {
             greedAI = spawnedBoss.GetComponent<GreedAI>();
             if (greedAI == null)
                 greedAI = spawnedBoss.GetComponentInChildren<GreedAI>();
+
+            if (greedAI == null)
+            {
+                slothAI = spawnedBoss.GetComponent<SlothAI>();
+                if (slothAI == null)
+                    slothAI = spawnedBoss.GetComponentInChildren<SlothAI>();
+            }
+
+            if (greedAI == null && slothAI == null)
+            {
+                lustAI = spawnedBoss.GetComponent<LustAI>();
+                if (lustAI == null)
+                    lustAI = spawnedBoss.GetComponentInChildren<LustAI>();
+
+                if (lustAI == null)
+                {
+                    prideAI = spawnedBoss.GetComponent<PrideAI>();
+                    if (prideAI == null)
+                        prideAI = spawnedBoss.GetComponentInChildren<PrideAI>();
+
+                    if (prideAI == null)
+                    {
+                        wrathAI = spawnedBoss.GetComponent<WrathAI>();
+                        if (wrathAI == null)
+                            wrathAI = spawnedBoss.GetComponentInChildren<WrathAI>();
+                    }
+                }
+            }
         }
 
         Light[] arenaLights = new Light[0];
@@ -138,6 +170,39 @@ public class BossSpawner : MonoBehaviour
                 bossHealthUIRoot,
                 doorMoveDistanceZ,
                 doorMoveDuration
+            );
+        }
+        else if (slothAI != null)
+        {
+            slothAI.SetFloor(currentFloor);
+            slothAI.SetupArenaReferences(
+                bossHealthBarFill,
+                bossHealthText,
+                bossHealthUIRoot
+            );
+        }
+        else if (lustAI != null)
+        {
+            lustAI.SetupArenaReferences(
+                bossHealthBarFill,
+                bossHealthText,
+                bossHealthUIRoot
+            );
+        }
+        else if (prideAI != null)
+        {
+            prideAI.SetupArenaReferences(
+                bossHealthBarFill,
+                bossHealthText,
+                bossHealthUIRoot
+            );
+        }
+        else if (wrathAI != null)
+        {
+            wrathAI.SetupArenaReferences(
+                bossHealthBarFill,
+                bossHealthText,
+                bossHealthUIRoot
             );
         }
         else
