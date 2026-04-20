@@ -4570,6 +4570,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BossSpawner
   bossPrefabs:
   - {fileID: 2730658654648739784, guid: aa70f419a48029e4eb9f6f8eeb6d3843, type: 3}
+  - {fileID: 2730658654648739784, guid: aa70f419a48029e4eb9f6f8eeb6d3843, type: 3}
+  - {fileID: 2730658654648739784, guid: aa70f419a48029e4eb9f6f8eeb6d3843, type: 3}
   - {fileID: 6576849777231807368, guid: 7cddfa90880447c45bcd9f4bf37e093b, type: 3}
   - {fileID: 1817817437369553006, guid: aa1d3c8b1f447594cab6003c063b0539, type: 3}
   - {fileID: 167928034052775675, guid: 9b37c6335e4093543b95a1c30e58415a, type: 3}
@@ -4590,8 +4592,8 @@ MonoBehaviour:
   bossHealthBarFill: {fileID: 1257694660}
   bossHealthText: {fileID: 1081649638}
   bossHealthUIRoot: {fileID: 877502356}
-  doorMoveDistanceZ: 1
-  doorMoveDuration: 1
+  doorMoveDistanceZ: 0.4
+  doorMoveDuration: 0.4
   roomCenter: {fileID: 203339400}
 --- !u!1001 &543942838
 PrefabInstance:
@@ -4687,7 +4689,7 @@ GameObject:
   - component: {fileID: 556127280}
   m_Layer: 5
   m_Name: BackgroundAudio
-  m_TagString: Untagged
+  m_TagString: Music
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4705,9 +4707,9 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
-  m_Volume: 0.319
+  m_Volume: 1
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0

@@ -9471,7 +9471,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AngelBossAI
   circleSpawnClip: {fileID: 8300000, guid: 41d9ea5c12f5f4944816783e5d56a9fe, type: 3}
-  circleSpawnVolume: 1
+  circleSpawnVolume: 0
   aliveLightColor: {r: 0, g: 1, b: 0, a: 1}
   deadLightColor: {r: 0.93333334, g: 0.76730275, b: 0.50980395, a: 1}
   ticktockLoop: {fileID: 8300000, guid: b3e5eb52631215049b63a5c8245684b4, type: 3}
@@ -9486,11 +9486,11 @@ MonoBehaviour:
   attackAudio4: {fileID: 0}
   attackAudio5: {fileID: 0}
   bossMusicClip: {fileID: 8300000, guid: ac46664cd57ac054492fdf44fa4a15a9, type: 3}
-  bossMusicVolume: 0.2
-  ticktockVolume: 0.2
-  robotNoiseVolume: 0.2
-  robotNoise2Volume: 0.2
-  voiceVolume: 1
+  bossMusicVolume: 1
+  ticktockVolume: 0.1
+  robotNoiseVolume: 0.1
+  robotNoise2Volume: 0.1
+  voiceVolume: 0.5
   introTriggerRange: 20
   randomRobotNoiseDelay: {x: 5, y: 10}
   randomAttackVoiceDelay: {x: 10, y: 20}
@@ -9519,7 +9519,7 @@ MonoBehaviour:
   phase2DelayAfterLastCircleEnds: 2
   circleDelayBeforeHit: 1.25
   circleDamageRadius: 4.5
-  circleDamage: 25
+  circleDamage: 30
   circleLifetime: 2.5
   drawDebugRange: 0
   alwaysFacePlayer: 1

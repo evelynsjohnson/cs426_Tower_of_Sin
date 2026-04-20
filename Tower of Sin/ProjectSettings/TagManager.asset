@@ -7,6 +7,7 @@ TagManager:
   - Enemy
   - Terrain
   - Staircase
+  - Music
   layers:
   - Default
   - TransparentFX
