@@ -5,7 +5,7 @@ Group members: Evelyn Johnson, Mario Tinoco, Soham Hisabia
 ## Name: Mario Tinoco
 For assignment 8 my main contribution was cleaning up the inventory system in the game. I started by adding UI that displays item data as requested by alpha play testers. Now, when the player hovers their cursor over an item in their inventory a box shows up that stats the items name, attack value, defense value, and health value. The stats box also shows an enlarged picture of the item with a color filter to represent the rarity of the item (commons are grey, uncommons are green, etc).
 
-I also update the item pickup. Before in the alpha build, opening a chest would make text show on screen to tell the player that they got an item. Playtesters noted that the text was abrupt and felt out of place. Now when the player opens the chest an orb spawns near the player that the player can "pick up" to get their item. Funtunality is the same, but now the flow of the game doesn't get disrupted by abrupt text. I also plan for the color of the orb to change on spawn based on the rariy of the item dropped.
+I also update the item pickup. Before in the alpha build, opening a chest would make text show on screen to tell the player that they got an item. Playtesters noted that the text was abrupt and felt out of place. Now when the player opens the chest an orb spawns near the player that the player can "pick up" to get their item. Funtunality is the same, but now the flow of the game doesn't get disrupted by abrupt text. The dropped orbs also change color based on the rarity of the itme they hold (common items stay white, uncommons change to green, etc).
 
 
 ## Name: Soham Hisabia

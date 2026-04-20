@@ -107,6 +107,9 @@ MonoBehaviour:
   player: {fileID: 0}
   activationDistance: 3
   lockYAxis: 1
+  visibleAngle: 100
+  maxBillboardTurn: 35
+  invertFacing: 1
 --- !u!1 &3869740327088428792
 GameObject:
   m_ObjectHideFlags: 0
@@ -484,49 +487,49 @@ MonoBehaviour:
     damage: 0
     defense: 0
     name: Helmet
-    rank: 0
+    rank: 2
   - type: 1
     icon: {fileID: 2800000, guid: de09b729e1f33fa44ad667525d429c99, type: 3}
     health: 0
     damage: 0
     defense: 0
     name: Chestplate
-    rank: 1
+    rank: 4
   - type: 2
     icon: {fileID: 2800000, guid: 63d2c8ff542298e4ab186ad033508ecf, type: 3}
     health: 0
     damage: 0
     defense: 0
     name: Legings
-    rank: 2
+    rank: 3
   - type: 3
     icon: {fileID: 2800000, guid: 170998785ff7af041bbabb8563474fba, type: 3}
     health: 0
     damage: 0
     defense: 0
     name: Boots
-    rank: 3
+    rank: 1
   - type: 4
     icon: {fileID: 2800000, guid: a9cc9399cf2d7764784c622ac648a546, type: 3}
     health: 0
     damage: 0
     defense: 0
     name: Sword
-    rank: 4
+    rank: 0
   - type: 5
     icon: {fileID: 2800000, guid: 4eaa258acbb581347a5b8bc114ef87ad, type: 3}
     health: 0
     damage: 0
     defense: 0
     name: Pendant
-    rank: 2
+    rank: 0
   - type: 6
     icon: {fileID: 2800000, guid: fdffbdb41c5326e4fa6ad71df2f49c64, type: 3}
     health: 0
     damage: 0
     defense: 0
     name: Ring
-    rank: 0
+    rank: 1
   itemPrefab: {fileID: 3640389493669310003, guid: 5c0bc393b0263b0479698ff8a6ba6095, type: 3}
   spawnPoint: {fileID: 3869740327088428792}
 --- !u!4 &2120743830538816199 stripped
