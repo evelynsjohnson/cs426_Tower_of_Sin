@@ -29,6 +29,7 @@ public class PortalTeleporter : MonoBehaviour
                 sceneToLoad = "Boss_Scene";
             else
                 sceneToLoad = "Dungeon_Scene";
+                Debug.Log("Teleported to dungeon scene: " + FloorTextController.floorNumber);
         }
         else if (curSceneName == "Boss_Scene")
         {

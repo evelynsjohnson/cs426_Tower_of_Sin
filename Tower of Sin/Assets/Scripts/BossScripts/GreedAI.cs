@@ -129,8 +129,8 @@ public class GreedAI : MonoBehaviour
     private AudioClip largeGateClipRef;
     private GameObject bossChestPrefabRef;
     private Transform bossChestSpawnPointRef;
-    private float doorMoveDistanceZRef;
-    private float doorMoveDurationRef;
+    private float doorMoveDistanceZRef = 1.4f;
+    private float doorMoveDurationRef = 5f;
 
     [SerializeField] private bool drawGizmos = true;
 
@@ -213,6 +213,8 @@ public class GreedAI : MonoBehaviour
 
     private void Start()
     {
+
+
         RecalculateScaledStats();
         currentHP = maxHP;
         UpdateBossUI();
@@ -308,6 +310,7 @@ public class GreedAI : MonoBehaviour
         float doorMoveDuration
     )
     {
+
         this.bossHealthBarFill = bossHealthBarFill;
         this.bossHealthText = bossHealthText;
         this.bossHealthUIRoot = bossHealthUIRoot;
@@ -325,16 +328,34 @@ public class GreedAI : MonoBehaviour
         }
 
         musicAudioSource = backgroundMusicSource;
+
+        Debug.Log("[GreedAI] SetupArenaReferences called.");
+
+        FindBackgroundMusicSourceIfNeeded();
+
         if (musicAudioSource != null)
         {
             previousBackgroundClip = musicAudioSource.clip;
+
             if (bossMusicClip != null)
             {
                 musicAudioSource.clip = bossMusicClip;
                 musicAudioSource.loop = true;
                 musicAudioSource.volume = musicVolume;
+
+                Debug.Log($"[GreedAI] bossMusicClip={(bossMusicClip != null ? bossMusicClip.name : "NULL")} musicAudioSource={(musicAudioSource != null ? musicAudioSource.name : "NULL")}");
+
+
                 musicAudioSource.Play();
             }
+            else
+            {
+                Debug.LogWarning("[GreedAI] bossMusicClip is NULL");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[GreedAI] No BackgroundAudio source found!");
         }
 
         basementDoorLeftRef = basementDoorLeft;
@@ -1528,26 +1549,26 @@ public class GreedAI : MonoBehaviour
             gateAudioSourceRef.PlayOneShot(largeGateClipRef);
 
         if (basementDoorLeftRef != null)
-            StartCoroutine(MoveDoorZ(basementDoorLeftRef, -doorMoveDistanceZRef, doorMoveDurationRef));
+            StartCoroutine(MoveDoorLocalZ(basementDoorLeftRef, -doorMoveDistanceZRef, doorMoveDurationRef));
 
         if (basementDoorRightRef != null)
-            StartCoroutine(MoveDoorZ(basementDoorRightRef, doorMoveDistanceZRef, doorMoveDurationRef));
+            StartCoroutine(MoveDoorLocalZ(basementDoorRightRef, doorMoveDistanceZRef, doorMoveDurationRef));
     }
 
-    private IEnumerator MoveDoorZ(Transform door, float zOffset, float duration)
+    private IEnumerator MoveDoorLocalZ(Transform door, float zOffset, float duration)
     {
-        Vector3 start = door.position;
+        Vector3 start = door.localPosition;
         Vector3 end = start + new Vector3(0f, 0f, zOffset);
 
         float t = 0f;
         while (t < duration)
         {
             t += Time.deltaTime;
-            door.position = Vector3.Lerp(start, end, t / duration);
+            door.localPosition = Vector3.Lerp(start, end, t / duration);
             yield return null;
         }
 
-        door.position = end;
+        door.localPosition = end;
     }
 
     private void RecalculateScaledStats()
@@ -1614,6 +1635,37 @@ public class GreedAI : MonoBehaviour
     private void ClearDeadRefs(List<GameObject> list)
     {
         list.RemoveAll(item => item == null);
+    }
+
+    private void FindBackgroundMusicSourceIfNeeded()
+    {
+        if (musicAudioSource != null)
+        {
+            Debug.Log("[GreedAI] Music source already assigned.");
+            return;
+        }
+
+        GameObject bg = GameObject.Find("BackgroundAudio");
+        if (bg != null)
+        {
+            musicAudioSource = bg.GetComponent<AudioSource>();
+            Debug.Log($"[GreedAI] Found BackgroundAudio by name: {musicAudioSource}");
+        }
+
+        if (musicAudioSource == null)
+        {
+            GameObject tagged = GameObject.FindGameObjectWithTag("Music");
+            if (tagged != null)
+            {
+                musicAudioSource = tagged.GetComponent<AudioSource>();
+                Debug.Log($"[GreedAI] Found music source by tag: {musicAudioSource}");
+            }
+        }
+
+        if (musicAudioSource == null)
+            Debug.LogWarning("[GreedAI] Could not find any background music source.");
+
+        Debug.Log($"[GreedAI] Final music source: {musicAudioSource}");
     }
 
     #endregion

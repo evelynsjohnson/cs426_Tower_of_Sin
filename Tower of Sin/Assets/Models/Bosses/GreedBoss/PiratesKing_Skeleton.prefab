@@ -2396,7 +2396,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
-  m_Volume: 0.589
+  m_Volume: 0.5
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -2505,7 +2505,7 @@ MonoBehaviour:
   phase4MinDistance: 7
   faceSpeed: 10
   baseMaxHP: 800
-  baseAttackDamage: 10
+  baseAttackDamage: 20
   attack1SweepSteps: 30
   attack1SweepDamageWindow: 0.35
   attack1TelegraphTime: 1.1
@@ -2538,6 +2538,8 @@ MonoBehaviour:
   telegraphOutlineColor: {r: 0.9811321, g: 0.6755887, b: 0, a: 0.95}
   bossLightColor: {r: 1, g: 0.8960756, b: 0.12156862, a: 1}
   lightIntensityMultiplier: 1
+  phase4MinPhase1Interval: 4
+  phase4MaxPhase1Interval: 9
   cannonFireClip: {fileID: 8300000, guid: 05f5d68fd194afa4e82d2e347c3742d6, type: 3}
   bossLoopClip: {fileID: 8300000, guid: 4d59a07649a0b0f408408e4f039be4f7, type: 3}
   walkingClip: {fileID: 8300000, guid: 4db9bf76746d6ba4a813e2abce127c5f, type: 3}
@@ -2563,15 +2565,15 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 4931e84a6acd3a74ba202d822e769834, type: 3}
   - {fileID: 8300000, guid: 590aebc065ef50a4c93a67b1907f4a8e, type: 3}
   attackVoiceIntervalRange: {x: 5, y: 10}
-  dialogueVolume: 1
-  deathDialogueVolume: 1
-  attackVoiceVolume: 1
+  dialogueVolume: 0.5
+  deathDialogueVolume: 0.5
+  attackVoiceVolume: 0.5
   deathFadeOutDuration: 0.25
-  cannonVolume: 0.116
-  ambientVolume: 0.122
-  randomVoiceVolume: 0.116
-  footstepVolume: 0.127
-  musicVolume: 0.106
+  cannonVolume: 0.2
+  ambientVolume: 1
+  randomVoiceVolume: 0.2
+  footstepVolume: 0.2
+  musicVolume: 1
   attack1TriggerClip: {fileID: 8300000, guid: 64da191cd35257541806a5e90a904d61, type: 3}
   attack1TriggerVolume: 0.725
   drawGizmos: 1
