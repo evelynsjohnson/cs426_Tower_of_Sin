@@ -10,6 +10,8 @@ public class PlayerHealth : MonoBehaviour
 
     public float maxHealth;
     private float currentHealth;
+    public float CurrentHealth => currentHealth;
+    public float MaxHealth => maxHealth;
 
     public TextMeshProUGUI baseHealthText;
     public TextMeshProUGUI healthBonusText;
@@ -38,6 +40,8 @@ public class PlayerHealth : MonoBehaviour
 
     private FirstPersonMovement movement;
     private Rigidbody rb;
+
+    public System.Action OnDamageTaken;
 
     void Awake()
     {
@@ -120,6 +124,7 @@ public class PlayerHealth : MonoBehaviour
         reducedDamage = Mathf.Max(1f, reducedDamage); // optional minimum damage
 
         currentHealth -= reducedDamage;
+        OnDamageTaken?.Invoke(); // for health vignette
 
         if (currentHealth <= 0)
         {
