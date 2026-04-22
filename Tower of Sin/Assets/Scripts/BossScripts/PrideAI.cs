@@ -28,6 +28,9 @@ public class PrideAI : MonoBehaviour
     private bool  phase3Triggered   = false;
     public float  phase2Threshold   = 0.75f;  // shield shatters at 75% HP
     public float  phase3Threshold   = 0.50f;  // clones start at 50% HP
+    [SerializeField] private int currentFloor = 5;
+    [SerializeField] private float baseHealthAtFloor5 = 480f;
+    [SerializeField] private float healthPerFiveFloors = 100f;
 
     // ── Pride — Reflect Shield ────────────────────────────────────────────────
     private bool  shieldActive      = true;
@@ -114,6 +117,17 @@ public class PrideAI : MonoBehaviour
     private float nextAttackTime = 0f;
     private float idleAudioTimer = 0f;
 
+    public void SetFloor(int floor)
+    {
+        currentFloor = Mathf.Max(1, floor);
+    }
+
+    private float GetScaledHealthForFloor(int floor)
+    {
+        int bonusSteps = Mathf.Max(0, floor / 5 - 1);
+        return baseHealthAtFloor5 + (bonusSteps * healthPerFiveFloors);
+    }
+
     public void SetupArenaReferences(Image sharedHealthBarFill, TMP_Text sharedHealthText, GameObject sharedHealthUIRoot)
     {
         SetupArenaReferences(
@@ -183,7 +197,10 @@ public class PrideAI : MonoBehaviour
     // ─────────────────────────────────────────────────────────────────────────
     void Start()
     {
-        maxHealth     = 400f + ((FloorTextController.floorNumber - 1) * 20f);
+        if (currentFloor <= 0)
+            currentFloor = Mathf.Max(1, FloorTextController.floorNumber);
+
+        maxHealth     = GetScaledHealthForFloor(currentFloor);
         currentHealth = maxHealth;
 
         agent       = GetComponent<NavMeshAgent>();

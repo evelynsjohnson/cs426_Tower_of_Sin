@@ -131,15 +131,54 @@ public class BossSpawner : MonoBehaviour
         }
         else if (lustAI != null)
         {
-            Debug.LogWarning("LustAI still needs to be refactored to use BossArenaController.");
+            lustAI.SetupArenaReferences(
+                bossHealthBarFill,
+                bossHealthText,
+                bossHealthUIRoot,
+                arenaLights,
+                basementDoorLeft,
+                basementDoorRight,
+                gateAudioSource,
+                largeGateClip,
+                bossChestPrefab,
+                bossChestSpawnPoint,
+                doorMoveDistanceZ,
+                doorMoveDuration
+            );
         }
         else if (prideAI != null)
         {
-            Debug.LogWarning("PrideAI still needs to be refactored to use BossArenaController.");
+            prideAI.SetupArenaReferences(
+                bossHealthBarFill,
+                bossHealthText,
+                bossHealthUIRoot,
+                arenaLights,
+                basementDoorLeft,
+                basementDoorRight,
+                gateAudioSource,
+                largeGateClip,
+                bossChestPrefab,
+                bossChestSpawnPoint,
+                doorMoveDistanceZ,
+                doorMoveDuration
+            );
         }
         else if (wrathAI != null)
         {
-            Debug.LogWarning("WrathAI still needs to be refactored to use BossArenaController.");
+            wrathAI.SetupArenaReferences(
+                bossHealthBarFill,
+                bossHealthText,
+                bossHealthUIRoot,
+                arenaLights,
+                basementDoorLeft,
+                basementDoorRight,
+                gateAudioSource,
+                largeGateClip,
+                bossChestPrefab,
+                bossChestSpawnPoint,
+                doorMoveDistanceZ,
+                doorMoveDuration
+            );
         }
         else
         {

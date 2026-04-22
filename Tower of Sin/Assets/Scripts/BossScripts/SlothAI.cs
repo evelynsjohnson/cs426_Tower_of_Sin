@@ -14,6 +14,8 @@ public class SlothAI : MonoBehaviour
     private int currentPhase = 1;
     private bool phase2Triggered = false;
     public float phase2Threshold = 0.40f;
+    [SerializeField] private float baseHealthAtFloor5 = 900f;
+    [SerializeField] private float healthPerFiveFloors = 125f;
 
     // Torpor
     public float torporHealPercent = 0.00f;
@@ -160,7 +162,8 @@ public class SlothAI : MonoBehaviour
 
     private float GetScaledHealthForFloor(int floor)
     {
-        return 800f + ((floor - 1) * 25f);
+        int bonusSteps = Mathf.Max(0, floor / 5 - 1);
+        return baseHealthAtFloor5 + (bonusSteps * healthPerFiveFloors);
     }
 
     void Start()
