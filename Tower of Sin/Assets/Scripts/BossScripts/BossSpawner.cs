@@ -124,62 +124,64 @@ public class BossSpawner : MonoBehaviour
 
             //greedAI.SetArenaController(bossArenaController);
         }
-        else if (slothAI != null)
-        {
-            slothAI.SetFloor(currentFloor);
-            Debug.LogWarning("SlothAI still needs to be refactored to use BossArenaController.");
-        }
-        else if (lustAI != null)
-        {
-            lustAI.SetupArenaReferences(
-                bossHealthBarFill,
-                bossHealthText,
-                bossHealthUIRoot,
-                arenaLights,
-                basementDoorLeft,
-                basementDoorRight,
-                gateAudioSource,
-                largeGateClip,
-                bossChestPrefab,
-                bossChestSpawnPoint,
-                doorMoveDistanceZ,
-                doorMoveDuration
-            );
-        }
-        else if (prideAI != null)
-        {
-            prideAI.SetupArenaReferences(
-                bossHealthBarFill,
-                bossHealthText,
-                bossHealthUIRoot,
-                arenaLights,
-                basementDoorLeft,
-                basementDoorRight,
-                gateAudioSource,
-                largeGateClip,
-                bossChestPrefab,
-                bossChestSpawnPoint,
-                doorMoveDistanceZ,
-                doorMoveDuration
-            );
-        }
-        else if (wrathAI != null)
-        {
-            wrathAI.SetupArenaReferences(
-                bossHealthBarFill,
-                bossHealthText,
-                bossHealthUIRoot,
-                arenaLights,
-                basementDoorLeft,
-                basementDoorRight,
-                gateAudioSource,
-                largeGateClip,
-                bossChestPrefab,
-                bossChestSpawnPoint,
-                doorMoveDistanceZ,
-                doorMoveDuration
-            );
-        }
+        //else if (slothAI != null)
+        //{
+        //    slothAI.SetFloor(currentFloor);
+        //    Debug.LogWarning("SlothAI still needs to be refactored to use BossArenaController.");
+        //}
+        //else if (lustAI != null)
+        //{
+
+        //    lustAI.SetFloor(currentFloor);
+        //    lustAI.SetupArenaReferences(
+        //        bossHealthBarFill,
+        //        bossHealthText,
+        //        bossHealthUIRoot,
+        //        arenaLights,
+        //        basementDoorLeft,
+        //        basementDoorRight,
+        //        gateAudioSource,
+        //        largeGateClip,
+        //        bossChestPrefab,
+        //        bossChestSpawnPoint,
+        //        doorMoveDistanceZ,
+        //        doorMoveDuration
+        //    );
+        //}
+        //else if (prideAI != null)
+        //{
+        //    prideAI.SetupArenaReferences(
+        //        bossHealthBarFill,
+        //        bossHealthText,
+        //        bossHealthUIRoot,
+        //        arenaLights,
+        //        basementDoorLeft,
+        //        basementDoorRight,
+        //        gateAudioSource,
+        //        largeGateClip,
+        //        bossChestPrefab,
+        //        bossChestSpawnPoint,
+        //        doorMoveDistanceZ,
+        //        doorMoveDuration
+        //    );
+        //}
+        //else if (wrathAI != null)
+        //{
+        //    wrathAI.SetupArenaReferences(
+        //        bossHealthBarFill,
+        //        bossHealthText,
+        //        bossHealthUIRoot,
+        //        arenaLights,
+        //        basementDoorLeft,
+        //        basementDoorRight,
+        //        gateAudioSource,
+        //        largeGateClip,
+        //        bossChestPrefab,
+        //        bossChestSpawnPoint,
+        //        doorMoveDistanceZ,
+        //        doorMoveDuration
+        //    );
+        //}
         else
         {
             Debug.LogWarning("No supported boss AI script found on spawned boss: " + spawnedBoss.name);
