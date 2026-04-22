@@ -34,6 +34,9 @@ public class WrathAI : MonoBehaviour
     private float damageMultiplier  = 1f;
     private int   currentPhase      = 1;
     private bool  phase2Triggered   = false;
+    [SerializeField] private int currentFloor = 5;
+    [SerializeField] private float baseHealthAtFloor5 = 360f;
+    [SerializeField] private float healthPerFiveFloors = 75f;
 
     public float phase2Threshold    = 0.50f;  // HP% that triggers phase 2
 
@@ -145,6 +148,17 @@ public class WrathAI : MonoBehaviour
     private float   lastDamageTime       = -999f;
     private float   healDelay            = 8f;
 
+    public void SetFloor(int floor)
+    {
+        currentFloor = Mathf.Max(1, floor);
+    }
+
+    private float GetScaledHealthForFloor(int floor)
+    {
+        int bonusSteps = Mathf.Max(0, floor / 5 - 1);
+        return baseHealthAtFloor5 + (bonusSteps * healthPerFiveFloors);
+    }
+
     public void SetupArenaReferences(Image sharedHealthBarFill, TMP_Text sharedHealthText, GameObject sharedHealthUIRoot)
     {
         SetupArenaReferences(
@@ -217,7 +231,10 @@ public class WrathAI : MonoBehaviour
 
     void Start()
     {
-        maxHealth     = 300f + ((FloorTextController.floorNumber - 1) * 15f);
+        if (currentFloor <= 0)
+            currentFloor = Mathf.Max(1, FloorTextController.floorNumber);
+
+        maxHealth     = GetScaledHealthForFloor(currentFloor);
         currentHealth = maxHealth;
 
         agent       = GetComponent<NavMeshAgent>();

@@ -192,6 +192,7 @@ public class BossSpawner : MonoBehaviour
         }
         else if (lustAI != null)
         {
+            lustAI.SetFloor(currentFloor);
             lustAI.SetupArenaReferences(
                 bossHealthBarFill,
                 bossHealthText,
@@ -209,6 +210,7 @@ public class BossSpawner : MonoBehaviour
         }
         else if (prideAI != null)
         {
+            prideAI.SetFloor(currentFloor);
             prideAI.SetupArenaReferences(
                 bossHealthBarFill,
                 bossHealthText,
@@ -226,6 +228,7 @@ public class BossSpawner : MonoBehaviour
         }
         else if (wrathAI != null)
         {
+            wrathAI.SetFloor(currentFloor);
             wrathAI.SetupArenaReferences(
                 bossHealthBarFill,
                 bossHealthText,

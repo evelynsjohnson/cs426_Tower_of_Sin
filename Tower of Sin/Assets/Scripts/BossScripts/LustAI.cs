@@ -28,6 +28,9 @@ public class LustAI : MonoBehaviour
     private int   currentPhase      = 1;
     private bool  phase2Triggered   = false;
     public float  phase2Threshold   = 0.50f;
+    [SerializeField] private int currentFloor = 5;
+    [SerializeField] private float baseHealthAtFloor5 = 273f;
+    [SerializeField] private float healthPerFiveFloors = 60f;
 
     // ── Lust — Charm Projectile ───────────────────────────────────────────────
     public GameObject charmProjectilePrefab;
@@ -115,6 +118,17 @@ public class LustAI : MonoBehaviour
     private Vector3 lastChaseTarget;
     private bool hasChaseTarget = false;
 
+    public void SetFloor(int floor)
+    {
+        currentFloor = Mathf.Max(1, floor);
+    }
+
+    private float GetScaledHealthForFloor(int floor)
+    {
+        int bonusSteps = Mathf.Max(0, floor / 5 - 1);
+        return baseHealthAtFloor5 + (bonusSteps * healthPerFiveFloors);
+    }
+
     public void SetupArenaReferences(Image sharedHealthBarFill, TMP_Text sharedHealthText, GameObject sharedHealthUIRoot)
     {
         SetupArenaReferences(
@@ -184,8 +198,10 @@ public class LustAI : MonoBehaviour
     // ─────────────────────────────────────────────────────────────────────────
     void Start()
     {
-        // Lust has 75% of base HP
-        maxHealth     = (300f * 0.75f) + ((FloorTextController.floorNumber - 1) * 12f);
+        if (currentFloor <= 0)
+            currentFloor = Mathf.Max(1, FloorTextController.floorNumber);
+
+        maxHealth     = GetScaledHealthForFloor(currentFloor);
         currentHealth = maxHealth;
 
         agent       = GetComponent<NavMeshAgent>();
