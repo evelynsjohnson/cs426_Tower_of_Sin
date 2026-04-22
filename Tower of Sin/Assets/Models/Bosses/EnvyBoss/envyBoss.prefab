@@ -9452,7 +9452,7 @@ CapsuleCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_Radius: 0.65
   m_Height: 4.48
@@ -9471,9 +9471,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AngelBossAI
   circleSpawnClip: {fileID: 8300000, guid: 41d9ea5c12f5f4944816783e5d56a9fe, type: 3}
-  circleSpawnVolume: 0
+  circleSpawnVolume: 0.5
   aliveLightColor: {r: 0, g: 1, b: 0, a: 1}
-  deadLightColor: {r: 0.93333334, g: 0.76730275, b: 0.50980395, a: 1}
   ticktockLoop: {fileID: 8300000, guid: b3e5eb52631215049b63a5c8245684b4, type: 3}
   robotNoise: {fileID: 8300000, guid: aad691b963d3a244293dd8c41203a234, type: 3}
   robotNoise2: {fileID: 8300000, guid: 2b5552d5b18069e41866ca816a2b7066, type: 3}
@@ -9486,17 +9485,17 @@ MonoBehaviour:
   attackAudio4: {fileID: 0}
   attackAudio5: {fileID: 0}
   bossMusicClip: {fileID: 8300000, guid: ac46664cd57ac054492fdf44fa4a15a9, type: 3}
-  bossMusicVolume: 1
+  bossMusicVolume: 0.5
   ticktockVolume: 0.1
   robotNoiseVolume: 0.1
   robotNoise2Volume: 0.1
-  voiceVolume: 0.5
+  voiceVolume: 0.75
   introTriggerRange: 20
   randomRobotNoiseDelay: {x: 5, y: 10}
   randomAttackVoiceDelay: {x: 10, y: 20}
   audioMinDistance: 2
   audioMaxDistance: 30
-  baseMaxHealth: 650
+  baseMaxHealth: 1
   currentHealth: 0
   maxHealth: 0
   currentPhase: 0
@@ -9508,17 +9507,18 @@ MonoBehaviour:
   playerTag: Player
   teleportSearchRadius: 25
   navMeshSampleDistance: 8
+  maxTeleportHeightDifference: 1.5
   teleportAttempts: 20
-  delayAfterTeleport: 3
+  delayAfterTeleport: 1
   attackTriggerName: attack1
   circleSpawnOffset: {x: 0, y: 0, z: 0}
   engageRange: 15
-  attackCooldown: 10
+  attackCooldown: 7
   phase1DelayAfterEachCircleEnds: 2
   phase2DelayBetweenSpawns: 1
   phase2DelayAfterLastCircleEnds: 2
-  circleDelayBeforeHit: 1.25
-  circleDamageRadius: 4.5
+  circleDelayBeforeHit: 1.2
+  circleDamageRadius: 4.7
   circleDamage: 30
   circleLifetime: 2.5
   drawDebugRange: 0
@@ -12293,9 +12293,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2069770079286445425}
+  - component: {fileID: 7028285826345162360}
   m_Layer: 0
   m_Name: skeleton:spine_mid
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -12316,6 +12317,29 @@ Transform:
   - {fileID: 518683439453979661}
   m_Father: {fileID: 6305481858262613929}
   m_LocalEulerAnglesHint: {x: -0.7758899, y: 176.84464, z: -157.67923}
+--- !u!136 &7028285826345162360
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3734452955715995202}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.0035
+  m_Height: 0.02
+  m_Direction: 1
+  m_Center: {x: 0, y: -0.003, z: 0}
 --- !u!1 &3744559717559810755
 GameObject:
   m_ObjectHideFlags: 0

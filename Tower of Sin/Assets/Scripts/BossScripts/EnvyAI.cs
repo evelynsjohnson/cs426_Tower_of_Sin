@@ -5,7 +5,7 @@ using UnityEngine.AI;
 using UnityEngine.UI;
 using TMPro;
 
-// Originally AngelBossAI script, via Evelyn's Test Scene
+// Refactored to use BossArenaController for doors/chest/lights/music
 public class EnvyAI : MonoBehaviour
 {
     public enum BossPhase
@@ -20,7 +20,6 @@ public class EnvyAI : MonoBehaviour
 
     [Header("Boss Light Colors")]
     [SerializeField] private Color aliveLightColor = Color.green;
-    [SerializeField] private Color deadLightColor = Color.white;
 
     [Header("Boss Audio")]
     [SerializeField] private AudioClip ticktockLoop;
@@ -35,7 +34,6 @@ public class EnvyAI : MonoBehaviour
     [SerializeField] private AudioClip attackAudio4;
     [SerializeField] private AudioClip attackAudio5;
     [SerializeField] private AudioClip bossMusicClip;
-    private AudioSource backgroundMusicSource;
     [SerializeField][Range(0f, 1f)] private float bossMusicVolume = 1f;
 
     [SerializeField][Range(0f, 1f)] private float ticktockVolume = 1f;
@@ -62,25 +60,26 @@ public class EnvyAI : MonoBehaviour
     [SerializeField] private string playerTag = "Player";
 
     [SerializeField] private float teleportSearchRadius = 25f;
-    [SerializeField] private float navMeshSampleDistance = 3f;
+    [SerializeField] private float navMeshSampleDistance = 8f;
+    [SerializeField] private float maxTeleportHeightDifference = 1.5f;
     [SerializeField] private int teleportAttempts = 20;
 
     [Header("Attack Timing")]
-    [SerializeField] private float delayAfterTeleport = 3f;
+    [SerializeField] private float delayAfterTeleport = 2f;
     [SerializeField] private string attackTriggerName = "attack1";
     [SerializeField] private Vector3 circleSpawnOffset = Vector3.zero;
 
     [Header("Phase Behavior")]
     [SerializeField] private float engageRange = 15f;
-    [SerializeField] private float attackCooldown = 15f;
+    [SerializeField] private float attackCooldown = 7f;
     [SerializeField] private float phase1DelayAfterEachCircleEnds = 2f;
     [SerializeField] private float phase2DelayBetweenSpawns = 1f;
     [SerializeField] private float phase2DelayAfterLastCircleEnds = 2f;
 
     [Header("Circle Damage")]
-    [SerializeField] private float circleDelayBeforeHit = 1.5f;
-    [SerializeField] private float circleDamageRadius = 3f;
-    [SerializeField] private float circleDamage = 25f;
+    [SerializeField] private float circleDelayBeforeHit = 1.2f;
+    [SerializeField] private float circleDamageRadius = 4.75f;
+    [SerializeField] private float circleDamage = 30f;
     [SerializeField] private float circleLifetime = 2.5f;
 
     [SerializeField] private bool drawDebugRange = true;
@@ -88,20 +87,11 @@ public class EnvyAI : MonoBehaviour
     [SerializeField] private bool alwaysFacePlayer = true;
     [SerializeField] private float faceTurnSpeed = 720f;
 
-    private Light[] controlledLights = new Light[0];
-    private Transform basementDoorLeft;
-    private Transform basementDoorRight;
-    private AudioSource gateAudioSource;
-    private AudioClip largeGateClip;
-    private GameObject bossChestPrefab;
-    private Transform bossChestSpawnPoint;
-
     private Image bossHealthBarFill;
     private TMP_Text bossHealthText;
     private GameObject bossHealthUIRoot;
 
-    private float doorMoveDistanceZ = 1f;
-    private float doorMoveDuration = 3f;
+    private BossArenaController arenaController;
 
     private AudioSource ticktockSource;
     private AudioSource robotNoiseSource;
@@ -118,7 +108,6 @@ public class EnvyAI : MonoBehaviour
     private bool isBusy = false;
     private bool phase2Started = false;
     private bool isDead = false;
-    private bool deathHandled = false;
     private bool introPlayed = false;
     private bool phaseTwoVoicePending = false;
     private bool deathVoiceStarted = false;
@@ -162,7 +151,6 @@ public class EnvyAI : MonoBehaviour
     {
         SetupHealthForFloor(currentFloor);
         UpdateBossUI();
-        ApplyAliveLightColor();
 
         if (bossHealthUIRoot != null)
             bossHealthUIRoot.SetActive(true);
@@ -171,12 +159,10 @@ public class EnvyAI : MonoBehaviour
 
         if (aiLoopRoutine != null)
             StopCoroutine(aiLoopRoutine);
-
         aiLoopRoutine = StartCoroutine(BossLoop());
 
         if (attackVoiceRoutine != null)
             StopCoroutine(attackVoiceRoutine);
-
         attackVoiceRoutine = StartCoroutine(AttackVoiceLoop());
     }
 
@@ -191,43 +177,28 @@ public class EnvyAI : MonoBehaviour
             FaceTarget(player.position);
     }
 
-    public void SetupArenaReferences(
-        Light[] arenaLights,
-        Transform leftDoor,
-        Transform rightDoor,
-        AudioSource gateSource,
-        AudioClip gateClip,
-        AudioSource musicSource,
-        GameObject chestPrefab,
-        Transform chestSpawnPoint,
-        Image healthBarFill,
-        TMP_Text healthText,
-        GameObject healthUIRoot,
-        float doorDistanceZ,
-        float doorOpenDuration)
+    public void SetArenaController(BossArenaController controller)
     {
-        controlledLights = arenaLights ?? new Light[0];
-        basementDoorLeft = leftDoor;
-        basementDoorRight = rightDoor;
-        gateAudioSource = gateSource;
-        largeGateClip = gateClip;
-        backgroundMusicSource = musicSource;
-        bossChestPrefab = chestPrefab;
-        bossChestSpawnPoint = chestSpawnPoint;
+        arenaController = controller;
 
+        if (arenaController != null)
+        {
+            bossHealthBarFill = arenaController.GetBossHealthBarFill();
+            bossHealthText = arenaController.GetBossHealthText();
+            bossHealthUIRoot = arenaController.GetBossHealthUIRoot();
+
+            arenaController.OnBossSpawned(aliveLightColor, 1f, bossMusicClip, bossMusicVolume);
+        }
+
+        UpdateBossUI();
+    }
+
+    public void SetBossUIReferences(Image healthBarFill, TMP_Text healthText, GameObject healthUIRoot)
+    {
         bossHealthBarFill = healthBarFill;
         bossHealthText = healthText;
         bossHealthUIRoot = healthUIRoot;
-
-        doorMoveDistanceZ = doorDistanceZ;
-        doorMoveDuration = doorOpenDuration;
-
-        if (bossHealthUIRoot != null)
-            bossHealthUIRoot.SetActive(true);
-
         UpdateBossUI();
-        ApplyAliveLightColor();
-        StartBossMusic();
     }
 
     private void SetupAudioSources()
@@ -239,21 +210,10 @@ public class EnvyAI : MonoBehaviour
 
         if (voiceSource != null)
         {
-            voiceSource.spatialBlend = 0.2f; 
+            voiceSource.spatialBlend = 0.2f;
             voiceSource.minDistance = 8f;
             voiceSource.maxDistance = 60f;
         }
-    }
-
-    private void StartBossMusic()
-    {
-        if (backgroundMusicSource == null || bossMusicClip == null)
-            return;
-
-        backgroundMusicSource.clip = bossMusicClip;
-        backgroundMusicSource.volume = bossMusicVolume;
-        backgroundMusicSource.loop = true;
-        backgroundMusicSource.Play();
     }
 
     private AudioSource Create3DAudioSource(string sourceName)
@@ -372,28 +332,6 @@ public class EnvyAI : MonoBehaviour
         }
     }
 
-    private void ApplyAliveLightColor()
-    {
-        if (controlledLights == null) return;
-
-        for (int i = 0; i < controlledLights.Length; i++)
-        {
-            if (controlledLights[i] != null)
-                controlledLights[i].color = aliveLightColor;
-        }
-    }
-
-    private void ApplyDeadLightColor()
-    {
-        if (controlledLights == null) return;
-
-        for (int i = 0; i < controlledLights.Length; i++)
-        {
-            if (controlledLights[i] != null)
-                controlledLights[i].color = deadLightColor;
-        }
-    }
-
     private IEnumerator BossLoop()
     {
         while (!isDead)
@@ -404,9 +342,7 @@ public class EnvyAI : MonoBehaviour
             {
                 float introDist = Vector3.Distance(transform.position, player.position);
                 if (introDist <= introTriggerRange)
-                {
                     PlayIntroAudioOnce();
-                }
             }
 
             if (!introFinished)
@@ -482,13 +418,14 @@ public class EnvyAI : MonoBehaviour
         currentPhase = BossPhase.Phase1;
         phase2Started = false;
         isDead = false;
-        deathHandled = false;
         introPlayed = false;
         introStarted = false;
         introFinished = false;
         phaseTwoVoicePending = false;
         deathVoiceStarted = false;
         nextAttackVoiceIndex = 0;
+        nextAttackTime = 0f;
+        isBusy = false;
     }
 
     private float GetScaledHealthForFloor(int floor)
@@ -512,7 +449,7 @@ public class EnvyAI : MonoBehaviour
 
         UpdateBossUI();
 
-        if (!phase2Started && currentHealth <= maxHealth * 0.65f)
+        if (!phase2Started && currentHealth <= maxHealth * 0.75f)
             EnterPhase2();
 
         if (currentHealth <= 0f)
@@ -556,7 +493,12 @@ public class EnvyAI : MonoBehaviour
         isDead = true;
         currentPhase = BossPhase.Dead;
         deathVoiceStarted = true;
-        StopAllCoroutines();
+        isBusy = false;
+
+        if (aiLoopRoutine != null) StopCoroutine(aiLoopRoutine);
+        if (robotNoiseRoutine != null) StopCoroutine(robotNoiseRoutine);
+        if (robotNoise2Routine != null) StopCoroutine(robotNoise2Routine);
+        if (attackVoiceRoutine != null) StopCoroutine(attackVoiceRoutine);
 
         if (agent != null && agent.enabled && agent.isOnNavMesh)
         {
@@ -572,10 +514,9 @@ public class EnvyAI : MonoBehaviour
             robotNoise2Source.Stop();
 
         UpdateBossUI();
-        ApplyDeadLightColor();
 
-        if (!deathHandled)
-            StartCoroutine(HandleDeathSequence());
+        if (arenaController != null)
+            arenaController.OnBossDied();
 
         PlayDeathAudioAndFadeBoss();
     }
@@ -613,9 +554,7 @@ public class EnvyAI : MonoBehaviour
             yield return new WaitForSeconds(delayBeforeFade);
 
         foreach (var kvp in originalMaterialColors)
-        {
             PrepareMaterialForFade(kvp.Key);
-        }
 
         float elapsed = 0f;
         float duration = Mathf.Max(0.01f, fadeDuration);
@@ -682,61 +621,6 @@ public class EnvyAI : MonoBehaviour
             mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
             mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
         }
-    }
-
-    private IEnumerator HandleDeathSequence()
-    {
-        deathHandled = true;
-
-        if (gateAudioSource != null)
-        {
-            if (largeGateClip != null)
-                gateAudioSource.PlayOneShot(largeGateClip);
-            else
-                gateAudioSource.Play();
-        }
-
-        Vector3 leftStart = basementDoorLeft != null ? basementDoorLeft.position : Vector3.zero;
-        Vector3 rightStart = basementDoorRight != null ? basementDoorRight.position : Vector3.zero;
-
-        Vector3 leftEnd = leftStart + new Vector3(0f, 0f, doorMoveDistanceZ);
-        Vector3 rightEnd = rightStart + new Vector3(0f, 0f, -doorMoveDistanceZ);
-
-        float elapsed = 0f;
-
-        while (elapsed < doorMoveDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / Mathf.Max(0.0001f, doorMoveDuration));
-            float eased = Mathf.SmoothStep(0f, 1f, t);
-
-            if (basementDoorLeft != null)
-                basementDoorLeft.position = Vector3.Lerp(leftStart, leftEnd, eased);
-
-            if (basementDoorRight != null)
-                basementDoorRight.position = Vector3.Lerp(rightStart, rightEnd, eased);
-
-            yield return null;
-        }
-
-        if (basementDoorLeft != null)
-            basementDoorLeft.position = leftEnd;
-
-        if (basementDoorRight != null)
-            basementDoorRight.position = rightEnd;
-
-        SpawnBossChest();
-    }
-
-    private void SpawnBossChest()
-    {
-        if (bossChestPrefab == null)
-            return;
-
-        Vector3 spawnPos = bossChestSpawnPoint != null ? bossChestSpawnPoint.position : transform.position;
-        Quaternion spawnRot = bossChestSpawnPoint != null ? bossChestSpawnPoint.rotation : Quaternion.identity;
-
-        Instantiate(bossChestPrefab, spawnPos, spawnRot);
     }
 
     private void UpdateBossUI()
@@ -887,6 +771,7 @@ public class EnvyAI : MonoBehaviour
     {
         Vector3 chosenPosition = transform.position;
         bool found = false;
+        float currentY = transform.position.y;
 
         for (int i = 0; i < teleportAttempts; i++)
         {
@@ -895,9 +780,14 @@ public class EnvyAI : MonoBehaviour
 
             if (NavMesh.SamplePosition(randomPoint, out NavMeshHit hit, navMeshSampleDistance, NavMesh.AllAreas))
             {
-                chosenPosition = hit.position;
-                found = true;
-                break;
+                float yDiff = Mathf.Abs(hit.position.y - currentY);
+
+                if (yDiff <= maxTeleportHeightDifference)
+                {
+                    chosenPosition = hit.position;
+                    found = true;
+                    break;
+                }
             }
         }
 
@@ -932,6 +822,7 @@ public class EnvyAI : MonoBehaviour
             faceTurnSpeed * Time.deltaTime
         );
     }
+
     private void SnapFaceTarget(Vector3 targetPosition)
     {
         Vector3 flatDir = targetPosition - transform.position;

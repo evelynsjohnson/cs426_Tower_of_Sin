@@ -1,37 +1,20 @@
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
 
 public class BossSpawner : MonoBehaviour
 {
+    [Header("Boss Pool")]
     public GameObject[] bossPrefabs;
     public int currentFloor = 5;
 
+    [Header("Spawn Points")]
     public Transform bossSpawnPoint;
     public Transform bossSpawnPointLedge;
     public string gluttonyNameContains = "Gluttony";
     public string greedNameContains = "piratesking_skeleton";
 
-    public Transform lightsRoot;
-    public Transform basementDoorLeft;
-    public Transform basementDoorRight;
-    public AudioSource gateAudioSource;
-    public AudioClip largeGateClip;
-
-    [Header("Boss Music")]
-    public AudioSource backgroundMusicSource;
-
-    public GameObject bossChestPrefab;
-    public Transform bossChestSpawnPoint;
-
-    public Image bossHealthBarFill;
-    public TMP_Text bossHealthText;
-    public GameObject bossHealthUIRoot;
-
-    public float doorMoveDistanceZ = 1f;
-    public float doorMoveDuration = 3f;
-
+    [Header("Scene References")]
     public Transform roomCenter;
+    public BossArenaController bossArenaController;
 
     private void Start()
     {
@@ -40,6 +23,9 @@ public class BossSpawner : MonoBehaviour
             Debug.LogWarning("BossSpawner is missing references.");
             return;
         }
+
+        if (bossArenaController != null)
+            bossArenaController.ResetArenaInstant();
 
         GameObject chosen = bossPrefabs[Random.Range(0, bossPrefabs.Length)];
 
@@ -70,17 +56,16 @@ public class BossSpawner : MonoBehaviour
 
         GameObject spawnedBoss = Instantiate(chosen, spawnPosition, spawnRotation);
 
-        // Try EnvyAI first
         EnvyAI envyAI = spawnedBoss.GetComponent<EnvyAI>();
         if (envyAI == null)
             envyAI = spawnedBoss.GetComponentInChildren<EnvyAI>();
 
-        // Try other boss AIs if EnvyAI wasn't found
         GreedAI greedAI = null;
         SlothAI slothAI = null;
         LustAI lustAI = null;
         PrideAI prideAI = null;
         WrathAI wrathAI = null;
+
         if (envyAI == null)
         {
             greedAI = spawnedBoss.GetComponent<GreedAI>();
@@ -116,29 +101,10 @@ public class BossSpawner : MonoBehaviour
             }
         }
 
-        Light[] arenaLights = new Light[0];
-        if (lightsRoot != null)
-            arenaLights = lightsRoot.GetComponentsInChildren<Light>(true);
-
         if (envyAI != null)
         {
             envyAI.SetFloor(currentFloor);
-
-            envyAI.SetupArenaReferences(
-                arenaLights,
-                basementDoorLeft,
-                basementDoorRight,
-                gateAudioSource,
-                largeGateClip,
-                backgroundMusicSource,
-                bossChestPrefab,
-                bossChestSpawnPoint,
-                bossHealthBarFill,
-                bossHealthText,
-                bossHealthUIRoot,
-                doorMoveDistanceZ,
-                doorMoveDuration
-            );
+            envyAI.SetArenaController(bossArenaController);
         }
         else if (greedAI != null)
         {
@@ -151,95 +117,29 @@ public class BossSpawner : MonoBehaviour
                 bossSpawnPoint,
                 bossSpawnPointLedge,
                 roomCenter,
-                bossHealthBarFill,
-                bossHealthText,
-                bossHealthUIRoot
+                bossArenaController != null ? bossArenaController.GetBossHealthBarFill() : null,
+                bossArenaController != null ? bossArenaController.GetBossHealthText() : null,
+                bossArenaController != null ? bossArenaController.GetBossHealthUIRoot() : null
             );
 
-            greedAI.SetupArenaReferences(
-                arenaLights,
-                basementDoorLeft,
-                basementDoorRight,
-                gateAudioSource,
-                largeGateClip,
-                backgroundMusicSource,
-                bossChestPrefab,
-                bossChestSpawnPoint,
-                bossHealthBarFill,
-                bossHealthText,
-                bossHealthUIRoot,
-                doorMoveDistanceZ,
-                doorMoveDuration
-            );
+            //greedAI.SetArenaController(bossArenaController);
         }
         else if (slothAI != null)
         {
             slothAI.SetFloor(currentFloor);
-            slothAI.SetupArenaReferences(
-                bossHealthBarFill,
-                bossHealthText,
-                bossHealthUIRoot,
-                arenaLights,
-                basementDoorLeft,
-                basementDoorRight,
-                gateAudioSource,
-                largeGateClip,
-                bossChestPrefab,
-                bossChestSpawnPoint,
-                doorMoveDistanceZ,
-                doorMoveDuration
-            );
+            Debug.LogWarning("SlothAI still needs to be refactored to use BossArenaController.");
         }
         else if (lustAI != null)
         {
-            lustAI.SetupArenaReferences(
-                bossHealthBarFill,
-                bossHealthText,
-                bossHealthUIRoot,
-                arenaLights,
-                basementDoorLeft,
-                basementDoorRight,
-                gateAudioSource,
-                largeGateClip,
-                bossChestPrefab,
-                bossChestSpawnPoint,
-                doorMoveDistanceZ,
-                doorMoveDuration
-            );
+            Debug.LogWarning("LustAI still needs to be refactored to use BossArenaController.");
         }
         else if (prideAI != null)
         {
-            prideAI.SetupArenaReferences(
-                bossHealthBarFill,
-                bossHealthText,
-                bossHealthUIRoot,
-                arenaLights,
-                basementDoorLeft,
-                basementDoorRight,
-                gateAudioSource,
-                largeGateClip,
-                bossChestPrefab,
-                bossChestSpawnPoint,
-                doorMoveDistanceZ,
-                doorMoveDuration
-            );
+            Debug.LogWarning("PrideAI still needs to be refactored to use BossArenaController.");
         }
         else if (wrathAI != null)
         {
-            wrathAI.SetupArenaReferences(
-                bossHealthBarFill,
-                bossHealthText,
-                bossHealthUIRoot,
-                arenaLights,
-                basementDoorLeft,
-                basementDoorRight,
-                gateAudioSource,
-                largeGateClip,
-                bossChestPrefab,
-                bossChestSpawnPoint,
-                doorMoveDistanceZ,
-                doorMoveDuration
-            );
+            Debug.LogWarning("WrathAI still needs to be refactored to use BossArenaController.");
         }
         else
         {

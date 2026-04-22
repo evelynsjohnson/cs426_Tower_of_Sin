@@ -1609,12 +1609,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 203339399}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 13.74, y: 0.01, z: -14.15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 212245515}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &212245514
 GameObject:
@@ -1647,10 +1647,17 @@ Transform:
   m_Children:
   - {fileID: 1744654291}
   - {fileID: 1327858540}
-  - {fileID: 1790830945}
-  - {fileID: 1355126489}
-  - {fileID: 1294538145}
   - {fileID: 1588495131}
+  - {fileID: 7323286858215325249}
+  - {fileID: 8284203264206461828}
+  - {fileID: 1239185657}
+  - {fileID: 1769859245}
+  - {fileID: 203339400}
+  - {fileID: 1790830945}
+  - {fileID: 556127281}
+  - {fileID: 524120951}
+  - {fileID: 213804884}
+  - {fileID: 271797449}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &213804881
@@ -1725,12 +1732,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 213804881}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 212245515}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &217098658
 PrefabInstance:
@@ -2353,12 +2360,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 271797445}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 13.94, y: -0.01, z: -14.01}
   m_LocalScale: {x: 28.594406, y: 0.067415, z: 20.063986}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 212245515}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &288289670
 PrefabInstance:
@@ -4363,12 +4370,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 524120949}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 24.7049, y: 0.01, z: -14.06277}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 212245515}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &524543682
 PrefabInstance:
@@ -4532,6 +4539,7 @@ GameObject:
   m_Component:
   - component: {fileID: 543289513}
   - component: {fileID: 543289514}
+  - component: {fileID: 543289515}
   m_Layer: 0
   m_Name: BossSpawner
   m_TagString: Untagged
@@ -4569,32 +4577,50 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossSpawner
   bossPrefabs:
-  - {fileID: 2730658654648739784, guid: aa70f419a48029e4eb9f6f8eeb6d3843, type: 3}
-  - {fileID: 2730658654648739784, guid: aa70f419a48029e4eb9f6f8eeb6d3843, type: 3}
-  - {fileID: 2730658654648739784, guid: aa70f419a48029e4eb9f6f8eeb6d3843, type: 3}
-  - {fileID: 6576849777231807368, guid: 7cddfa90880447c45bcd9f4bf37e093b, type: 3}
-  - {fileID: 1817817437369553006, guid: aa1d3c8b1f447594cab6003c063b0539, type: 3}
-  - {fileID: 167928034052775675, guid: 9b37c6335e4093543b95a1c30e58415a, type: 3}
-  - {fileID: 9060477573423771446, guid: 363f5c164a4dd8949a6a57f987008940, type: 3}
+  - {fileID: 2275824099207907018, guid: 2ef57131672a6684a90b3990f0d3c284, type: 3}
+  - {fileID: 2275824099207907018, guid: 2ef57131672a6684a90b3990f0d3c284, type: 3}
+  - {fileID: 2275824099207907018, guid: 2ef57131672a6684a90b3990f0d3c284, type: 3}
+  - {fileID: 2275824099207907018, guid: 2ef57131672a6684a90b3990f0d3c284, type: 3}
+  - {fileID: 2275824099207907018, guid: 2ef57131672a6684a90b3990f0d3c284, type: 3}
+  - {fileID: 2275824099207907018, guid: 2ef57131672a6684a90b3990f0d3c284, type: 3}
+  - {fileID: 2275824099207907018, guid: 2ef57131672a6684a90b3990f0d3c284, type: 3}
   currentFloor: 5
   bossSpawnPoint: {fileID: 1215559007}
   bossSpawnPointLedge: {fileID: 336447961}
   gluttonyNameContains: Gluttony
   greedNameContains: piratesking_skeleton
-  lightsRoot: {fileID: 1327858540}
-  basementDoorLeft: {fileID: 1355126489}
-  basementDoorRight: {fileID: 1294538145}
+  roomCenter: {fileID: 203339400}
+  bossArenaController: {fileID: 543289515}
+--- !u!114 &543289515
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 543289512}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16fa5642a4c19d64f941297cb5c8bcb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  basementDoorLeft: {fileID: 7323286858215325249}
+  basementDoorRight: {fileID: 8284203264206461828}
+  doorMoveDistanceZ: -1.75
+  doorMoveDuration: 6
+  moveDoorsInLocalSpace: 1
   gateAudioSource: {fileID: 1790830946}
   largeGateClip: {fileID: 8300000, guid: 1edfbeb36dcdc954ea9e084121954353, type: 3}
-  backgroundMusicSource: {fileID: 556127280}
+  lightsRoot: {fileID: 1327858540}
+  defaultLightColor: {r: 0.90588236, g: 0.78431374, b: 0.38039216, a: 1}
+  defaultLightIntensityMultiplier: 1
   bossChestPrefab: {fileID: 7911348273595320300, guid: cc87a78918f51934e86f6f2934010f3a, type: 3}
   bossChestSpawnPoint: {fileID: 1769859245}
+  backgroundMusicSource: {fileID: 556127280}
+  defaultMusicClip: {fileID: 8300000, guid: 87a36cc36761c074f85749b83b44537e, type: 3}
+  defaultMusicVolume: 1
   bossHealthBarFill: {fileID: 1257694660}
   bossHealthText: {fileID: 1081649638}
   bossHealthUIRoot: {fileID: 877502356}
-  doorMoveDistanceZ: 0.4
-  doorMoveDuration: 0.4
-  roomCenter: {fileID: 203339400}
 --- !u!1001 &543942838
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4703,7 +4729,7 @@ AudioSource:
   m_GameObject: {fileID: 556127279}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 24300002, guid: 37acf924d13abde49898458ba1054559, type: 2}
+  OutputAudioMixerGroup: {fileID: -4606566686636076616, guid: 37acf924d13abde49898458ba1054559, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
@@ -4803,7 +4829,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 212245515}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -9905,12 +9931,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1239185656}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
   m_LocalPosition: {x: -8.58, y: -0.00002, z: -13.87}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 212245515}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!114 &1239185658
 MonoBehaviour:
@@ -10956,38 +10982,6 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
---- !u!1 &1294538144
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1294538145}
-  m_Layer: 0
-  m_Name: BasementDoorRight
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1294538145
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1294538144}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 8284203264206461828}
-  m_Father: {fileID: 212245515}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1294973188
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11200,38 +11194,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f4372e02dd0e54440977f29b6a4c317b, type: 3}
---- !u!1 &1355126488
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1355126489}
-  m_Layer: 0
-  m_Name: BasementDoorLeft
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1355126489
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1355126488}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 7323286858215325249}
-  m_Father: {fileID: 212245515}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1363189475
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -13515,12 +13477,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1769859244}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
+  m_LocalRotation: {x: -0, y: -0.7071068, z: -0, w: 0.7071068}
   m_LocalPosition: {x: 27.57, y: 0.01, z: -13.91}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 212245515}
   m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
 --- !u!1 &1773433551
 GameObject:
@@ -13793,7 +13755,7 @@ AudioSource:
   m_GameObject: {fileID: 1790830944}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 24300002, guid: 0b88f49200b3a7b4c813a306920bd6c0, type: 2}
+  OutputAudioMixerGroup: {fileID: 133451126432789121, guid: 37acf924d13abde49898458ba1054559, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: 8713a969fde51bc41b2a4d7593361eaa, type: 3}
   m_PlayOnAwake: 0
@@ -16334,7 +16296,7 @@ Transform:
   m_LocalScale: {x: 1.8, y: 1.8, z: 1.8}
   m_ConstrainProportionsScale: 1
   m_Children: []
-  m_Father: {fileID: 1355126489}
+  m_Father: {fileID: 212245515}
   m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
 --- !u!23 &8284203264204691812
 MeshRenderer:
@@ -16406,7 +16368,7 @@ Transform:
   m_LocalScale: {x: 1.8, y: 1.8, z: 1.8}
   m_ConstrainProportionsScale: 1
   m_Children: []
-  m_Father: {fileID: 1294538145}
+  m_Father: {fileID: 212245515}
   m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
 --- !u!64 &8284203264206848762
 MeshCollider:
@@ -16519,14 +16481,7 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 213804884}
-  - {fileID: 1239185657}
-  - {fileID: 1769859245}
-  - {fileID: 203339400}
   - {fileID: 212245515}
-  - {fileID: 556127281}
-  - {fileID: 524120951}
   - {fileID: 543289513}
   - {fileID: 1284769641}
-  - {fileID: 271797449}
   - {fileID: 877502360}

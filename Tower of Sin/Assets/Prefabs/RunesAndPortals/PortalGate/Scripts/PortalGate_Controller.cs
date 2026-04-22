@@ -20,6 +20,7 @@ public class PortalGate_Controller : MonoBehaviour
     private float transitionF, lightF;
     private Material portalMat, portalEffectMat;
     private Vector3 symbolStartPos;
+    [SerializeField] private bool controlledByBossArena = false;
 
     private Coroutine transitionCor, symbolMovementCor;
 
@@ -67,10 +68,9 @@ public class PortalGate_Controller : MonoBehaviour
         }
     }
 
-    // --- ADDED THIS TO MAKE IT AUTO-START ---
     private void Start()
     {
-        F_TogglePortalGate(true);
+        //F_TogglePortalGate(true);
     }
 
     public void F_TogglePortalGate(bool _activate)
