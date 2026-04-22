@@ -54,6 +54,9 @@ public class FirstPersonMovement : MonoBehaviour
     public float slash2AnimDuration = 1.30f;
     public float slash2HitDelay = 0.30f;
 
+    public float heavyAttackGruntDelay = 1f;
+    public float lightAttackGruntDelay = 0.3f;
+
     public GroundCheck groundCheck;
     public float jumpHeight = 2f;
     public float jumpCooldown = 0.1f;
@@ -61,13 +64,22 @@ public class FirstPersonMovement : MonoBehaviour
     private bool jumpQueued = false;
     private float lastJumpTime = -999f;
 
+    [Header("Sword Audio")]
     public AudioClip swordSwing1;
     public AudioClip swordSwing2;
     public AudioClip swordWoosh1;
     public AudioClip swordWoosh2;
 
+    public AudioSource voiceAudioSource;
+    public AudioSource runAudioSource;
+
+    public AudioClip runAudio;
+    public AudioClip[] attackGrunts;   // atkGrunt1 - atkGrunt8
+    public AudioClip[] getHitClips;    // getHit1 - getHit2
+
     private Rigidbody rigidbody;
     private AudioSource audioSource;
+    private PlayerHealth playerHealth;
 
     private float nextSlashTime = 0f;
     private float holdTimer = 0f;
@@ -88,14 +100,32 @@ public class FirstPersonMovement : MonoBehaviour
     {
         rigidbody = GetComponent<Rigidbody>();
         audioSource = GetComponent<AudioSource>();
+        playerHealth = GetComponent<PlayerHealth>();
 
         if (animator == null) animator = GetComponentInChildren<Animator>();
         if (cameraTransform == null && Camera.main != null) cameraTransform = Camera.main.transform;
+
+        if (voiceAudioSource == null)
+            voiceAudioSource = gameObject.AddComponent<AudioSource>();
+
+        if (runAudioSource == null)
+            runAudioSource = gameObject.AddComponent<AudioSource>();
+
+        runAudioSource.loop = true;
+        runAudioSource.playOnAwake = false;
+        runAudioSource.spatialBlend = 0f;
+
+        voiceAudioSource.loop = false;
+        voiceAudioSource.playOnAwake = false;
+        voiceAudioSource.spatialBlend = 0f;
     }
 
     void Start()
     {
         SetUIMode(false);
+
+        if (playerHealth != null)
+            playerHealth.OnDamageTaken += PlayRandomGetHit;
 
         if (enableDebugLogs)
         {
@@ -104,6 +134,12 @@ public class FirstPersonMovement : MonoBehaviour
             if (cameraTransform != null)
                 Debug.Log($"[FPM] Camera start pos={cameraTransform.position}");
         }
+    }
+
+    void OnDestroy()
+    {
+        if (playerHealth != null)
+            playerHealth.OnDamageTaken -= PlayRandomGetHit;
     }
 
     void Update()
@@ -116,6 +152,7 @@ public class FirstPersonMovement : MonoBehaviour
             holdTimer = 0f;
             jumpQueued = false;
             UpdateAnimationStates(0f, 0f);
+            UpdateRunAudio();
             return;
         }
 
@@ -135,7 +172,11 @@ public class FirstPersonMovement : MonoBehaviour
 
         CheckForInvalidState();
 
-        if (Time.timeScale == 0f) return;
+        if (Time.timeScale == 0f)
+        {
+            UpdateRunAudio();
+            return;
+        }
 
         if (uiMode)
         {
@@ -144,6 +185,7 @@ public class FirstPersonMovement : MonoBehaviour
             IsRunning = false;
             holdTimer = 0f;
             UpdateAnimationStates(0f, 0f);
+            UpdateRunAudio();
             return;
         }
 
@@ -151,7 +193,9 @@ public class FirstPersonMovement : MonoBehaviour
 
         currentHorizontalInput = Input.GetAxisRaw("Horizontal");
         currentVerticalInput = Input.GetAxisRaw("Vertical");
-        IsRunning = canRun && Input.GetKey(runningKey);
+
+        bool hasMovementInput = Mathf.Abs(currentHorizontalInput) > 0.1f || Mathf.Abs(currentVerticalInput) > 0.1f;
+        IsRunning = canRun && Input.GetKey(runningKey) && hasMovementInput;
 
         if (Input.GetKeyDown(jumpKey) &&
             groundCheck != null &&
@@ -174,6 +218,7 @@ public class FirstPersonMovement : MonoBehaviour
         }
 
         UpdateAnimationStates(currentHorizontalInput, currentVerticalInput);
+        UpdateRunAudio();
     }
 
     void SetUIMode(bool enabled)
@@ -190,9 +235,7 @@ public class FirstPersonMovement : MonoBehaviour
         if (animator == null) return;
 
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-        {
             return;
-        }
 
         if (Time.time >= nextSlashTime)
         {
@@ -233,11 +276,78 @@ public class FirstPersonMovement : MonoBehaviour
         animator.SetInteger("slashType", slashChoice);
         animator.SetTrigger("isSlashing");
 
+        if (slashChoice == 1)
+        {
+            StartCoroutine(PlayLightAttackGruntDelayed());
+        }
+        else if (slashChoice == 2)
+        {
+            StartCoroutine(PlayHeavyAttackGruntDelayed());
+        }
+
         float currentDelay = (slashChoice == 1) ? slash1HitDelay : slash2HitDelay;
         StartCoroutine(DealDamageAfterDelay(currentDelay, slashChoice));
 
         float animLength = (slashChoice == 1) ? slash1AnimDuration : slash2AnimDuration;
         nextSlashTime = Time.time + animLength;
+    }
+
+    private IEnumerator PlayLightAttackGruntDelayed()
+    {
+        yield return new WaitForSeconds(lightAttackGruntDelay);
+
+        if (!canControl) yield break;
+        PlayRandomAttackGrunt();
+    }
+
+    private IEnumerator PlayHeavyAttackGruntDelayed()
+    {
+        yield return new WaitForSeconds(heavyAttackGruntDelay);
+
+        if (!canControl) yield break;
+        PlayRandomAttackGrunt();
+    }
+
+    private void PlayRandomAttackGrunt()
+    {
+        if (voiceAudioSource == null || attackGrunts == null || attackGrunts.Length == 0)
+            return;
+
+        AudioClip clip = attackGrunts[Random.Range(0, attackGrunts.Length)];
+        if (clip != null)
+            voiceAudioSource.PlayOneShot(clip);
+    }
+
+    private void PlayRandomGetHit()
+    {
+        if (voiceAudioSource == null || getHitClips == null || getHitClips.Length == 0)
+            return;
+
+        AudioClip clip = getHitClips[Random.Range(0, getHitClips.Length)];
+        if (clip != null)
+            voiceAudioSource.PlayOneShot(clip);
+    }
+
+    private void UpdateRunAudio()
+    {
+        bool hasMovementInput = Mathf.Abs(currentHorizontalInput) > 0.1f || Mathf.Abs(currentVerticalInput) > 0.1f;
+        bool shouldPlayRun = canControl && !uiMode && IsRunning && hasMovementInput && runAudio != null;
+
+        if (runAudioSource == null) return;
+
+        if (shouldPlayRun)
+        {
+            if (runAudioSource.clip != runAudio)
+                runAudioSource.clip = runAudio;
+
+            if (!runAudioSource.isPlaying)
+                runAudioSource.Play();
+        }
+        else
+        {
+            if (runAudioSource.isPlaying)
+                runAudioSource.Stop();
+        }
     }
 
     private IEnumerator DealDamageAfterDelay(float delayTime, int slashChoice)
@@ -475,6 +585,9 @@ public class FirstPersonMovement : MonoBehaviour
         jumpQueued = false;
         nextSlashTime = 0f;
 
+        if (runAudioSource != null && runAudioSource.isPlaying)
+            runAudioSource.Stop();
+
         if (rigidbody != null)
             rigidbody.linearVelocity = Vector3.zero;
 
@@ -493,6 +606,9 @@ public class FirstPersonMovement : MonoBehaviour
 
         currentHorizontalInput = 0f;
         currentVerticalInput = 0f;
+
+        if (runAudioSource != null)
+            runAudioSource.Stop();
 
         if (rigidbody != null)
             rigidbody.linearVelocity = Vector3.zero;
