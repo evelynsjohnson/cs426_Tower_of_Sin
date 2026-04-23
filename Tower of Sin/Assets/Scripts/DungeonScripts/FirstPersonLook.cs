@@ -56,4 +56,25 @@ public class FirstPersonLook : MonoBehaviour
         if (character != null)
             character.localRotation = Quaternion.AngleAxis(velocity.x, Vector3.up);
     }
+
+    public void SetLookRotation(Quaternion worldRotation)
+    {
+        Vector3 euler = worldRotation.eulerAngles;
+
+        float yaw = euler.y;
+        float pitch = euler.x;
+
+        if (pitch > 180f)
+            pitch -= 360f;
+
+        velocity.x = yaw;
+        velocity.y = Mathf.Clamp(-pitch, -90f, 90f);
+
+        frameVelocity = Vector2.zero;
+
+        transform.localRotation = Quaternion.AngleAxis(-velocity.y, Vector3.right);
+
+        if (character != null)
+            character.localRotation = Quaternion.AngleAxis(velocity.x, Vector3.up);
+    }
 }

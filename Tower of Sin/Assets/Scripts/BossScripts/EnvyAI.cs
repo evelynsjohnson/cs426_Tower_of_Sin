@@ -489,16 +489,18 @@ public class EnvyAI : MonoBehaviour
     private void Die()
     {
         if (isDead) return;
-
+        circleDamage = 0f;
         isDead = true;
         currentPhase = BossPhase.Dead;
         deathVoiceStarted = true;
         isBusy = false;
 
-        if (aiLoopRoutine != null) StopCoroutine(aiLoopRoutine);
-        if (robotNoiseRoutine != null) StopCoroutine(robotNoiseRoutine);
-        if (robotNoise2Routine != null) StopCoroutine(robotNoise2Routine);
-        if (attackVoiceRoutine != null) StopCoroutine(attackVoiceRoutine);
+        //if (aiLoopRoutine != null) StopCoroutine(aiLoopRoutine);
+        //if (robotNoiseRoutine != null) StopCoroutine(robotNoiseRoutine);
+        //if (robotNoise2Routine != null) StopCoroutine(robotNoise2Routine);
+        //if (attackVoiceRoutine != null) StopCoroutine(attackVoiceRoutine);
+
+        StopAllCoroutines();
 
         if (agent != null && agent.enabled && agent.isOnNavMesh)
         {

@@ -20,7 +20,13 @@ public class RandomPlayerSpawner : MonoBehaviour
                 if (cc != null) cc.enabled = false;
 
                 player.transform.position = spawn.position;
-                // temporarily remove rotation line for debugging
+                player.transform.rotation = spawn.rotation;
+
+                FirstPersonLook look = player.GetComponentInChildren<FirstPersonLook>();
+                if (look != null)
+                {
+                    look.SetLookRotation(spawn.rotation);
+                }
 
                 if (cc != null) cc.enabled = true;
             }

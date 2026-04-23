@@ -35,8 +35,15 @@ public class BossArenaController : MonoBehaviour
     [SerializeField] private TMP_Text bossHealthText;
     [SerializeField] private GameObject bossHealthUIRoot;
 
+    [Header("Boss Exit Portal")]
+    [SerializeField] private PortalGate_Controller bossExitPortal;
+    [SerializeField] private Renderer bossExitPortalCubeRenderer;
+    [SerializeField] private Color portalCubeInactiveColor = Color.gray;
+    [SerializeField] private string portalCubeColorProperty = "_BaseColor";
+
     private Light[] arenaLights = new Light[0];
     private float[] originalLightIntensities = new float[0];
+    [SerializeField] private Light bossExitPortalPointLight;
 
     private Vector3 leftDoorClosedLocalPos;
     private Vector3 rightDoorClosedLocalPos;
@@ -50,10 +57,15 @@ public class BossArenaController : MonoBehaviour
     private AudioClip previousMusicClip;
     private float previousMusicVolume = 1f;
 
+    private Color currentBossAliveLightColor = Color.white;
+    private Material bossExitPortalCubeMaterialInstance;
+    private Color originalPortalCubeColor = Color.white;
+
     private void Awake()
     {
         CacheDoorClosedPositions();
         CacheLights();
+        CachePortalCubeMaterial();
 
         if (backgroundMusicSource != null)
         {
@@ -95,6 +107,38 @@ public class BossArenaController : MonoBehaviour
         }
     }
 
+    private void CachePortalCubeMaterial()
+    {
+        if (bossExitPortalCubeRenderer == null)
+            return;
+
+        if (bossExitPortalCubeMaterialInstance == null)
+        {
+            bossExitPortalCubeMaterialInstance = bossExitPortalCubeRenderer.material;
+
+            if (bossExitPortalCubeMaterialInstance != null)
+            {
+                if (bossExitPortalCubeMaterialInstance.HasProperty(portalCubeColorProperty))
+                    originalPortalCubeColor = bossExitPortalCubeMaterialInstance.GetColor(portalCubeColorProperty);
+                else if (bossExitPortalCubeMaterialInstance.HasProperty("_Color"))
+                    originalPortalCubeColor = bossExitPortalCubeMaterialInstance.GetColor("_Color");
+            }
+        }
+    }
+
+    private void SetPortalCubeColor(Color color)
+    {
+        CachePortalCubeMaterial();
+
+        if (bossExitPortalCubeMaterialInstance == null)
+            return;
+
+        if (bossExitPortalCubeMaterialInstance.HasProperty(portalCubeColorProperty))
+            bossExitPortalCubeMaterialInstance.SetColor(portalCubeColorProperty, color);
+        else if (bossExitPortalCubeMaterialInstance.HasProperty("_Color"))
+            bossExitPortalCubeMaterialInstance.SetColor("_Color", color);
+    }
+
     public void ResetArenaInstant()
     {
         chestSpawned = false;
@@ -102,9 +146,24 @@ public class BossArenaController : MonoBehaviour
         CloseDoorsInstant();
         ResetLightsToDefault();
         RestoreDefaultMusic();
+        SetPortalCubeColor(portalCubeInactiveColor);
+
+        if (bossExitPortal != null)
+        {
+            bossExitPortal.SetControlledByBossArena(true);
+            bossExitPortal.F_TogglePortalGate(false);
+            SetPortalCubeColor(portalCubeInactiveColor);
+            SetPortalPointLightColor(portalCubeInactiveColor);
+        }
 
         if (bossHealthUIRoot != null)
             bossHealthUIRoot.SetActive(false);
+    }
+
+    private void SetPortalPointLightColor(Color color)
+    {
+        if (bossExitPortalPointLight != null)
+            bossExitPortalPointLight.color = color;
     }
 
     public void OnBossSpawned(Color bossLightColor, float bossLightIntensityMultiplier, AudioClip bossMusicClip, float bossMusicVolume = 1f)
@@ -114,6 +173,18 @@ public class BossArenaController : MonoBehaviour
         CloseDoorsInstant();
         ApplyBossLights(bossLightColor, bossLightIntensityMultiplier);
         PlayBossMusic(bossMusicClip, bossMusicVolume);
+
+        currentBossAliveLightColor = bossLightColor;
+
+        if (bossExitPortal != null)
+        {
+            bossExitPortal.SetControlledByBossArena(true);
+            bossExitPortal.F_TogglePortalGate(false);
+            SetPortalCubeColor(portalCubeInactiveColor);
+            SetPortalPointLightColor(portalCubeInactiveColor);
+        }
+
+        SetPortalCubeColor(portalCubeInactiveColor);
 
         if (bossHealthUIRoot != null)
             bossHealthUIRoot.SetActive(true);
@@ -125,6 +196,15 @@ public class BossArenaController : MonoBehaviour
         SpawnBossChestOnce();
         ResetLightsToDefault();
         RestoreDefaultMusic();
+
+        SetPortalCubeColor(currentBossAliveLightColor);
+
+        if (bossExitPortal != null)
+        {
+            bossExitPortal.F_TogglePortalGate(true);
+            SetPortalCubeColor(currentBossAliveLightColor);
+            SetPortalPointLightColor(currentBossAliveLightColor);
+        }
 
         if (bossHealthUIRoot != null)
             bossHealthUIRoot.SetActive(false);

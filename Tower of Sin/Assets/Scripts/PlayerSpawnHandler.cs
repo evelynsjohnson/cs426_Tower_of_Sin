@@ -32,7 +32,13 @@ public class PlayerSpawnHandler : MonoBehaviour
         }
 
         player.transform.position = spawnPoint.position;
-        player.transform.rotation = Quaternion.Euler(0f, spawnPoint.eulerAngles.y, 0f);
+        player.transform.rotation = spawnPoint.rotation;
+
+        FirstPersonLook look = player.GetComponentInChildren<FirstPersonLook>();
+        if (look != null)
+        {
+            look.SetLookRotation(spawnPoint.rotation);
+        }
 
         if (cc != null)
         {

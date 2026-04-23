@@ -9495,7 +9495,7 @@ MonoBehaviour:
   randomAttackVoiceDelay: {x: 10, y: 20}
   audioMinDistance: 2
   audioMaxDistance: 30
-  baseMaxHealth: 1
+  baseMaxHealth: 700
   currentHealth: 0
   maxHealth: 0
   currentPhase: 0
