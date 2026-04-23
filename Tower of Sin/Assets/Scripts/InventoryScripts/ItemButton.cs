@@ -37,10 +37,10 @@ public class ItemButton : MonoBehaviour, IPointerClickHandler, IPointerEnterHand
 
     public void ShowStats()
     {
-        // UnityEngine.Debug.Log("Tring to show stats");
+        UnityEngine.Debug.Log("Tring to show stats");
         if (itemStatsPanel != null && item.icon != null)
         {
-            // UnityEngine.Debug.Log("Start of trying");
+            UnityEngine.Debug.Log("Start of trying");
             itemStatsPanel.SetActive(true);
 
             string itemText = item.name + "\nATK: +" + item.damage + "\nDEF: +" + item.defense + "\nHP: +" + item.health;
@@ -49,7 +49,7 @@ public class ItemButton : MonoBehaviour, IPointerClickHandler, IPointerEnterHand
             UnityEngine.Color hue = getColor(item.rank);
             itemPicture.texture = item.icon;
             itemPicture.color = hue;
-            // UnityEngine.Debug.Log("End of trying");
+            UnityEngine.Debug.Log("End of trying");
         }
 
     }

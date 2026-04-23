@@ -1,7 +1,5 @@
 using UnityEngine;
-
 using System.Collections.Generic;
-using UnityEngine;
 using System;
 using System.ComponentModel;
 using UnityEngine.UI;
@@ -9,6 +7,9 @@ using UnityEngine.EventSystems;
 using System.Runtime.Serialization;
 using System.Security.AccessControl;
 using TMPro;
+
+using System.Diagnostics;
+using System.Drawing;
 
 public class OpenInventory : MonoBehaviour
 {
@@ -20,6 +21,12 @@ public class OpenInventory : MonoBehaviour
 
     public List<ItemData> inventory;
 
+    public GameObject slots;
+
+    void Start()
+    {
+        playerController = GameObject.FindGameObjectWithTag("Player");
+    }
     void Update()
     {
         if (player == null || objectToShow == null) return;
@@ -39,8 +46,6 @@ public class OpenInventory : MonoBehaviour
                 CloseTheInventory();
             }
         }
-
-        playerController = GameObject.FindGameObjectWithTag("Player");
     }
 
     private void OpenTheInventory()
@@ -67,10 +72,25 @@ public class OpenInventory : MonoBehaviour
 
     private void fillInventory()
     {
-        GameObject r1 = GameObject.FindGameObjectWithTag("InventorySlots");
-
         InvManager manager = playerController.GetComponent<InvManager>();
 
         inventory = manager.getInventory();
+
+        int index = 0;
+        foreach (Transform row in slots.transform)
+        {
+            foreach (Transform slot in row)
+            {
+                if (index >= inventory.Count) return;
+                RawImage image = slot.GetComponent<RawImage>();
+                image.texture = inventory[index].icon;
+                UnityEngine.Color temp = image.color;
+                temp.a = 1.0f;
+                image.color = temp;
+                ItemButton button = slot.GetComponent<ItemButton>();
+                button.item = inventory[index];
+                index++;
+            }
+        }
     }
 }
