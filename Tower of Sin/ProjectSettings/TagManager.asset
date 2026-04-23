@@ -8,6 +8,7 @@ TagManager:
   - Terrain
   - Staircase
   - Music
+  - InventorySlots
   layers:
   - Default
   - TransparentFX

@@ -1,10 +1,24 @@
 using UnityEngine;
 
+using System.Collections.Generic;
+using UnityEngine;
+using System;
+using System.ComponentModel;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using System.Runtime.Serialization;
+using System.Security.AccessControl;
+using TMPro;
+
 public class OpenInventory : MonoBehaviour
 {
     public Transform player;
     public float activationDistance = 3f;
     public GameObject objectToShow;
+
+    public GameObject playerController;
+
+    public List<ItemData> inventory;
 
     void Update()
     {
@@ -25,10 +39,14 @@ public class OpenInventory : MonoBehaviour
                 CloseTheInventory();
             }
         }
+
+        playerController = GameObject.FindGameObjectWithTag("Player");
     }
 
     private void OpenTheInventory()
     {
+        fillInventory();
+
         objectToShow.SetActive(true);
 
         Time.timeScale = 0f;
@@ -45,5 +63,14 @@ public class OpenInventory : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+    }
+
+    private void fillInventory()
+    {
+        GameObject r1 = GameObject.FindGameObjectWithTag("InventorySlots");
+
+        InvManager manager = playerController.GetComponent<InvManager>();
+
+        inventory = manager.getInventory();
     }
 }

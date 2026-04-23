@@ -49,9 +49,6 @@ public class InvManager : MonoBehaviour
 
     public List<ItemData> inventory = new List<ItemData>();
 
-    // public GameObject itemStatsPanel;
-    // public TextMeshProUGUI itemStatsText;
-
     void OnEnable()
     {
         if (playerMovementScript != null) playerMovementScript.enabled = false;
@@ -212,28 +209,8 @@ public class InvManager : MonoBehaviour
         inventory.Add(item);
     }
 
-    // public void ShowStats(ItemData item)
-    // {
-    //     itemStatsPanel = GameObject.Find("ItemStats");
-    //     UnityEngine.Debug.Log("Tring to show stats");
-    //     if (itemStatsPanel != null)
-    //     {
-    //         UnityEngine.Debug.Log("Step 1");
-    //         itemStatsPanel.SetActive(true);
-
-    //         string itemText = item.name + "\nATK: +" + item.damage + "\nDEF: +" + item.defense + "\nHP: +" + item.health;
-
-    //         itemStatsText.text = itemText;
-    //     }
-
-    // }
-
-    // public void HideStats()
-    // {
-    //     if (itemStatsPanel != null)
-    //     {
-    //         itemStatsPanel.SetActive(false);
-    //     }
-
-    // }
+    public List<ItemData> getInventory()
+    {
+        return inventory;
+    }
 }
