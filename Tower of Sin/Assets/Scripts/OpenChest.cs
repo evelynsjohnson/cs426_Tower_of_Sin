@@ -75,7 +75,7 @@ public class OpenChest : MonoBehaviour
         {
             playerTransform = player.transform;
         }
-        itmeToSpawn = Random.Range(0, lootItems.Count + 1);
+        itmeToSpawn = Random.Range(0, lootItems.Count);
     }
 
 

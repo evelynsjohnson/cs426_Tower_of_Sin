@@ -19161,7 +19161,7 @@ GameObject:
   - component: {fileID: 628636804}
   m_Layer: 5
   m_Name: InventorySlots
-  m_TagString: Untagged
+  m_TagString: InventorySlots
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -21594,6 +21594,8 @@ MonoBehaviour:
   player: {fileID: 4207293209181035}
   activationDistance: 3
   objectToShow: {fileID: 1004075635}
+  playerController: {fileID: 1773622908903619}
+  inventory: []
 --- !u!1 &710249037
 GameObject:
   m_ObjectHideFlags: 0
