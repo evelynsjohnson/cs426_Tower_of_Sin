@@ -29,6 +29,18 @@ public class OpenInventory : MonoBehaviour
     }
     void Update()
     {
+        if (player == null)
+        {
+            if (playerController != null)
+            {
+                player = playerController.transform;
+            }
+            else
+            {
+                playerController = GameObject.FindGameObjectWithTag("Player");
+                if (playerController != null) player = playerController.transform;
+            }
+        }
         if (player == null || objectToShow == null) return;
 
         if (Time.timeScale == 0f && !objectToShow.activeSelf) return; // other UI is open
@@ -46,6 +58,7 @@ public class OpenInventory : MonoBehaviour
                 CloseTheInventory();
             }
         }
+
     }
 
     private void OpenTheInventory()
