@@ -28,6 +28,7 @@ public class PlayerHealth : MonoBehaviour
     public CanvasGroup gameplayUICanvasGroup;
     public CanvasGroup deathScreenCanvasGroup;
     public float uiFadeDuration = 1.5f;
+    public TextMeshProUGUI deathStatsText;
 
     public string prisonSceneName = "Prison_Scene";
     private int lastAutoHealFloor = -1;
@@ -70,7 +71,23 @@ public class PlayerHealth : MonoBehaviour
             gameplayUICanvasGroup.blocksRaycasts = true;
         }
 
+        TryMilestoneFullHeal(SceneManager.GetActiveScene().name);
         UpdateUI();
+    }
+
+    void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        TryMilestoneFullHeal(scene.name);
     }
 
     void Update()
@@ -83,22 +100,23 @@ public class PlayerHealth : MonoBehaviour
                 targetFill,
                 Time.deltaTime * drainSpeed
             );
-
-            CheckPrisonFullHeal();
         }
+
+        TryMilestoneFullHeal(SceneManager.GetActiveScene().name);
     }
 
-    private void CheckPrisonFullHeal()
+    private void TryMilestoneFullHeal(string sceneName)
     {
         if (isDead || deathRoutineRunning)
             return;
 
-        if (SceneManager.GetActiveScene().name != prisonSceneName)
+        bool isPrisonScene = sceneName == prisonSceneName || sceneName.Contains(prisonSceneName);
+        if (!isPrisonScene)
             return;
 
         int floor = FloorTextController.floorNumber;
 
-        // Heals on floors 5, 6, 10, 12, 15, 18, etc.
+        // Heals on floors 0, 5, 10, 15, etc.
         bool shouldHealThisFloor = (floor >= 0) && (floor % 5 == 0);
 
         if (!shouldHealThisFloor)
@@ -152,7 +170,7 @@ public class PlayerHealth : MonoBehaviour
         if (rb != null)
             rb.linearVelocity = Vector3.zero;
 
-        FloorTextController.floorNumber = 1;
+        UpdateDeathStatsText();
 
         if (playerAnimator != null)
         {
@@ -162,11 +180,34 @@ public class PlayerHealth : MonoBehaviour
 
         yield return new WaitForSeconds(deathAnimationDuration);
 
-        if (gameplayUICanvasGroup != null && deathScreenCanvasGroup != null)
-            yield return StartCoroutine(FadeBetweenUI(gameplayUICanvasGroup, deathScreenCanvasGroup, uiFadeDuration));
+        if (deathScreenCanvasGroup != null)
+        {
+            bool canFade = gameplayUICanvasGroup != null && gameplayUICanvasGroup != deathScreenCanvasGroup;
+
+            if (canFade)
+            {
+                yield return StartCoroutine(FadeBetweenUI(gameplayUICanvasGroup, deathScreenCanvasGroup, uiFadeDuration));
+            }
+            else
+            {
+                deathScreenCanvasGroup.gameObject.SetActive(true);
+                deathScreenCanvasGroup.alpha = 1f;
+                deathScreenCanvasGroup.interactable = true;
+                deathScreenCanvasGroup.blocksRaycasts = true;
+            }
+        }
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+    }
+
+    private void UpdateDeathStatsText()
+    {
+        if (deathStatsText == null)
+            return;
+
+        int floorAtDeath = Mathf.Max(0, FloorTextController.floorNumber);
+        deathStatsText.text = $"[Game Stats]\nFloor Reached: {floorAtDeath}";
     }
 
     private IEnumerator FadeBetweenUI(CanvasGroup fromUI, CanvasGroup toUI, float duration)

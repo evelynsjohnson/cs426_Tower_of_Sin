@@ -12576,9 +12576,10 @@ MonoBehaviour:
   playerAnimator: {fileID: 5866666020155763101}
   deathTriggerName: death
   deathAnimationDuration: 2
-  gameplayUICanvasGroup: {fileID: 1461959565}
+  gameplayUICanvasGroup: {fileID: 1960446503}
   deathScreenCanvasGroup: {fileID: 1461959565}
   uiFadeDuration: 1.5
+  deathStatsText: {fileID: 440841909}
   prisonSceneName: Prison_Scene
   finalDefenseText: {fileID: 681168871}
 --- !u!114 &487772498
@@ -51761,6 +51762,7 @@ GameObject:
   - component: {fileID: 1960446502}
   - component: {fileID: 1960446501}
   - component: {fileID: 1960446500}
+  - component: {fileID: 1960446503}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -51855,6 +51857,18 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+--- !u!225 &1960446503
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1960446498}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &1966821901
 GameObject:
   m_ObjectHideFlags: 0
