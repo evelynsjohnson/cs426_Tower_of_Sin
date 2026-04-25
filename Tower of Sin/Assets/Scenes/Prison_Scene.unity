@@ -58407,7 +58407,7 @@ MonoBehaviour:
   inventory:
   - type: 4
     icon: {fileID: 2800000, guid: a9cc9399cf2d7764784c622ac648a546, type: 3}
-    health: 1
+    health: 0
     damage: 2
     defense: 1
     name: Sword
