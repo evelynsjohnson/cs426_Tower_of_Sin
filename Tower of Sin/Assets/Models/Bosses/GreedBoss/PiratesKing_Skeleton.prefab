@@ -2408,9 +2408,9 @@ MonoBehaviour:
   attackRange: 7
   phase4MinDistance: 7
   faceSpeed: 10
-  baseMaxHP: 800
+  baseMaxHP: 200
   baseAttackDamage: 15
-  attack1SweepSteps: 30
+  attack1SweepSteps: 25
   attack1SweepDamageWindow: 0.35
   attack1TelegraphTime: 1.1
   attack1ActiveTime: 0.4
@@ -2429,7 +2429,7 @@ MonoBehaviour:
   phase2LoopPause: 0
   explosionPrefab: {fileID: 1819053320288612861, guid: d67aaed3dcf449b4daa3ef9b53904d01, type: 3}
   phase4LoopPause: 7
-  skeletonPrefab: {fileID: 8145929255845080419, guid: a2ed85b28c4ba814da314d89886b961c, type: 3}
+  skeletonPrefab: {fileID: 8544559525891978862, guid: 329913d19c05cff40a990d60bd227860, type: 3}
   skeletonSpawnCount: 6
   navmeshSpawnRadius: 30
   bossHealthBarFill: {fileID: 0}
@@ -2460,14 +2460,15 @@ MonoBehaviour:
   oneShotMinDistance: 2
   oneShotMaxDistance: 25
   introDialogueClip: {fileID: 8300000, guid: 552f1e6f5a1557e4dbed5200fde57e55, type: 3}
-  phase2DialogueClip: {fileID: 0}
-  phase4DialogueClip: {fileID: 0}
-  deathDialogueClip: {fileID: 0}
+  phase2DialogueClip: {fileID: 8300000, guid: 89075584238be6945893ce6ee0beefb7, type: 3}
+  phase4DialogueClip: {fileID: 8300000, guid: 998cbda0017334a4a86b1af2d11f9587, type: 3}
+  deathDialogueClip: {fileID: 8300000, guid: ef5fa3542441343429a545e4e6f82c09, type: 3}
   attackVoiceClips:
-  - {fileID: 8300000, guid: b9a7a8f8d3500534b9403426d902f5ac, type: 3}
-  - {fileID: 8300000, guid: 3cefc40bce363314db5155141f10a4eb, type: 3}
-  - {fileID: 8300000, guid: 4931e84a6acd3a74ba202d822e769834, type: 3}
-  - {fileID: 8300000, guid: 590aebc065ef50a4c93a67b1907f4a8e, type: 3}
+  - {fileID: 8300000, guid: 5bb1a9893d1cdaf40bcc7ef3c832edd3, type: 3}
+  - {fileID: 8300000, guid: 10e1c6d0673118e47bc2d2b059f3aeb3, type: 3}
+  - {fileID: 8300000, guid: 3eefe3941e682944880fa1a2dd8e44ea, type: 3}
+  - {fileID: 8300000, guid: 9c3e0fb9bc6d96b498a4e51b647ac83f, type: 3}
+  - {fileID: 8300000, guid: 0f1e477a734a211429a98de0138f9d75, type: 3}
   attackVoiceIntervalRange: {x: 5, y: 10}
   deathFadeOutDuration: 0.25
   attack1TriggerClip: {fileID: 8300000, guid: 64da191cd35257541806a5e90a904d61, type: 3}

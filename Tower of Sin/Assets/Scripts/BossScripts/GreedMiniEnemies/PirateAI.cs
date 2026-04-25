@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
@@ -15,13 +16,17 @@ public class PirateAI : MonoBehaviour
     public float walkSpeed = 2f;
     public float runSpeed = 4.5f;
     public float attackRange = 2.5f;
-    public float runDistance = 8f;   // if farther than this, run
-    public float walkDistance = 4f;   // if between attackRange and this/runDistance, walk
+    public float runDistance = 8f;
     public float rotationSpeed = 8f;
     public float stopDistanceBuffer = 0.15f;
 
     public float attackCooldown = 1.75f;
     public bool canDamagePlayer = true;
+
+    [Header("Spawn Intro / Crawl Up")]
+    public float spawnLowerAmount = 5f;
+    public float crawlUpDuration = 1.5f;
+    public bool untargetableDuringSpawn = true;
 
     public Transform player;
     public NavMeshAgent agent;
@@ -34,11 +39,24 @@ public class PirateAI : MonoBehaviour
     private float lastAttackTime = -999f;
     private bool isDead = false;
     private bool isAttacking = false;
+    private bool isReady = false;
+    private bool canBeDamaged = false;
+
+    private Collider[] allColliders;
+    private Vector3 finalSpawnPosition;
+
+    private static readonly int ParamIsRunning = Animator.StringToHash("isRunning");
+    private static readonly int ParamAttack1 = Animator.StringToHash("Attack1");
+    private static readonly int ParamAttack2 = Animator.StringToHash("Attack2");
+    private static readonly int ParamDie1 = Animator.StringToHash("Die1");
+    private static readonly int ParamDie2 = Animator.StringToHash("Die2");
 
     void Start()
     {
         if (agent == null) agent = GetComponent<NavMeshAgent>();
         if (animator == null) animator = GetComponent<Animator>();
+
+        allColliders = GetComponentsInChildren<Collider>(true);
 
         if (player == null)
         {
@@ -47,7 +65,6 @@ public class PirateAI : MonoBehaviour
         }
 
         ApplyFloorScaling();
-
         currentHP = maxHP;
         UpdateHPUI();
 
@@ -59,12 +76,80 @@ public class PirateAI : MonoBehaviour
             agent.stoppingDistance = attackRange - stopDistanceBuffer;
             agent.speed = walkSpeed;
             agent.updateRotation = false;
+            agent.isStopped = true;
+        }
+
+        StartCoroutine(SpawnIntroRoutine());
+    }
+
+    private IEnumerator SpawnIntroRoutine()
+    {
+        isReady = false;
+        canBeDamaged = !untargetableDuringSpawn;
+        canDamagePlayer = false;
+
+        finalSpawnPosition = transform.position;
+        Vector3 lowerPosition = finalSpawnPosition + Vector3.down * spawnLowerAmount;
+
+        if (agent != null)
+        {
+            agent.isStopped = true;
+            agent.enabled = false;
+        }
+
+        transform.position = lowerPosition;
+
+        if (untargetableDuringSpawn)
+            SetCollidersEnabled(false);
+
+        if (animator != null)
+            animator.SetBool(ParamIsRunning, false);
+
+        float timer = 0f;
+
+        while (timer < crawlUpDuration)
+        {
+            timer += Time.deltaTime;
+            float t = Mathf.Clamp01(timer / crawlUpDuration);
+
+            transform.position = Vector3.Lerp(lowerPosition, finalSpawnPosition, t);
+
+            yield return null;
+        }
+
+        transform.position = finalSpawnPosition;
+
+        if (untargetableDuringSpawn)
+            SetCollidersEnabled(true);
+
+        if (agent != null)
+        {
+            agent.enabled = true;
+            agent.Warp(finalSpawnPosition);
+            agent.isStopped = false;
+            agent.stoppingDistance = attackRange - stopDistanceBuffer;
+            agent.speed = walkSpeed;
+        }
+
+        canBeDamaged = true;
+        canDamagePlayer = true;
+        isReady = true;
+    }
+
+    private void SetCollidersEnabled(bool enabled)
+    {
+        if (allColliders == null) return;
+
+        foreach (Collider col in allColliders)
+        {
+            if (col != null)
+                col.enabled = enabled;
         }
     }
 
     void Update()
     {
-        if (isDead || player == null || agent == null) return;
+        if (!isReady || isDead || player == null || agent == null || !agent.enabled) return;
 
         float distance = Vector3.Distance(transform.position, player.position);
 
@@ -80,61 +165,31 @@ public class PirateAI : MonoBehaviour
         {
             agent.isStopped = true;
             agent.ResetPath();
-
-            SetMovementAnimation(false, false);
+            animator.SetBool(ParamIsRunning, false);
 
             if (Time.time >= lastAttackTime + attackCooldown)
-            {
                 StartAttack();
-            }
         }
         else
         {
             agent.isStopped = false;
             agent.SetDestination(player.position);
 
-            if (distance > runDistance)
-            {
-                agent.speed = runSpeed;
-                SetMovementAnimation(false, true);
-            }
-            else
-            {
-                agent.speed = walkSpeed;
-                SetMovementAnimation(true, false);
-            }
+            bool shouldRun = distance > runDistance;
+            agent.speed = shouldRun ? runSpeed : walkSpeed;
+            animator.SetBool(ParamIsRunning, shouldRun);
         }
     }
 
     void ApplyFloorScaling()
     {
         int floor = FloorTextController.floorNumber;
-
         int bonusSteps = Mathf.Max(0, (floor / 5) - 1);
+
         float multiplier = 1f + (0.10f * bonusSteps);
 
         maxHP = baseHP * multiplier;
         currentATK = baseATK * multiplier;
-    }
-
-
-    private int currentRunVariant = -1;
-    void SetMovementAnimation(bool walking, bool running)
-    {
-        if (animator == null) return;
-
-        animator.SetBool("isRunning", running);
-
-        if (running && currentRunVariant == -1)
-        {
-            currentRunVariant = Random.Range(0, 2);
-            animator.SetInteger("runVariant", currentRunVariant);
-        }
-
-        if (!running)
-        {
-            currentRunVariant = -1;
-        }
     }
 
     void FacePlayer()
@@ -157,17 +212,16 @@ public class PirateAI : MonoBehaviour
         isAttacking = true;
         lastAttackTime = Time.time;
 
-        int choice = Random.Range(0, 2);
-
-        if (choice == 0)
-            animator.SetTrigger("attack1");
+        if (Random.value < 0.5f)
+            animator.SetTrigger(ParamAttack1);
         else
-            animator.SetTrigger("attack2");
+            animator.SetTrigger(ParamAttack2);
     }
 
     public void EndAttack()
     {
         if (isDead) return;
+
         isAttacking = false;
     }
 
@@ -176,13 +230,13 @@ public class PirateAI : MonoBehaviour
         if (isDead || !canDamagePlayer || player == null) return;
 
         float distance = Vector3.Distance(transform.position, player.position);
+
         if (distance > attackRange + 0.75f) return;
 
         PlayerHealth ph = player.GetComponent<PlayerHealth>();
+
         if (ph != null)
-        {
             ph.TakeDamage(Mathf.RoundToInt(currentATK));
-        }
     }
 
     public void TakeDamage(float damage)
@@ -192,61 +246,62 @@ public class PirateAI : MonoBehaviour
 
     public void TakeDamage(float damage, int slashChoice)
     {
-        if (isDead) return;
+        if (isDead || !canBeDamaged) return;
 
-        currentHP -= damage;
-        currentHP = Mathf.Max(currentHP, 0f);
-
+        currentHP = Mathf.Max(currentHP - damage, 0f);
         UpdateHPUI();
 
         if (currentHP <= 0f)
-        {
             Die();
-        }
     }
 
     void UpdateHPUI()
     {
         if (healthFillImage != null)
-        {
-            healthFillImage.fillAmount = (maxHP <= 0f) ? 0f : currentHP / maxHP;
-        }
+            healthFillImage.fillAmount = maxHP <= 0f ? 0f : currentHP / maxHP;
 
         if (healthText != null)
-        {
             healthText.text = $"{Mathf.CeilToInt(currentHP)}/{Mathf.CeilToInt(maxHP)}";
-        }
     }
 
     void Die()
     {
         if (isDead) return;
-        isDead = true;
 
+        isDead = true;
         currentATK = 0f;
         canDamagePlayer = false;
         isAttacking = false;
+        canBeDamaged = false;
+
+        StopAllCoroutines();
 
         if (agent != null)
         {
-            agent.isStopped = true;
-            agent.ResetPath();
+            if (agent.enabled)
+            {
+                agent.isStopped = true;
+                agent.ResetPath();
+            }
+
             agent.enabled = false;
         }
+
+        SetCollidersEnabled(false);
 
         if (hpCanvas != null)
             hpCanvas.SetActive(false);
 
         if (animator != null)
         {
-            int deathChoice = Random.Range(0, 2);
-            if (deathChoice == 0)
-                animator.SetTrigger("death1");
+            animator.SetBool(ParamIsRunning, false);
+
+            if (Random.value < 0.5f)
+                animator.SetTrigger(ParamDie1);
             else
-                animator.SetTrigger("death2");
+                animator.SetTrigger(ParamDie2);
         }
 
-        // destroy later after death animation finishes
         Destroy(gameObject, 10f);
     }
 }

@@ -9496,10 +9496,6 @@ MonoBehaviour:
   audioMinDistance: 2
   audioMaxDistance: 25
   baseMaxHealth: 750
-  currentHealth: 0
-  maxHealth: 0
-  currentPhase: 0
-  currentFloor: 5
   animator: {fileID: 7727423031859224629}
   agent: {fileID: 9222652192110072588}
   envycirclePrefab: {fileID: 8764552555477813996, guid: b550eb20c69709342b808c358532ebc6, type: 3}
@@ -9513,13 +9509,13 @@ MonoBehaviour:
   attackTriggerName: attack1
   circleSpawnOffset: {x: 0, y: 0, z: 0}
   engageRange: 20
-  attackCooldown: 5
+  attackCooldown: 7
   phase1DelayAfterEachCircleEnds: 1.5
-  phase2DelayBetweenSpawns: 0.5
-  phase2DelayAfterLastCircleEnds: 1
+  phase2DelayBetweenSpawns: 1
+  phase2DelayAfterLastCircleEnds: 2
   circleDelayBeforeHit: 1.2
   circleDamageRadius: 4.7
-  circleDamage: 30
+  circleDamage: 35
   circleLifetime: 2.5
   drawDebugRange: 0
   alwaysFacePlayer: 1

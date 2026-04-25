@@ -4561,7 +4561,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BossSpawner
   bossPrefabs:
   - {fileID: 2730658654648739784, guid: aa70f419a48029e4eb9f6f8eeb6d3843, type: 3}
-  - {fileID: 2275824099207907018, guid: 2ef57131672a6684a90b3990f0d3c284, type: 3}
+  - {fileID: 2730658654648739784, guid: aa70f419a48029e4eb9f6f8eeb6d3843, type: 3}
   bossSpawnPoint: {fileID: 1215559007}
   bossSpawnPointLedge: {fileID: 336447961}
   gluttonyNameContains: Gluttony
@@ -10101,7 +10101,7 @@ Transform:
   m_GameObject: {fileID: 1239185656}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -8.58, y: -0.00002, z: -13.87}
+  m_LocalPosition: {x: -8.58, y: -0.051, z: -13.87}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
