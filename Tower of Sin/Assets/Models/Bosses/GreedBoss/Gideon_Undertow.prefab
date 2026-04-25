@@ -3395,8 +3395,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5815018340655769759}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -0, z: 1.6280005}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3405,7 +3405,7 @@ Transform:
   - {fileID: 8424170744324765519}
   - {fileID: 3073780444295648903}
   - {fileID: 6318525504913112078}
-  m_Father: {fileID: 2249070929225063666}
+  m_Father: {fileID: 5237505863570498396}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5821199403335845310
 GameObject:
@@ -3838,7 +3838,6 @@ GameObject:
   - component: {fileID: 2249070929225063666}
   - component: {fileID: 2352138399036134178}
   - component: {fileID: 4967776702431984503}
-  - component: {fileID: 2596080896486110643}
   - component: {fileID: 6283258072097776831}
   m_Layer: 0
   m_Name: Gideon_Undertow
@@ -3860,7 +3859,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 6928541192967057195}
   - {fileID: 5237505863570498396}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -3908,29 +3906,6 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!136 &2596080896486110643
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6772814150775830934}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.31
-  m_Height: 2.05
-  m_Direction: 2
-  m_Center: {x: 0, y: 0, z: 0.94}
 --- !u!114 &6283258072097776831
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4321,6 +4296,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 6928541192967057195}
   - {fileID: 3864813055982519144}
   - {fileID: 8197511713068583903}
   - {fileID: 4974408115487309549}

@@ -2504,8 +2504,8 @@ MonoBehaviour:
   attackRange: 7
   phase4MinDistance: 7
   faceSpeed: 10
-  baseMaxHP: 800
-  baseAttackDamage: 20
+  baseMaxHP: 50
+  baseAttackDamage: 0
   attack1SweepSteps: 30
   attack1SweepDamageWindow: 0.35
   attack1TelegraphTime: 1.1
