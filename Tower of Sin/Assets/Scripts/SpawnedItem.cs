@@ -34,7 +34,7 @@ public class SpawnedItem : MonoBehaviour
             inventory.AddItem(item);
 
 
-            playerUI = FindObjectOfType<UIManager>();
+            playerUI = FindFirstObjectByType<UIManager>();
 
 
             playerUI.ShowPickup("Found: " + item.name);

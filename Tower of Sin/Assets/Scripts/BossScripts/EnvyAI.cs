@@ -48,10 +48,10 @@ public class EnvyAI : MonoBehaviour
 
     [Header("Boss Stats")]
     [SerializeField] private float baseMaxHealth = 650f;
-    [SerializeField] private float currentHealth;
-    [SerializeField] private float maxHealth;
-    [SerializeField] private BossPhase currentPhase = BossPhase.Phase1;
-    [SerializeField] private int currentFloor = 5;
+    private float currentHealth;
+    private float maxHealth;
+    private BossPhase currentPhase = BossPhase.Phase1;
+    private int currentFloor = 5;
 
     [SerializeField] private Animator animator;
     [SerializeField] private NavMeshAgent agent;

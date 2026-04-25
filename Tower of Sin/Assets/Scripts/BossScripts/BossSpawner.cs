@@ -4,7 +4,7 @@ public class BossSpawner : MonoBehaviour
 {
     [Header("Boss Pool")]
     public GameObject[] bossPrefabs;
-    public int currentFloor = 5;
+    private int currentFloor => FloorTextController.floorNumber;
 
     [Header("Spawn Points")]
     public Transform bossSpawnPoint;
@@ -111,18 +111,7 @@ public class BossSpawner : MonoBehaviour
             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
 
             greedAI.SetFloor(currentFloor);
-
-            greedAI.SetSceneReferences(
-                playerObj != null ? playerObj.transform : null,
-                bossSpawnPoint,
-                bossSpawnPointLedge,
-                roomCenter,
-                bossArenaController != null ? bossArenaController.GetBossHealthBarFill() : null,
-                bossArenaController != null ? bossArenaController.GetBossHealthText() : null,
-                bossArenaController != null ? bossArenaController.GetBossHealthUIRoot() : null
-            );
-
-            //greedAI.SetArenaController(bossArenaController);
+            greedAI.SetArenaController(bossArenaController);
         }
         //else if (slothAI != null)
         //{

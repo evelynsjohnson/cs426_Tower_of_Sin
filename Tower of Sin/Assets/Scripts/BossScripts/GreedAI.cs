@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.Audio;
 
 public class GreedAI : MonoBehaviour
 {
@@ -15,6 +16,10 @@ public class GreedAI : MonoBehaviour
         Phase4,
         Dead
     }
+
+    private BossArenaController arenaController;
+    [SerializeField] private AudioMixerGroup narrationMixer;
+    [SerializeField] private AudioMixerGroup sfxMixer;
 
     [Header("Core References")]
     [SerializeField] private Animator animator;
@@ -89,11 +94,11 @@ public class GreedAI : MonoBehaviour
     [SerializeField] private AudioClip bossLoopClip;
     [SerializeField] private AudioClip walkingClip;
     [SerializeField] private AudioClip bossMusicClip;
-    [SerializeField] private AudioClip[] randomVoiceClips;
-    [SerializeField] private Vector2 randomVoiceIntervalRange = new Vector2(3f, 8f);
+    [SerializeField] private AudioClip[] randomSfxClips;
+    [SerializeField] private Vector2 randomSfxIntervalRange = new Vector2(3f, 8f);
     [SerializeField] private float oneShotSpatialBlend = 1f;
-    [SerializeField] private float oneShotMinDistance = 6f;
-    [SerializeField] private float oneShotMaxDistance = 35f;
+    [SerializeField] private float oneShotMinDistance = 2f;
+    [SerializeField] private float oneShotMaxDistance = 25f;
 
     [SerializeField] private AudioClip introDialogueClip;
     [SerializeField] private AudioClip phase2DialogueClip;
@@ -102,19 +107,9 @@ public class GreedAI : MonoBehaviour
 
     [SerializeField] private AudioClip[] attackVoiceClips; // 5 clips
     [SerializeField] private Vector2 attackVoiceIntervalRange = new Vector2(5f, 10f);
-    [Range(0f, 1f)][SerializeField] private float dialogueVolume = 1f;
-    [Range(0f, 1f)][SerializeField] private float deathDialogueVolume = 1f;
-    [Range(0f, 1f)][SerializeField] private float attackVoiceVolume = 1f;
     [SerializeField] private float deathFadeOutDuration = 0.25f;
 
-    [Range(0f, 1f)][SerializeField] private float cannonVolume = 1f;
-    [Range(0f, 1f)][SerializeField] private float ambientVolume = 0.6f;
-    [Range(0f, 1f)][SerializeField] private float randomVoiceVolume = 0.8f;
-    [Range(0f, 1f)][SerializeField] private float footstepVolume = 0.7f;
-    [Range(0f, 1f)][SerializeField] private float musicVolume = 1f;
-
     [SerializeField] private AudioClip attack1TriggerClip;
-    [Range(0f, 1f)][SerializeField] private float attack1TriggerVolume = 1f;
 
     private AudioSource dialogueAudioSource;
     private Coroutine attackVoiceRoutine;
@@ -122,15 +117,6 @@ public class GreedAI : MonoBehaviour
     private bool phase2DialoguePlayed = false;
     private bool phase4DialoguePlayed = false;
     private int attackVoiceIndex = 0;
-
-    private Transform basementDoorLeftRef;
-    private Transform basementDoorRightRef;
-    private AudioSource gateAudioSourceRef;
-    private AudioClip largeGateClipRef;
-    private GameObject bossChestPrefabRef;
-    private Transform bossChestSpawnPointRef;
-    private float doorMoveDistanceZRef = 1.4f;
-    private float doorMoveDurationRef = 5f;
 
     [SerializeField] private bool drawGizmos = true;
 
@@ -166,31 +152,29 @@ public class GreedAI : MonoBehaviour
     private AudioClip previousBackgroundClip;
     private Coroutine randomVoiceRoutine;
 
-    private Light[] arenaLights = new Light[0];
-    private Color[] originalLightColors;
-    private float[] originalLightIntensities;
-
     private readonly List<GameObject> spawnedTelegraphs = new List<GameObject>();
     private readonly List<GameObject> spawnedExplosions = new List<GameObject>();
     private readonly List<GameObject> spawnedSkeletons = new List<GameObject>();
 
-    public void SetSceneReferences(
-        Transform playerTransform,
-        Transform spawnPoint,
-        Transform ledgePoint,
-        Transform roomCenterTransform,
-        Image healthFill,
-        TMP_Text healthText,
-        GameObject healthUIRootObject
-    )
+    public void SetArenaController(BossArenaController controller)
     {
-        player = playerTransform;
-        bossSpawnPoint = spawnPoint;
-        bossSpawnPointLedge = ledgePoint;
-        roomCenter = roomCenterTransform;
-        bossHealthBarFill = healthFill;
-        bossHealthText = healthText;
-        bossHealthUIRoot = healthUIRootObject;
+        arenaController = controller;
+
+        if (arenaController != null)
+        {
+            bossHealthBarFill = arenaController.GetBossHealthBarFill();
+            bossHealthText = arenaController.GetBossHealthText();
+            bossHealthUIRoot = arenaController.GetBossHealthUIRoot();
+
+            arenaController.OnBossSpawned(
+                bossLightColor,
+                lightIntensityMultiplier,
+                bossMusicClip,
+                1f
+            );
+        }
+
+        UpdateBossUI();
     }
 
     private void Awake()
@@ -213,16 +197,14 @@ public class GreedAI : MonoBehaviour
 
     private void Start()
     {
-
-
         RecalculateScaledStats();
         currentHP = maxHP;
         UpdateBossUI();
 
+        SetupAudioSources();
+
         if (bossHealthUIRoot != null)
             bossHealthUIRoot.SetActive(true);
-
-        SetupAudioSources();
 
         if (randomVoiceRoutine != null)
             StopCoroutine(randomVoiceRoutine);
@@ -315,59 +297,10 @@ public class GreedAI : MonoBehaviour
         this.bossHealthText = bossHealthText;
         this.bossHealthUIRoot = bossHealthUIRoot;
 
-        this.arenaLights = arenaLights != null ? arenaLights : new Light[0];
-
-        originalLightColors = new Color[this.arenaLights.Length];
-        originalLightIntensities = new float[this.arenaLights.Length];
-
-        for (int i = 0; i < this.arenaLights.Length; i++)
-        {
-            if (this.arenaLights[i] == null) continue;
-            originalLightColors[i] = this.arenaLights[i].color;
-            originalLightIntensities[i] = this.arenaLights[i].intensity;
-        }
-
         musicAudioSource = backgroundMusicSource;
-
-        Debug.Log("[GreedAI] SetupArenaReferences called.");
 
         FindBackgroundMusicSourceIfNeeded();
 
-        if (musicAudioSource != null)
-        {
-            previousBackgroundClip = musicAudioSource.clip;
-
-            if (bossMusicClip != null)
-            {
-                musicAudioSource.clip = bossMusicClip;
-                musicAudioSource.loop = true;
-                musicAudioSource.volume = musicVolume;
-
-                Debug.Log($"[GreedAI] bossMusicClip={(bossMusicClip != null ? bossMusicClip.name : "NULL")} musicAudioSource={(musicAudioSource != null ? musicAudioSource.name : "NULL")}");
-
-
-                musicAudioSource.Play();
-            }
-            else
-            {
-                Debug.LogWarning("[GreedAI] bossMusicClip is NULL");
-            }
-        }
-        else
-        {
-            Debug.LogWarning("[GreedAI] No BackgroundAudio source found!");
-        }
-
-        basementDoorLeftRef = basementDoorLeft;
-        basementDoorRightRef = basementDoorRight;
-        gateAudioSourceRef = gateAudioSource;
-        largeGateClipRef = largeGateClip;
-        bossChestPrefabRef = bossChestPrefab;
-        bossChestSpawnPointRef = bossChestSpawnPoint;
-        doorMoveDistanceZRef = doorMoveDistanceZ;
-        doorMoveDurationRef = doorMoveDuration;
-
-        ApplyBossLightState();
         UpdateBossUI();
     }
 
@@ -523,7 +456,7 @@ public class GreedAI : MonoBehaviour
                     yield return StartCoroutine(Phase2Version2_Columns());
 
                 phase2PatternToggle = !phase2PatternToggle;
-                yield return new WaitForSeconds(phase4LoopPause);
+                yield return StartCoroutine(Phase4MoveDuringPause(phase4LoopPause));
             }
             else
             {
@@ -534,6 +467,19 @@ public class GreedAI : MonoBehaviour
 
         if (extraPhase1Routine != null)
             StopCoroutine(extraPhase1Routine);
+    }
+    private IEnumerator Phase4MoveDuringPause(float duration)
+    {
+        float timer = 0f;
+
+        while (timer < duration && currentPhase == BossPhase.Phase4 && !isDead)
+        {
+            MaintainPhase4Distance();
+            timer += Time.deltaTime;
+            yield return null;
+        }
+
+        StopMoving();
     }
     private IEnumerator Phase4RandomConeRoutine()
     {
@@ -621,7 +567,6 @@ public class GreedAI : MonoBehaviour
         currentPhase = requestedPhase;
         return true;
     }
-
     private IEnumerator TransitionToPhase2()
     {
         isTransitioning = true;
@@ -685,7 +630,7 @@ public class GreedAI : MonoBehaviour
 
         dialogueAudioSource.Stop();
         dialogueAudioSource.clip = clip;
-        dialogueAudioSource.volume = dialogueVolume;
+        dialogueAudioSource.volume = 1f;
         dialogueAudioSource.Play();
 
         while (dialogueAudioSource.isPlaying)
@@ -719,7 +664,7 @@ public class GreedAI : MonoBehaviour
                 AudioClip clip = attackVoiceClips[attackVoiceIndex % attackVoiceClips.Length];
                 attackVoiceIndex++;
 
-                yield return StartCoroutine(PlayQueuedDialogueClip(clip, attackVoiceVolume));
+                yield return StartCoroutine(PlayQueuedDialogueClip(clip));
             }
 
             float wait = Random.Range(attackVoiceIntervalRange.x, attackVoiceIntervalRange.y);
@@ -727,7 +672,7 @@ public class GreedAI : MonoBehaviour
         }
     }
 
-    private IEnumerator PlayQueuedDialogueClip(AudioClip clip, float volume)
+    private IEnumerator PlayQueuedDialogueClip(AudioClip clip)
     {
         if (clip == null || dialogueAudioSource == null)
             yield break;
@@ -736,13 +681,12 @@ public class GreedAI : MonoBehaviour
             yield return null;
 
         dialogueAudioSource.clip = clip;
-        dialogueAudioSource.volume = volume;
+        dialogueAudioSource.volume = 1f;
         dialogueAudioSource.Play();
 
         while (dialogueAudioSource.isPlaying)
             yield return null;
     }
-
     #endregion
 
     #region Attacks
@@ -777,7 +721,7 @@ public class GreedAI : MonoBehaviour
     }
     private void PlayAttack1TriggerSound()
     {
-        PlayOneShotAtPosition(attack1TriggerClip, transform.position, attack1TriggerVolume);
+        PlayOneShotAtPosition(attack1TriggerClip, transform.position);
     }
 
     private IEnumerator DealSweepingConeDamage(Vector3 attackForward)
@@ -824,7 +768,12 @@ public class GreedAI : MonoBehaviour
     private IEnumerator Phase2Version1_Columns()
     {
         isBusy = true;
-        StopMoving();
+        try
+        {
+            StopMoving();
+        }
+        catch { isBusy = false; yield break; }
+
         yield return StartCoroutine(FacePlayerOverTime(0.2f));
 
         int[] firstSet = { 0, 2, 4 }; // far left, middle, far right
@@ -1259,36 +1208,34 @@ public class GreedAI : MonoBehaviour
             yield break;
         }
 
+        NavMeshHit hit;
+        Vector3 target = point;
+
+        if (NavMesh.SamplePosition(point, out hit, 5f, NavMesh.AllAreas))
+            target = hit.position;
+
         agent.isStopped = false;
         agent.stoppingDistance = stoppingDistance;
-        agent.SetDestination(point);
+        agent.SetDestination(target);
 
-        while (!isDead && Vector3.Distance(transform.position, point) > stoppingDistance + 0.25f)
+        float timer = 0f;
+        float maxMoveTime = 4f;
+
+        while (!isDead && timer < maxMoveTime)
+        {
+            float dist = Vector3.Distance(transform.position, target);
+
+            if (dist <= stoppingDistance + 0.5f)
+                break;
+
+            if (!agent.pathPending && agent.pathStatus == NavMeshPathStatus.PathInvalid)
+                break;
+
+            timer += Time.deltaTime;
             yield return null;
+        }
 
         StopMoving();
-    }
-
-    private void SafeTeleportTo(Vector3 targetPosition, bool enableAgentAfter)
-    {
-        if (agent != null && agent.enabled && agent.isOnNavMesh)
-        {
-            agent.isStopped = true;
-            agent.ResetPath();
-            agent.enabled = false;
-        }
-
-        transform.position = targetPosition;
-
-        if (enableAgentAfter && agent != null)
-        {
-            NavMeshHit hit;
-            if (NavMesh.SamplePosition(targetPosition, out hit, 3f, NavMesh.AllAreas))
-            {
-                transform.position = hit.position;
-                agent.enabled = true;
-            }
-        }
     }
 
     private IEnumerator FacePlayerOverTime(float duration)
@@ -1332,37 +1279,6 @@ public class GreedAI : MonoBehaviour
 
     #region Audio / Lights / UI
 
-    private void SetupAudioSources()
-    {
-        loopAudioSource = gameObject.AddComponent<AudioSource>();
-        loopAudioSource.clip = bossLoopClip;
-        loopAudioSource.loop = true;
-        loopAudioSource.playOnAwake = false;
-        loopAudioSource.spatialBlend = 1f;
-        loopAudioSource.minDistance = 5f;
-        loopAudioSource.maxDistance = 30f;
-        loopAudioSource.volume = ambientVolume;
-
-        if (bossLoopClip != null)
-            loopAudioSource.Play();
-
-        walkAudioSource = gameObject.AddComponent<AudioSource>();
-        walkAudioSource.clip = walkingClip;
-        walkAudioSource.loop = true;
-        walkAudioSource.playOnAwake = false;
-        walkAudioSource.spatialBlend = 1f;
-        walkAudioSource.minDistance = 4f;
-        walkAudioSource.maxDistance = 20f;
-        walkAudioSource.volume = footstepVolume;
-
-        dialogueAudioSource = gameObject.AddComponent<AudioSource>();
-        dialogueAudioSource.playOnAwake = false;
-        dialogueAudioSource.loop = false;
-        dialogueAudioSource.spatialBlend = 1f;
-        dialogueAudioSource.minDistance = 6f;
-        dialogueAudioSource.maxDistance = 35f;
-        dialogueAudioSource.volume = dialogueVolume;
-    }
 
     private void UpdateWalkAudio()
     {
@@ -1386,69 +1302,43 @@ public class GreedAI : MonoBehaviour
     {
         while (!isDead)
         {
-            float wait = Random.Range(randomVoiceIntervalRange.x, randomVoiceIntervalRange.y);
+            float wait = Random.Range(randomSfxIntervalRange.x, randomSfxIntervalRange.y);
             yield return new WaitForSeconds(wait);
 
-            if (randomVoiceClips != null && randomVoiceClips.Length > 0)
+            if (randomSfxClips != null && randomSfxClips.Length > 0)
             {
-                AudioClip clip = randomVoiceClips[Random.Range(0, randomVoiceClips.Length)];
-                PlayOneShotAtPosition(clip, transform.position, randomVoiceVolume);
+                AudioClip clip = randomSfxClips[Random.Range(0, randomSfxClips.Length)];
+                PlayOneShotAtPosition(clip, transform.position);
             }
         }
     }
-
-    private void PlayOneShotAtPosition(AudioClip clip, Vector3 pos, float volume)
+    private void PlayOneShotAtPosition(AudioClip clip, Vector3 pos)
     {
         if (clip == null) return;
 
-        GameObject temp = new GameObject("TempBossAudio");
+        GameObject temp = new GameObject("OneShot_BossSFX");
         temp.transform.position = pos;
 
         AudioSource src = temp.AddComponent<AudioSource>();
         src.clip = clip;
-        src.spatialBlend = oneShotSpatialBlend;
+        src.outputAudioMixerGroup = sfxMixer;
+
+        src.playOnAwake = false;
+        src.loop = false;
+        src.spatialBlend = 1f;
+        src.rolloffMode = AudioRolloffMode.Logarithmic;
         src.minDistance = oneShotMinDistance;
         src.maxDistance = oneShotMaxDistance;
-        src.volume = volume;
-        src.Play();
+        src.dopplerLevel = 0f;
+        src.volume = 1f;
 
-        Destroy(temp, clip.length + 0.2f);
+        src.Play();
+        Destroy(temp, clip.length + 0.25f);
     }
 
     private void PlayCannonShot(Vector3 pos)
     {
-        PlayOneShotAtPosition(cannonFireClip, pos, cannonVolume);
-    }
-
-    private void ApplyBossLightState()
-    {
-        if (arenaLights == null) return;
-
-        for (int i = 0; i < arenaLights.Length; i++)
-        {
-            if (arenaLights[i] == null) continue;
-
-            arenaLights[i].color = bossLightColor;
-            arenaLights[i].intensity = originalLightIntensities != null && i < originalLightIntensities.Length
-                ? originalLightIntensities[i] * lightIntensityMultiplier
-                : arenaLights[i].intensity;
-        }
-    }
-
-    private void RestoreArenaLights()
-    {
-        if (arenaLights == null) return;
-
-        for (int i = 0; i < arenaLights.Length; i++)
-        {
-            if (arenaLights[i] == null) continue;
-
-            if (originalLightColors != null && i < originalLightColors.Length)
-                arenaLights[i].color = originalLightColors[i];
-
-            if (originalLightIntensities != null && i < originalLightIntensities.Length)
-                arenaLights[i].intensity = originalLightIntensities[i];
-        }
+        PlayOneShotAtPosition(cannonFireClip, pos);
     }
 
     private void TryDamagePlayer(GameObject playerObj, float damage)
@@ -1478,8 +1368,6 @@ public class GreedAI : MonoBehaviour
         StopAllCoroutines();
         StopMoving();
         StopAttackVoiceCycle();
-
-        RestoreArenaLights();
         ClearAllSpawnedObjects();
 
         if (loopAudioSource != null) loopAudioSource.Stop();
@@ -1501,18 +1389,13 @@ public class GreedAI : MonoBehaviour
         if (deathDialogueClip != null && dialogueAudioSource != null)
         {
             dialogueAudioSource.clip = deathDialogueClip;
-            dialogueAudioSource.volume = deathDialogueVolume;
+            dialogueAudioSource.volume = 1f;
             dialogueAudioSource.Play();
         }
 
-        OpenBossGates();
-        SpawnBossChest();
-
-        if (musicAudioSource != null && previousBackgroundClip != null)
+        if (arenaController != null)
         {
-            musicAudioSource.clip = previousBackgroundClip;
-            musicAudioSource.loop = true;
-            musicAudioSource.Play();
+            arenaController.OnBossDied();
         }
     }
 
@@ -1537,39 +1420,6 @@ public class GreedAI : MonoBehaviour
         }
     }
 
-    private void SpawnBossChest()
-    {
-        if (bossChestPrefabRef != null && bossChestSpawnPointRef != null)
-            Instantiate(bossChestPrefabRef, bossChestSpawnPointRef.position, bossChestSpawnPointRef.rotation);
-    }
-
-    private void OpenBossGates()
-    {
-        if (gateAudioSourceRef != null && largeGateClipRef != null)
-            gateAudioSourceRef.PlayOneShot(largeGateClipRef);
-
-        if (basementDoorLeftRef != null)
-            StartCoroutine(MoveDoorLocalZ(basementDoorLeftRef, -doorMoveDistanceZRef, doorMoveDurationRef));
-
-        if (basementDoorRightRef != null)
-            StartCoroutine(MoveDoorLocalZ(basementDoorRightRef, doorMoveDistanceZRef, doorMoveDurationRef));
-    }
-
-    private IEnumerator MoveDoorLocalZ(Transform door, float zOffset, float duration)
-    {
-        Vector3 start = door.localPosition;
-        Vector3 end = start + new Vector3(0f, 0f, zOffset);
-
-        float t = 0f;
-        while (t < duration)
-        {
-            t += Time.deltaTime;
-            door.localPosition = Vector3.Lerp(start, end, t / duration);
-            yield return null;
-        }
-
-        door.localPosition = end;
-    }
 
     private void RecalculateScaledStats()
     {
@@ -1587,13 +1437,34 @@ public class GreedAI : MonoBehaviour
 
     #region Utility
 
-    // 5 equally sized floor columns from left -> right
     private Vector3 GetColumnCenter(int columnIndex)
     {
+        FindRoomCenterIfNeeded();
+
+        if (roomCenter == null)
+        {
+            Debug.LogError("[GreedAI] roomCenter is not assigned! Phase 2 columns cannot work.");
+            return transform.position;
+        }
         float columnWidth = roomWidth / 5f;
         float xMin = roomCenter.position.x - roomWidth * 0.5f;
         float x = xMin + (columnWidth * columnIndex) + columnWidth * 0.5f;
         return new Vector3(x, roomCenter.position.y, roomCenter.position.z);
+    }
+    private void FindRoomCenterIfNeeded()
+    {
+        if (roomCenter != null) return;
+
+        GameObject found = GameObject.Find("RoomCenter");
+
+        if (found != null)
+        {
+            roomCenter = found.transform;
+        }
+        else
+        {
+            Debug.LogError("[GreedAI] Could not find RoomCenter in scene.");
+        }
     }
 
     private Vector3 SampleNavmeshPoint(Vector3 desired, float radius, Vector3 fallback)
@@ -1632,40 +1503,57 @@ public class GreedAI : MonoBehaviour
         list.Clear();
     }
 
-    private void ClearDeadRefs(List<GameObject> list)
-    {
-        list.RemoveAll(item => item == null);
-    }
-
     private void FindBackgroundMusicSourceIfNeeded()
     {
         if (musicAudioSource != null)
         {
-            Debug.Log("[GreedAI] Music source already assigned.");
             return;
         }
 
         GameObject bg = GameObject.Find("BackgroundAudio");
-        if (bg != null)
-        {
-            musicAudioSource = bg.GetComponent<AudioSource>();
-            Debug.Log($"[GreedAI] Found BackgroundAudio by name: {musicAudioSource}");
-        }
 
         if (musicAudioSource == null)
         {
             GameObject tagged = GameObject.FindGameObjectWithTag("Music");
-            if (tagged != null)
-            {
-                musicAudioSource = tagged.GetComponent<AudioSource>();
-                Debug.Log($"[GreedAI] Found music source by tag: {musicAudioSource}");
-            }
         }
 
-        if (musicAudioSource == null)
-            Debug.LogWarning("[GreedAI] Could not find any background music source.");
+    }
+    private void SetupAudioSources()
+    {
+        loopAudioSource = gameObject.AddComponent<AudioSource>();
+        loopAudioSource.clip = bossLoopClip;
+        loopAudioSource.loop = true;
+        loopAudioSource.playOnAwake = false;
+        loopAudioSource.spatialBlend = 1f;
+        loopAudioSource.minDistance = 5f;
+        loopAudioSource.maxDistance = 30f;
+        loopAudioSource.volume = 1f;
+        loopAudioSource.outputAudioMixerGroup = sfxMixer;
 
-        Debug.Log($"[GreedAI] Final music source: {musicAudioSource}");
+        if (bossLoopClip != null)
+            loopAudioSource.Play();
+
+        walkAudioSource = gameObject.AddComponent<AudioSource>();
+        walkAudioSource.clip = walkingClip;
+        walkAudioSource.loop = true;
+        walkAudioSource.playOnAwake = false;
+        walkAudioSource.spatialBlend = 1f;
+        walkAudioSource.minDistance = 4f;
+        walkAudioSource.maxDistance = 20f;
+        walkAudioSource.volume = 1f;
+        walkAudioSource.outputAudioMixerGroup = sfxMixer;
+
+        if (narrationMixer == null)
+            Debug.LogError("[GreedAI] narrationMixer is not assigned in the Inspector! Dialogue will bypass the mixer and the volume slider will have no effect.");
+
+        dialogueAudioSource = gameObject.AddComponent<AudioSource>();
+        dialogueAudioSource.playOnAwake = false;
+        dialogueAudioSource.loop = false;
+        dialogueAudioSource.spatialBlend = 0.2f;
+        dialogueAudioSource.minDistance = 8f;
+        dialogueAudioSource.maxDistance = 60f;
+        dialogueAudioSource.volume = 1f;
+        dialogueAudioSource.outputAudioMixerGroup = narrationMixer;
     }
 
     #endregion

@@ -2,7 +2,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.UI;
-using static UnityEngine.Rendering.DebugUI;
 
 public class VolumeController : MonoBehaviour
 {
@@ -13,6 +12,10 @@ public class VolumeController : MonoBehaviour
     public string musicVolumeParameter = "BGMusicVolume";
     public string sfxVolumeParameter = "SFXVolume";
     public string voicesVolumeParameter = "NarrationVolume";
+
+    [Header("Default Slider Value")]
+    [Range(-80f, 20f)]
+    public float defaultVolume = 0f;
 
     [Header("Sliders")]
     public Slider masterSlider;
@@ -26,16 +29,12 @@ public class VolumeController : MonoBehaviour
     public TMP_Text sfxText;
     public TMP_Text voicesText;
 
-    private const string MASTER_KEY = "MasterVolumeKey";
-    private const string MUSIC_KEY = "MusicVolumeKey";
-    private const string SFX_KEY = "SFXVolumeKey";
-    private const string VOICES_KEY = "VoicesVolumeKey";
-
     void Awake()
     {
         BindSliders();
-        LoadSavedVolumes();
+        //ResetSlidersToDefault();
         ApplyAllVolumes();
+
     }
 
     void OnEnable()
@@ -71,17 +70,12 @@ public class VolumeController : MonoBehaviour
         }
     }
 
-    void LoadSavedVolumes()
+    void ResetSlidersToDefault()
     {
-        float master = PlayerPrefs.GetFloat(MASTER_KEY, 0.75f);
-        float music = PlayerPrefs.GetFloat(MUSIC_KEY, 0.75f);
-        float sfx = PlayerPrefs.GetFloat(SFX_KEY, 0.75f);
-        float voices = PlayerPrefs.GetFloat(VOICES_KEY, 0.75f);
-
-        if (masterSlider != null) masterSlider.SetValueWithoutNotify(master);
-        if (musicSlider != null) musicSlider.SetValueWithoutNotify(music);
-        if (sfxSlider != null) sfxSlider.SetValueWithoutNotify(sfx);
-        if (voicesSlider != null) voicesSlider.SetValueWithoutNotify(voices);
+        if (masterSlider != null) masterSlider.SetValueWithoutNotify(defaultVolume);
+        if (musicSlider != null) musicSlider.SetValueWithoutNotify(defaultVolume);
+        if (sfxSlider != null) sfxSlider.SetValueWithoutNotify(defaultVolume);
+        if (voicesSlider != null) voicesSlider.SetValueWithoutNotify(defaultVolume);
     }
 
     void ApplyAllVolumes()
@@ -95,53 +89,27 @@ public class VolumeController : MonoBehaviour
     public void SetMasterVolume(float value)
     {
         SetVolume(masterVolumeParameter, value);
-        if (masterText != null) masterText.text = Mathf.RoundToInt(value * 100f) + "%";
-        PlayerPrefs.SetFloat(MASTER_KEY, value);
-        PlayerPrefs.Save();
+        if (masterText != null) masterText.text = Mathf.RoundToInt(value) + " dB";
     }
 
     public void SetMusicVolume(float value)
     {
         SetVolume(musicVolumeParameter, value);
-        if (musicText != null) musicText.text = Mathf.RoundToInt(value * 100f) + "%";
-        PlayerPrefs.SetFloat(MUSIC_KEY, value);
-        PlayerPrefs.Save();
+        if (musicText != null) musicText.text = Mathf.RoundToInt(value) + " dB";
     }
 
     public void SetSFXVolume(float value)
     {
         SetVolume(sfxVolumeParameter, value);
-        if (sfxText != null) sfxText.text = Mathf.RoundToInt(value * 100f) + "%";
-        PlayerPrefs.SetFloat(SFX_KEY, value);
-        PlayerPrefs.Save();
+        if (sfxText != null) sfxText.text = Mathf.RoundToInt(value) + " dB";
     }
 
     public void SetVoicesVolume(float value)
     {
         SetVolume(voicesVolumeParameter, value);
-        if (voicesText != null) voicesText.text = Mathf.RoundToInt(value * 100f) + "%";
-        PlayerPrefs.SetFloat(VOICES_KEY, value);
-        PlayerPrefs.Save();
+        if (voicesText != null) voicesText.text = Mathf.RoundToInt(value) + " dB";
     }
 
-    //    // dB scale, from -80 to 0.
-    //void SetVolume(string exposedParam, float sliderValue)
-    //{
-    //    if (mixer == null)
-    //    {
-    //        Debug.LogWarning("No AudioMixer assigned.");
-    //        return;
-    //    }
-
-    //    sliderValue = Mathf.Clamp(sliderValue, 0.0001f, 1f);
-    //    float dB = Mathf.Log10(sliderValue) * 20f;
-
-    //    bool success = mixer.SetFloat(exposedParam, dB);
-    //    if (!success)
-    //        Debug.LogWarning("Could not set mixer parameter: " + exposedParam);
-    //}
-
-    // directly set dB from slider
     void SetVolume(string exposedParam, float value)
     {
         if (mixer == null)
@@ -150,6 +118,11 @@ public class VolumeController : MonoBehaviour
             return;
         }
 
-        mixer.SetFloat(exposedParam, value);
+        bool success = mixer.SetFloat(exposedParam, value);
+
+        if (!success)
+        {
+            Debug.LogWarning("Could not set mixer parameter: " + exposedParam);
+        }
     }
 }

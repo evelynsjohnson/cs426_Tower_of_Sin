@@ -4560,9 +4560,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossSpawner
   bossPrefabs:
+  - {fileID: 2730658654648739784, guid: aa70f419a48029e4eb9f6f8eeb6d3843, type: 3}
   - {fileID: 2275824099207907018, guid: 2ef57131672a6684a90b3990f0d3c284, type: 3}
-  - {fileID: 2275824099207907018, guid: 2ef57131672a6684a90b3990f0d3c284, type: 3}
-  currentFloor: 5
   bossSpawnPoint: {fileID: 1215559007}
   bossSpawnPointLedge: {fileID: 336447961}
   gluttonyNameContains: Gluttony
