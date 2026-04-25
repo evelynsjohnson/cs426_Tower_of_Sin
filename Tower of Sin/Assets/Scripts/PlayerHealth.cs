@@ -32,6 +32,7 @@ public class PlayerHealth : MonoBehaviour
 
     public string prisonSceneName = "Prison_Scene";
     private int lastAutoHealFloor = -1;
+    private string previousSceneName = "";
 
     private bool isDead = false;
     private bool deathRoutineRunning = false;
@@ -71,12 +72,12 @@ public class PlayerHealth : MonoBehaviour
             gameplayUICanvasGroup.blocksRaycasts = true;
         }
 
-        TryMilestoneFullHeal(SceneManager.GetActiveScene().name);
         UpdateUI();
     }
 
     void OnEnable()
     {
+        previousSceneName = SceneManager.GetActiveScene().name;
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
@@ -87,7 +88,8 @@ public class PlayerHealth : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        TryMilestoneFullHeal(scene.name);
+        TryMilestoneFullHeal(scene.name, previousSceneName);
+        previousSceneName = scene.name;
     }
 
     void Update()
@@ -102,16 +104,19 @@ public class PlayerHealth : MonoBehaviour
             );
         }
 
-        TryMilestoneFullHeal(SceneManager.GetActiveScene().name);
     }
 
-    private void TryMilestoneFullHeal(string sceneName)
+    private void TryMilestoneFullHeal(string sceneName, string fromSceneName)
     {
         if (isDead || deathRoutineRunning)
             return;
 
         bool isPrisonScene = sceneName == prisonSceneName || sceneName.Contains(prisonSceneName);
         if (!isPrisonScene)
+            return;
+
+        bool cameFromBoss = fromSceneName == "Boss_Scene" || fromSceneName.Contains("Boss_Scene");
+        if (!cameFromBoss)
             return;
 
         int floor = FloorTextController.floorNumber;
