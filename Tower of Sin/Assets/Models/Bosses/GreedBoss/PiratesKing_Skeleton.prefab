@@ -2504,8 +2504,8 @@ MonoBehaviour:
   attackRange: 7
   phase4MinDistance: 7
   faceSpeed: 10
-  baseMaxHP: 50
-  baseAttackDamage: 0
+  baseMaxHP: 800
+  baseAttackDamage: 15
   attack1SweepSteps: 30
   attack1SweepDamageWindow: 0.35
   attack1TelegraphTime: 1.1
@@ -2525,7 +2525,7 @@ MonoBehaviour:
   phase2LoopPause: 0
   explosionPrefab: {fileID: 1819053320288612861, guid: d67aaed3dcf449b4daa3ef9b53904d01, type: 3}
   phase4LoopPause: 7
-  skeletonPrefab: {fileID: 6772814150775830934, guid: c97a30f24e51ff94ab310a9680330b6a, type: 3}
+  skeletonPrefab: {fileID: 8145929255845080419, guid: a2ed85b28c4ba814da314d89886b961c, type: 3}
   skeletonSpawnCount: 6
   navmeshSpawnRadius: 30
   bossHealthBarFill: {fileID: 0}
