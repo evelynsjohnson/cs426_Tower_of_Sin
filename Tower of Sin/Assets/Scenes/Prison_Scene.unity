@@ -5192,7 +5192,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &202901721
 RectTransform:
   m_ObjectHideFlags: 0
@@ -35009,6 +35009,37 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &1269617330
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1269617331}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1269617331
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1269617330}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.15423334, z: -0, w: 0.9880345}
+  m_LocalPosition: {x: -0.24513894, y: 1.1140003, z: 0.50353086}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4207293209181035}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1270997573
 GameObject:
   m_ObjectHideFlags: 0
@@ -39262,24 +39293,27 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'WASD/Arrow Keys - Move player
+  m_text: 'WASD/Arrow Keys - Walk
 
     Shift + WASD/Arrow Keys - Sprint
 
-    Space
-    - Jump
+    Ctrl
+    - Crouch
 
-    Left click - Swing Weapon (Attack 1)
+    Ctrl + WASD/Arrow Keys - Slow Walk
 
-    Hold Left Click - Swing
-    Weapon (Attack 2, Heavy Attack)
+    Space - Jump
+
+    Left
+    click - Swing Weapon (Attack 1)
+
+    Hold Left Click - Swing Weapon (Attack 2,
+    Heavy Attack)
 
     Scroll Wheel - Zoom in/out
 
-    E - Open
-    doors, chests, and other interactables
-
-    Ctrl/Windows Key - Crouch'
+    E - Open doors, chests, and
+    other interactables'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 2f8b734e7e218274e8fb20d7879c7ad2, type: 2}
   m_sharedMaterial: {fileID: 8639463220935417821, guid: 2f8b734e7e218274e8fb20d7879c7ad2, type: 2}
@@ -57537,6 +57571,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1269617331}
   - {fileID: 950089507}
   - {fileID: 737284279}
   - {fileID: 184945686}
@@ -57753,13 +57788,18 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 27b67ddb3d23b8340b125aede56d7e8c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::Crouch
   key: 306
   movement: {fileID: 114963312205644127}
-  movementSpeed: 2
-  headToLower: {fileID: 4490257813953675}
-  crouchYHeadPosition: 0.75
+  crouchSpeed: 2
+  cameraTransform: {fileID: 4490257813953675}
+  crouchLocalOffset: {x: -0.05, y: 0.09, z: -0.21}
+  smoothTime: 0.25
   colliderToLower: {fileID: 136877096852500177}
+  standingHeight: 2
+  standingCenter: {x: 0, y: 1, z: 0}
+  crouchHeight: 1.4
+  crouchCenter: {x: 0, y: 0.7, z: 0}
 --- !u!114 &114963312205644127
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -58421,7 +58461,7 @@ MonoBehaviour:
   inventory:
   - type: 4
     icon: {fileID: 2800000, guid: a9cc9399cf2d7764784c622ac648a546, type: 3}
-    health: 0
+    health: 1
     damage: 2
     defense: 1
     name: Sword
