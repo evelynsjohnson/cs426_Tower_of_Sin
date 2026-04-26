@@ -69,8 +69,13 @@ public class GreedAI : MonoBehaviour
 
     [Header("Phase 4")]
     [SerializeField] private GameObject skeletonPrefab;
-    [SerializeField] private int skeletonSpawnCount = 6;
+    [SerializeField] private int phase4MinSoldiersPerSpawn = 2;
+    [SerializeField] private int phase4MaxSoldiersPerSpawn = 6;
+    [SerializeField] private float phase4MinSoldierSpawnInterval = 8f;
+    [SerializeField] private float phase4MaxSoldierSpawnInterval = 10f;
     [SerializeField] private float navmeshSpawnRadius = 18f;
+    [SerializeField] private float navmeshSampleRadius = 8f;
+    private Coroutine phase4SoldierSpawnRoutine;
 
     [SerializeField] private Image bossHealthBarFill;
     [SerializeField] private TMP_Text bossHealthText;
@@ -602,7 +607,7 @@ public class GreedAI : MonoBehaviour
         isInvulnerable = true;
 
         StopAttackVoiceCycle();
-        SpawnPhase4Skeletons();
+        StartPhase4SoldierSpawning();
 
         yield return StartCoroutine(FacePlayerOverTime(0.25f));
 
@@ -1110,26 +1115,90 @@ public class GreedAI : MonoBehaviour
 
     #region Phase 3 / 4 Spawning
 
-
-    private void SpawnPhase4Skeletons()
+    private void StartPhase4SoldierSpawning()
     {
-        if (skeletonPrefab == null) return;
+        if (phase4SoldierSpawnRoutine != null)
+            StopCoroutine(phase4SoldierSpawnRoutine);
 
-        for (int i = 0; i < skeletonSpawnCount; i++)
+        phase4SoldierSpawnRoutine = StartCoroutine(Phase4SoldierSpawnLoop());
+    }
+
+    private IEnumerator Phase4SoldierSpawnLoop()
+    {
+        // Spawn one group immediately when Phase 4 starts
+        SpawnPhase4Soldiers();
+
+        while (currentPhase == BossPhase.Phase4 && !isDead)
         {
-            Vector3 basePos = roomCenter != null ? roomCenter.position : transform.position;
-            Vector3 random = basePos + new Vector3(
-                Random.Range(-navmeshSpawnRadius, navmeshSpawnRadius),
-                0f,
-                Random.Range(-navmeshSpawnRadius, navmeshSpawnRadius)
-            );
+            float wait = Random.Range(phase4MinSoldierSpawnInterval, phase4MaxSoldierSpawnInterval);
+            yield return new WaitForSeconds(wait);
 
-            Vector3 valid = SampleNavmeshPoint(random, 8f, basePos);
-            GameObject skel = Instantiate(skeletonPrefab, valid, Quaternion.identity);
-            spawnedSkeletons.Add(skel);
+            if (currentPhase != BossPhase.Phase4 || isDead)
+                yield break;
+
+            SpawnPhase4Soldiers();
         }
     }
 
+    private void SpawnPhase4Soldiers()
+    {
+        if (skeletonPrefab == null)
+        {
+            Debug.LogWarning("[GreedAI] skeletonPrefab is not assigned. Cannot spawn Phase 4 soldiers.");
+            return;
+        }
+
+        int count = Random.Range(phase4MinSoldiersPerSpawn, phase4MaxSoldiersPerSpawn + 1);
+        Vector3 basePos = roomCenter != null ? roomCenter.position : transform.position;
+
+        for (int i = 0; i < count; i++)
+        {
+            if (TryGetRandomNavMeshSpawnPoint(basePos, out Vector3 spawnPos))
+            {
+                Quaternion spawnRot = Quaternion.identity;
+
+                if (player != null)
+                {
+                    Vector3 dir = player.position - spawnPos;
+                    dir.y = 0f;
+
+                    if (dir.sqrMagnitude > 0.001f)
+                        spawnRot = Quaternion.LookRotation(dir.normalized, Vector3.up);
+                }
+
+                GameObject soldier = Instantiate(skeletonPrefab, spawnPos, spawnRot);
+                spawnedSkeletons.Add(soldier);
+            }
+            else
+            {
+                Debug.LogWarning("[GreedAI] Could not find a valid NavMesh point for soldier spawn.");
+            }
+        }
+    }
+
+    private bool TryGetRandomNavMeshSpawnPoint(Vector3 center, out Vector3 result)
+    {
+        for (int attempt = 0; attempt < 20; attempt++)
+        {
+            Vector2 randomCircle = Random.insideUnitCircle * navmeshSpawnRadius;
+            Vector3 randomPoint = center + new Vector3(randomCircle.x, 0f, randomCircle.y);
+
+            if (NavMesh.SamplePosition(randomPoint, out NavMeshHit hit, navmeshSampleRadius, NavMesh.AllAreas))
+            {
+                result = hit.position;
+                return true;
+            }
+        }
+
+        if (NavMesh.SamplePosition(center, out NavMeshHit fallbackHit, navmeshSampleRadius, NavMesh.AllAreas))
+        {
+            result = fallbackHit.position;
+            return true;
+        }
+
+        result = center;
+        return false;
+    }
     #endregion
 
     #region Movement / Teleport
@@ -1364,6 +1433,12 @@ public class GreedAI : MonoBehaviour
         currentPhase = BossPhase.Dead;
         requestedPhase = BossPhase.Dead;
         scaledAttackDamage = 0f;
+
+        if (phase4SoldierSpawnRoutine != null)
+        {
+            StopCoroutine(phase4SoldierSpawnRoutine);
+            phase4SoldierSpawnRoutine = null;
+        }
 
         StopAllCoroutines();
         StopMoving();

@@ -4,7 +4,7 @@ public class DeathRealmReset : MonoBehaviour
 {
     void Start()
     {
-        PlayerHealth ph = FindObjectOfType<PlayerHealth>();
+        PlayerHealth ph = Object.FindFirstObjectByType<PlayerHealth>();
 
         if (ph != null)
         {

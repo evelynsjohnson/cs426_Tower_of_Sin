@@ -13,6 +13,7 @@ public class PirateAI : MonoBehaviour
     [HideInInspector] public float currentATK;
     [HideInInspector] public float maxHP;
 
+    [Header("Movement")]
     public float walkSpeed = 2f;
     public float runSpeed = 4.5f;
     public float attackRange = 2.5f;
@@ -20,18 +21,21 @@ public class PirateAI : MonoBehaviour
     public float rotationSpeed = 8f;
     public float stopDistanceBuffer = 0.15f;
 
+    [Header("Combat")]
     public float attackCooldown = 1.75f;
     public bool canDamagePlayer = true;
 
     [Header("Spawn Intro / Crawl Up")]
-    public float spawnLowerAmount = 5f;
+    public float spawnLowerAmount = 6f;
     public float crawlUpDuration = 1.5f;
     public bool untargetableDuringSpawn = true;
 
+    [Header("References")]
     public Transform player;
     public NavMeshAgent agent;
     public Animator animator;
 
+    [Header("UI")]
     public GameObject hpCanvas;
     public Image healthFillImage;
     public TMP_Text healthText;
@@ -45,16 +49,15 @@ public class PirateAI : MonoBehaviour
     private Collider[] allColliders;
     private Vector3 finalSpawnPosition;
 
+    private static readonly int ParamAtk1 = Animator.StringToHash("atk1");
+    private static readonly int ParamAtk2 = Animator.StringToHash("atk2");
+    private static readonly int ParamDie = Animator.StringToHash("die");
     private static readonly int ParamIsRunning = Animator.StringToHash("isRunning");
-    private static readonly int ParamAttack1 = Animator.StringToHash("Attack1");
-    private static readonly int ParamAttack2 = Animator.StringToHash("Attack2");
-    private static readonly int ParamDie1 = Animator.StringToHash("Die1");
-    private static readonly int ParamDie2 = Animator.StringToHash("Die2");
 
     void Start()
     {
         if (agent == null) agent = GetComponent<NavMeshAgent>();
-        if (animator == null) animator = GetComponent<Animator>();
+        if (animator == null) animator = GetComponentInChildren<Animator>();
 
         allColliders = GetComponentsInChildren<Collider>(true);
 
@@ -73,12 +76,13 @@ public class PirateAI : MonoBehaviour
 
         if (agent != null)
         {
-            agent.stoppingDistance = attackRange - stopDistanceBuffer;
+            agent.stoppingDistance = Mathf.Max(0.1f, attackRange - stopDistanceBuffer);
             agent.speed = walkSpeed;
             agent.updateRotation = false;
             agent.isStopped = true;
         }
 
+        SetRunning(false);
         StartCoroutine(SpawnIntroRoutine());
     }
 
@@ -87,6 +91,7 @@ public class PirateAI : MonoBehaviour
         isReady = false;
         canBeDamaged = !untargetableDuringSpawn;
         canDamagePlayer = false;
+        SetRunning(false);
 
         finalSpawnPosition = transform.position;
         Vector3 lowerPosition = finalSpawnPosition + Vector3.down * spawnLowerAmount;
@@ -102,22 +107,22 @@ public class PirateAI : MonoBehaviour
         if (untargetableDuringSpawn)
             SetCollidersEnabled(false);
 
-        if (animator != null)
-            animator.SetBool(ParamIsRunning, false);
-
         float timer = 0f;
 
         while (timer < crawlUpDuration)
         {
             timer += Time.deltaTime;
             float t = Mathf.Clamp01(timer / crawlUpDuration);
-
             transform.position = Vector3.Lerp(lowerPosition, finalSpawnPosition, t);
-
             yield return null;
         }
 
-        transform.position = finalSpawnPosition;
+        Vector3 navmeshFinalPosition = finalSpawnPosition;
+
+        if (NavMesh.SamplePosition(finalSpawnPosition, out NavMeshHit hit, 5f, NavMesh.AllAreas))
+            navmeshFinalPosition = hit.position;
+
+        transform.position = navmeshFinalPosition;
 
         if (untargetableDuringSpawn)
             SetCollidersEnabled(true);
@@ -125,15 +130,16 @@ public class PirateAI : MonoBehaviour
         if (agent != null)
         {
             agent.enabled = true;
-            agent.Warp(finalSpawnPosition);
+            agent.Warp(navmeshFinalPosition);
             agent.isStopped = false;
-            agent.stoppingDistance = attackRange - stopDistanceBuffer;
+            agent.stoppingDistance = Mathf.Max(0.1f, attackRange - stopDistanceBuffer);
             agent.speed = walkSpeed;
         }
 
         canBeDamaged = true;
         canDamagePlayer = true;
         isReady = true;
+        SetRunning(false);
     }
 
     private void SetCollidersEnabled(bool enabled)
@@ -149,7 +155,8 @@ public class PirateAI : MonoBehaviour
 
     void Update()
     {
-        if (!isReady || isDead || player == null || agent == null || !agent.enabled) return;
+        if (!isReady || isDead || player == null || agent == null || !agent.enabled)
+            return;
 
         float distance = Vector3.Distance(transform.position, player.position);
 
@@ -158,6 +165,7 @@ public class PirateAI : MonoBehaviour
         if (isAttacking)
         {
             agent.isStopped = true;
+            SetRunning(false);
             return;
         }
 
@@ -165,7 +173,7 @@ public class PirateAI : MonoBehaviour
         {
             agent.isStopped = true;
             agent.ResetPath();
-            animator.SetBool(ParamIsRunning, false);
+            SetRunning(false);
 
             if (Time.time >= lastAttackTime + attackCooldown)
                 StartAttack();
@@ -177,7 +185,8 @@ public class PirateAI : MonoBehaviour
 
             bool shouldRun = distance > runDistance;
             agent.speed = shouldRun ? runSpeed : walkSpeed;
-            animator.SetBool(ParamIsRunning, shouldRun);
+
+            SetRunning(true);
         }
     }
 
@@ -212,10 +221,45 @@ public class PirateAI : MonoBehaviour
         isAttacking = true;
         lastAttackTime = Time.time;
 
+        SetRunning(false);
+
+        animator.ResetTrigger(ParamAtk1);
+        animator.ResetTrigger(ParamAtk2);
+
         if (Random.value < 0.5f)
-            animator.SetTrigger(ParamAttack1);
+            animator.SetTrigger(ParamAtk1);
         else
-            animator.SetTrigger(ParamAttack2);
+            animator.SetTrigger(ParamAtk2);
+
+        StartCoroutine(AttackDamageWindow());
+    }
+
+    private IEnumerator AttackDamageWindow()
+    {
+        yield return new WaitForSeconds(0.75f);
+
+        float timer = 0f;
+        bool alreadyHit = false;
+
+        while (timer < 1f)
+        {
+            if (!alreadyHit)
+            {
+                float distance = Vector3.Distance(transform.position, player.position);
+
+                if (distance <= attackRange + 0.75f)
+                {
+                    DealDamageToPlayer();
+                    alreadyHit = true;
+                }
+            }
+
+            timer += Time.deltaTime;
+            yield return null;
+        }
+
+        isAttacking = false;
+        SetRunning(false);
     }
 
     public void EndAttack()
@@ -223,6 +267,7 @@ public class PirateAI : MonoBehaviour
         if (isDead) return;
 
         isAttacking = false;
+        SetRunning(false);
     }
 
     public void DealDamageToPlayer()
@@ -294,14 +339,18 @@ public class PirateAI : MonoBehaviour
 
         if (animator != null)
         {
-            animator.SetBool(ParamIsRunning, false);
-
-            if (Random.value < 0.5f)
-                animator.SetTrigger(ParamDie1);
-            else
-                animator.SetTrigger(ParamDie2);
+            SetRunning(false);
+            animator.ResetTrigger(ParamAtk1);
+            animator.ResetTrigger(ParamAtk2);
+            animator.SetTrigger(ParamDie);
         }
 
         Destroy(gameObject, 10f);
+    }
+
+    private void SetRunning(bool value)
+    {
+        if (animator != null)
+            animator.SetBool(ParamIsRunning, value);
     }
 }

@@ -77,7 +77,7 @@ public class FirstPersonMovement : MonoBehaviour
     public AudioClip[] attackGrunts;   // atkGrunt1 - atkGrunt8
     public AudioClip[] getHitClips;    // getHit1 - getHit2
 
-    private Rigidbody rigidbody;
+    private Rigidbody rb;
     private AudioSource audioSource;
     private PlayerHealth playerHealth;
 
@@ -98,7 +98,7 @@ public class FirstPersonMovement : MonoBehaviour
 
     void Awake()
     {
-        rigidbody = GetComponent<Rigidbody>();
+        rb = GetComponent<Rigidbody>();
         audioSource = GetComponent<AudioSource>();
         playerHealth = GetComponent<PlayerHealth>();
 
@@ -212,7 +212,7 @@ public class FirstPersonMovement : MonoBehaviour
                 Debug.Log($"[FPM] Player pos={transform.position}");
                 if (cameraTransform != null)
                     Debug.Log($"[FPM] Camera pos={cameraTransform.position}");
-                Debug.Log($"[FPM] Rigidbody vel before jump={rigidbody.linearVelocity}");
+                Debug.Log($"[FPM] Rigidbody vel before jump={GetComponent<Rigidbody>().linearVelocity}");
                 Debug.Log($"[FPM] grounded={(groundCheck != null ? groundCheck.isGrounded.ToString() : "null groundCheck")}");
             }
         }
@@ -435,13 +435,13 @@ public class FirstPersonMovement : MonoBehaviour
     {
         if (!canControl)
         {
-            rigidbody.linearVelocity = Vector3.zero;
+            rb.linearVelocity = Vector3.zero;
             return;
         }
 
         if (uiMode)
         {
-            rigidbody.linearVelocity = new Vector3(0f, rigidbody.linearVelocity.y, 0f);
+            rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
             return;
         }
 
@@ -460,7 +460,7 @@ public class FirstPersonMovement : MonoBehaviour
         Vector3 moveDir = (right * currentHorizontalInput + forward * currentVerticalInput).normalized;
         Vector3 velocity = moveDir * targetMovingSpeed;
 
-        float yVelocity = rigidbody.linearVelocity.y;
+        float yVelocity = rb.linearVelocity.y;
         Physics.gravity = new Vector3(0, -20f, 0);
 
         if (jumpQueued)
@@ -473,16 +473,16 @@ public class FirstPersonMovement : MonoBehaviour
             if (enableDebugLogs)
             {
                 Debug.Log($"[FPM] Applying jump velocity={jumpVelocity}");
-                Debug.Log($"[FPM] Rigidbody vel pre-apply={rigidbody.linearVelocity}");
+                Debug.Log($"[FPM] Rigidbody vel pre-apply={rb.linearVelocity}");
                 DebugPosition("JumpApply");
             }
         }
 
-        rigidbody.linearVelocity = new Vector3(velocity.x, yVelocity, velocity.z);
+        rb.linearVelocity = new Vector3(velocity.x, yVelocity, velocity.z);
 
-        if (enableDebugLogs && (float.IsNaN(rigidbody.linearVelocity.x) ||
-                                float.IsNaN(rigidbody.linearVelocity.y) ||
-                                float.IsNaN(rigidbody.linearVelocity.z)))
+        if (enableDebugLogs && (float.IsNaN(rb.linearVelocity.x) ||
+                                float.IsNaN(rb.linearVelocity.y) ||
+                                float.IsNaN(rb.linearVelocity.z)))
         {
             Debug.LogError("[FPM] Rigidbody velocity became NaN!");
         }
@@ -544,7 +544,7 @@ public class FirstPersonMovement : MonoBehaviour
 
     private void EmergencyReset()
     {
-        rigidbody.linearVelocity = Vector3.zero;
+        rb.linearVelocity = Vector3.zero;
         transform.position = emergencyResetPosition;
 
         if (cameraTransform != null)
@@ -564,7 +564,7 @@ public class FirstPersonMovement : MonoBehaviour
         if (!enableDebugLogs) return;
 
         string camPos = cameraTransform != null ? cameraTransform.position.ToString() : "null";
-        Debug.Log($"[FPM:{label}] scene={SceneManager.GetActiveScene().name} playerPos={transform.position} camPos={camPos} vel={rigidbody.linearVelocity}");
+        Debug.Log($"[FPM:{label}] scene={SceneManager.GetActiveScene().name} playerPos={transform.position} camPos={camPos} vel={rb.linearVelocity}");
     }
 
     public void UpdateAttack()
@@ -588,8 +588,8 @@ public class FirstPersonMovement : MonoBehaviour
         if (runAudioSource != null && runAudioSource.isPlaying)
             runAudioSource.Stop();
 
-        if (rigidbody != null)
-            rigidbody.linearVelocity = Vector3.zero;
+        if (rb != null)
+            rb.linearVelocity = Vector3.zero;
 
         UpdateAnimationStates(0f, 0f);
     }
@@ -610,8 +610,8 @@ public class FirstPersonMovement : MonoBehaviour
         if (runAudioSource != null)
             runAudioSource.Stop();
 
-        if (rigidbody != null)
-            rigidbody.linearVelocity = Vector3.zero;
+        if (rb != null)
+            rb.linearVelocity = Vector3.zero;
 
         UpdateAttack();
         SetUIMode(false);

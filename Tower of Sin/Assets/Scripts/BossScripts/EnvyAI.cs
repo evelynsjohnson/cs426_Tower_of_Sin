@@ -1,3 +1,4 @@
+using UnityEngine.Audio;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -18,21 +19,15 @@ public class EnvyAI : MonoBehaviour
     [SerializeField] private AudioClip circleSpawnClip;
     [SerializeField][Range(0f, 1f)] private float circleSpawnVolume = 1f;
 
-    [Header("Boss Light Colors")]
     [SerializeField] private Color aliveLightColor = Color.green;
 
-    [Header("Boss Audio")]
     [SerializeField] private AudioClip ticktockLoop;
     [SerializeField] private AudioClip robotNoise;
     [SerializeField] private AudioClip robotNoise2;
     [SerializeField] private AudioClip introAudio;
     [SerializeField] private AudioClip phaseTwoAudio;
     [SerializeField] private AudioClip deathAudio;
-    [SerializeField] private AudioClip attackAudio1;
-    [SerializeField] private AudioClip attackAudio2;
-    [SerializeField] private AudioClip attackAudio3;
-    [SerializeField] private AudioClip attackAudio4;
-    [SerializeField] private AudioClip attackAudio5;
+    [SerializeField] public List<AudioClip> attackVoiceClips = new List<AudioClip>();
     [SerializeField] private AudioClip bossMusicClip;
     [SerializeField][Range(0f, 1f)] private float bossMusicVolume = 1f;
 
@@ -46,7 +41,6 @@ public class EnvyAI : MonoBehaviour
     [SerializeField] private float audioMinDistance = 2f;
     [SerializeField] private float audioMaxDistance = 30f;
 
-    [Header("Boss Stats")]
     [SerializeField] private float baseMaxHealth = 650f;
     private float currentHealth;
     private float maxHealth;
@@ -64,19 +58,19 @@ public class EnvyAI : MonoBehaviour
     [SerializeField] private float maxTeleportHeightDifference = 1.5f;
     [SerializeField] private int teleportAttempts = 20;
 
-    [Header("Attack Timing")]
+    [SerializeField] private AudioMixerGroup sfxMixerGroup;
+    [SerializeField] private AudioMixerGroup narrationMixerGroup;
+
     [SerializeField] private float delayAfterTeleport = 2f;
     [SerializeField] private string attackTriggerName = "attack1";
     [SerializeField] private Vector3 circleSpawnOffset = Vector3.zero;
 
-    [Header("Phase Behavior")]
     [SerializeField] private float engageRange = 15f;
     [SerializeField] private float attackCooldown = 7f;
     [SerializeField] private float phase1DelayAfterEachCircleEnds = 2f;
     [SerializeField] private float phase2DelayBetweenSpawns = 1f;
     [SerializeField] private float phase2DelayAfterLastCircleEnds = 2f;
 
-    [Header("Circle Damage")]
     [SerializeField] private float circleDelayBeforeHit = 1.2f;
     [SerializeField] private float circleDamageRadius = 4.75f;
     [SerializeField] private float circleDamage = 30f;
@@ -114,7 +108,6 @@ public class EnvyAI : MonoBehaviour
     private bool introStarted = false;
     private bool introFinished = false;
 
-    private readonly List<AudioClip> attackVoiceClips = new List<AudioClip>();
     private int nextAttackVoiceIndex = 0;
 
     private Renderer[] cachedRenderers;
@@ -144,7 +137,6 @@ public class EnvyAI : MonoBehaviour
         FindPlayerIfNeeded();
         SetupAudioSources();
         CacheRenderers();
-        BuildAttackVoiceList();
     }
 
     private void Start()
@@ -203,10 +195,10 @@ public class EnvyAI : MonoBehaviour
 
     private void SetupAudioSources()
     {
-        ticktockSource = Create3DAudioSource("TicktockSource");
-        robotNoiseSource = Create3DAudioSource("RobotNoiseSource");
-        robotNoise2Source = Create3DAudioSource("RobotNoise2Source");
-        voiceSource = Create3DAudioSource("VoiceSource");
+        ticktockSource = Create3DAudioSource("TicktockSource", sfxMixerGroup);
+        robotNoiseSource = Create3DAudioSource("RobotNoiseSource", sfxMixerGroup);
+        robotNoise2Source = Create3DAudioSource("RobotNoise2Source", sfxMixerGroup);
+        voiceSource = Create3DAudioSource("VoiceSource", narrationMixerGroup);
 
         if (voiceSource != null)
         {
@@ -216,7 +208,7 @@ public class EnvyAI : MonoBehaviour
         }
     }
 
-    private AudioSource Create3DAudioSource(string sourceName)
+    private AudioSource Create3DAudioSource(string sourceName, AudioMixerGroup mixerGroup)
     {
         GameObject child = new GameObject(sourceName);
         child.transform.SetParent(transform, false);
@@ -229,6 +221,9 @@ public class EnvyAI : MonoBehaviour
         source.minDistance = audioMinDistance;
         source.maxDistance = audioMaxDistance;
         source.dopplerLevel = 0f;
+
+        source.outputAudioMixerGroup = mixerGroup;
+
         return source;
     }
 
@@ -252,17 +247,6 @@ public class EnvyAI : MonoBehaviour
                     originalMaterialColors[mat] = mat.GetColor("_Color");
             }
         }
-    }
-
-    private void BuildAttackVoiceList()
-    {
-        attackVoiceClips.Clear();
-
-        if (attackAudio1 != null) attackVoiceClips.Add(attackAudio1);
-        if (attackAudio2 != null) attackVoiceClips.Add(attackAudio2);
-        if (attackAudio3 != null) attackVoiceClips.Add(attackAudio3);
-        if (attackAudio4 != null) attackVoiceClips.Add(attackAudio4);
-        if (attackAudio5 != null) attackVoiceClips.Add(attackAudio5);
     }
 
     private void StartAmbientBossAudio()
@@ -726,7 +710,23 @@ public class EnvyAI : MonoBehaviour
         GameObject circle = Instantiate(envycirclePrefab, spawnPos, Quaternion.identity);
 
         if (circleSpawnClip != null)
-            AudioSource.PlayClipAtPoint(circleSpawnClip, spawnPos, circleSpawnVolume);
+        {
+            GameObject audioObj = new GameObject("CircleSpawnSFX");
+            audioObj.transform.position = spawnPos;
+
+            AudioSource source = audioObj.AddComponent<AudioSource>();
+            source.clip = circleSpawnClip;
+            source.volume = circleSpawnVolume;
+            source.outputAudioMixerGroup = sfxMixerGroup;
+            source.spatialBlend = 1f;
+            source.rolloffMode = AudioRolloffMode.Logarithmic;
+            source.minDistance = audioMinDistance;
+            source.maxDistance = audioMaxDistance;
+            source.dopplerLevel = 0f;
+
+            source.Play();
+            Destroy(audioObj, circleSpawnClip.length + 0.25f);
+        }
 
         return circle;
     }

@@ -9476,14 +9476,17 @@ MonoBehaviour:
   ticktockLoop: {fileID: 8300000, guid: b3e5eb52631215049b63a5c8245684b4, type: 3}
   robotNoise: {fileID: 8300000, guid: aad691b963d3a244293dd8c41203a234, type: 3}
   robotNoise2: {fileID: 8300000, guid: 2b5552d5b18069e41866ca816a2b7066, type: 3}
-  introAudio: {fileID: 8300000, guid: 2a45fd7fda5f4ff42b8959c69142e649, type: 3}
-  phaseTwoAudio: {fileID: 8300000, guid: ce7d0a53bfc6fe94396b14f9150d459f, type: 3}
-  deathAudio: {fileID: 8300000, guid: 2a408c215b370f1438ad6989bcfeec8c, type: 3}
-  attackAudio1: {fileID: 8300000, guid: 9f55e243fb1c082469c3d36ec484a37e, type: 3}
-  attackAudio2: {fileID: 8300000, guid: 1d1b25c746ccaac41bd2c9c95aa0e9bb, type: 3}
-  attackAudio3: {fileID: 0}
-  attackAudio4: {fileID: 0}
-  attackAudio5: {fileID: 0}
+  introAudio: {fileID: 8300000, guid: 106c809339267544daf73439e2b06482, type: 3}
+  phaseTwoAudio: {fileID: 8300000, guid: 0c8ce3a77b9a59d4cbc151c4b4e206e0, type: 3}
+  deathAudio: {fileID: 8300000, guid: 57ed6d5f449bea34e96ac1534b2911d6, type: 3}
+  attackVoiceClips:
+  - {fileID: 8300000, guid: 39200f41cf881ba4f9e48571d29340f9, type: 3}
+  - {fileID: 8300000, guid: f3e1c11e2e9192248b061fde4d1a9358, type: 3}
+  - {fileID: 8300000, guid: 08e5e51dd7d61cb4ea6d6500d2c339fc, type: 3}
+  - {fileID: 8300000, guid: ab4cd468bdbf9ba42bf43f7085207cca, type: 3}
+  - {fileID: 8300000, guid: 8c90982d39138a94fbb315dcbea38960, type: 3}
+  - {fileID: 8300000, guid: 53211920446ccfb4b9073324cd4d55f0, type: 3}
+  - {fileID: 8300000, guid: fe7f6cacc5e31a542bf31650d5928822, type: 3}
   bossMusicClip: {fileID: 8300000, guid: ac46664cd57ac054492fdf44fa4a15a9, type: 3}
   bossMusicVolume: 0.5
   ticktockVolume: 0.1
@@ -9505,6 +9508,8 @@ MonoBehaviour:
   navMeshSampleDistance: 8
   maxTeleportHeightDifference: 1.5
   teleportAttempts: 20
+  sfxMixerGroup: {fileID: 133451126432789121, guid: 37acf924d13abde49898458ba1054559, type: 2}
+  narrationMixerGroup: {fileID: 5747015506416730578, guid: 37acf924d13abde49898458ba1054559, type: 2}
   delayAfterTeleport: 0.5
   attackTriggerName: attack1
   circleSpawnOffset: {x: 0, y: 0, z: 0}
