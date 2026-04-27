@@ -37,7 +37,7 @@ public class SpawnedItem : MonoBehaviour
             playerUI = FindFirstObjectByType<UIManager>();
 
 
-            playerUI.ShowPickup("Found: " + item.name);
+            playerUI.ShowPickup(item.name);
 
             Destroy(gameObject);
         }

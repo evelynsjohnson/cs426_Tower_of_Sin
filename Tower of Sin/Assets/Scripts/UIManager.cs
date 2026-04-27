@@ -16,6 +16,7 @@ public class UIManager : MonoBehaviour
     private int numPotions;
 
     public TextMeshProUGUI pickupText;
+    public GameObject pickupUI;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -55,10 +56,10 @@ public class UIManager : MonoBehaviour
     private IEnumerator ShowPickupCoroutine(string message)
     {
         pickupText.text = message;
-        pickupText.alpha = 1;
+        pickupUI.SetActive(true);
 
         yield return new WaitForSeconds(2f);
 
-        pickupText.alpha = 0;
+        pickupUI.SetActive(false);
     }
 }
