@@ -1450,6 +1450,14 @@ public class GreedAI : MonoBehaviour
         if (randomVoiceRoutine != null) StopCoroutine(randomVoiceRoutine);
 
         StartCoroutine(HandleDeathSequence());
+
+
+        Collider[] cols = GetComponentsInChildren<Collider>();
+        foreach (Collider col in cols)
+        {
+            col.enabled = false;
+        }
+
     }
 
     private IEnumerator HandleDeathSequence()

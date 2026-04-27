@@ -505,6 +505,14 @@ public class EnvyAI : MonoBehaviour
             arenaController.OnBossDied();
 
         PlayDeathAudioAndFadeBoss();
+
+        Collider[] cols = GetComponentsInChildren<Collider>();
+        foreach (Collider col in cols)
+        {
+            col.enabled = false;
+        }
+
+
     }
 
     private void PlayDeathAudioAndFadeBoss()
