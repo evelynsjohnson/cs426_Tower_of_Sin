@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using UnityEngine.Audio;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -28,6 +29,12 @@ public class NarratorController : MonoBehaviour
     public AudioClip logoSound;
     public List<SentenceAudio> sentenceSequence = new List<SentenceAudio>();
 
+    [Header("Audio After Intro / Skip")]
+    public AudioClip afterIntroClip;
+    public AudioClip finalClip;
+    [Range(0f, 1f)] public float afterIntroVolume = 1f;
+    [Range(0f, 1f)] public float finalClipVolume = 1f;
+
     public CanvasGroup introCanvasGroup;
     public TextMeshProUGUI txt1;
     public TextMeshProUGUI txt2;
@@ -40,6 +47,7 @@ public class NarratorController : MonoBehaviour
     public float fadeDuration = .5f;
     public float betweenTitles = 0.25f;
     public float gapBetweenSentences = 0.05f;
+    public AudioMixerGroup narrationMixerGroup;
 
     [Range(0f, 1f)] public float logoSoundVolume = 0.35f;
     public float logoFadeDelayAfterSoundStarts = 0f;
@@ -53,11 +61,16 @@ public class NarratorController : MonoBehaviour
 
     private bool isPlaying;
     private bool skipRequested;
+    private bool isPlayingEndingAudio;
     private static bool hasPlayed;
 
     private void Start()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
+
+        if (voiceSource != null && narrationMixerGroup != null)
+            voiceSource.outputAudioMixerGroup = narrationMixerGroup;
+
         HideEverything();
         Check(SceneManager.GetActiveScene());
     }
@@ -69,8 +82,8 @@ public class NarratorController : MonoBehaviour
 
     private void Update()
     {
-        if (isPlaying && Input.GetKeyDown(KeyCode.S))
-            Skip();
+        if (isPlaying && !isPlayingEndingAudio && Input.GetKeyDown(KeyCode.S))
+            SkipIntroToEndingAudio();
     }
 
     private void OnSceneLoaded(Scene s, LoadSceneMode m)
@@ -84,6 +97,8 @@ public class NarratorController : MonoBehaviour
 
         isPlaying = false;
         skipRequested = false;
+        isPlayingEndingAudio = false;
+
         HideEverything();
 
         if (voiceSource) voiceSource.Stop();
@@ -117,8 +132,6 @@ public class NarratorController : MonoBehaviour
 
         ResetVisuals();
 
-        if (skipRequested) { End(); yield break; }
-
         if (bgSource != null && introBg != null)
         {
             bgSource.clip = introBg;
@@ -128,51 +141,52 @@ public class NarratorController : MonoBehaviour
         }
 
         yield return Wait(betweenTitles);
-        if (skipRequested) { End(); yield break; }
+        if (skipRequested) yield break;
 
         yield return Title(txt1);
-        if (skipRequested) { End(); yield break; }
+        if (skipRequested) yield break;
 
         yield return Wait(betweenTitles);
-        if (skipRequested) { End(); yield break; }
+        if (skipRequested) yield break;
 
         yield return Title(txt2);
-        if (skipRequested) { End(); yield break; }
+        if (skipRequested) yield break;
 
         yield return Wait(betweenTitles);
-        if (skipRequested) { End(); yield break; }
+        if (skipRequested) yield break;
 
         yield return Title(txt3);
-        if (skipRequested) { End(); yield break; }
+        if (skipRequested) yield break;
 
         if (bgSource != null && bgSource.isPlaying)
         {
             while (bgSource.isPlaying)
             {
-                if (skipRequested) { End(); yield break; }
+                if (skipRequested) yield break;
                 yield return null;
             }
         }
 
         PlayVoice(logoSound, logoSoundVolume);
-        if (skipRequested) { End(); yield break; }
+        if (skipRequested) yield break;
 
         yield return Wait(.25f);
+        if (skipRequested) yield break;
 
         yield return FadeLogo(0f, 3f, 5f);
-        if (skipRequested) { End(); yield break; }
+        if (skipRequested) yield break;
 
         if (voiceSource != null)
         {
             while (voiceSource.isPlaying)
             {
-                if (skipRequested) { End(); yield break; }
+                if (skipRequested) yield break;
                 yield return null;
             }
         }
 
         yield return FadeLogo(3f, 0f, 1f);
-        if (skipRequested) { End(); yield break; }
+        if (skipRequested) yield break;
 
         if (narratorText != null)
         {
@@ -187,22 +201,45 @@ public class NarratorController : MonoBehaviour
 
             yield return TypeAppend(s.sentence, s.clip);
 
-            if (skipRequested)
-            {
-                End();
-                yield break;
-            }
+            if (skipRequested) yield break;
 
             yield return Wait(gapBetweenSentences);
 
-            if (skipRequested)
-            {
-                End();
-                yield break;
-            }
+            if (skipRequested) yield break;
         }
 
         yield return FadeCanvas(introCanvasGroup, 1f, 0f, fadeDuration);
+
+        StartCoroutine(EndingAudioSequence());
+    }
+
+    private IEnumerator EndingAudioSequence()
+    {
+        isPlaying = true;
+        isPlayingEndingAudio = true;
+        skipRequested = false;
+
+        HideEverything();
+
+        if (bgSource) bgSource.Stop();
+        if (voiceSource) voiceSource.Stop();
+
+        if (afterIntroClip != null)
+        {
+            PlayVoice(afterIntroClip, afterIntroVolume);
+
+            while (voiceSource != null && voiceSource.isPlaying)
+                yield return null;
+        }
+
+        if (finalClip != null)
+        {
+            PlayVoice(finalClip, finalClipVolume);
+
+            while (voiceSource != null && voiceSource.isPlaying)
+                yield return null;
+        }
+
         End();
     }
 
@@ -233,7 +270,6 @@ public class NarratorController : MonoBehaviour
 
         int nonWhitespaceCount = CountChars(sentence);
         float baseDelay = clip.length / Mathf.Max(1, nonWhitespaceCount);
-
         float letterDelay = baseDelay / Mathf.Max(1f, wordSpeedMultiplier);
 
         PlayVoice(clip, 1f);
@@ -265,6 +301,9 @@ public class NarratorController : MonoBehaviour
     {
         if (voiceSource == null || clip == null)
             return;
+
+        if (narrationMixerGroup != null)
+            voiceSource.outputAudioMixerGroup = narrationMixerGroup;
 
         voiceSource.clip = clip;
         voiceSource.loop = false;
@@ -342,6 +381,7 @@ public class NarratorController : MonoBehaviour
     private IEnumerator Wait(float t)
     {
         float e = 0f;
+
         while (e < t)
         {
             if (skipRequested)
@@ -355,12 +395,15 @@ public class NarratorController : MonoBehaviour
     private int CountChars(string s)
     {
         int c = 0;
+
         foreach (char ch in s)
-            if (!char.IsWhiteSpace(ch)) c++;
+            if (!char.IsWhiteSpace(ch))
+                c++;
+
         return c;
     }
 
-    private void Skip()
+    private void SkipIntroToEndingAudio()
     {
         skipRequested = true;
         StopAllCoroutines();
@@ -368,13 +411,14 @@ public class NarratorController : MonoBehaviour
         if (voiceSource) voiceSource.Stop();
         if (bgSource) bgSource.Stop();
 
-        End();
+        StartCoroutine(EndingAudioSequence());
     }
 
     private void End()
     {
         isPlaying = false;
         skipRequested = false;
+        isPlayingEndingAudio = false;
 
         if (pauseGameplayDuringCutscene)
             Time.timeScale = 1f;

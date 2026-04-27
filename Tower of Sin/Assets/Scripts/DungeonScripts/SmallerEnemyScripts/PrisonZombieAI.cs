@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.Audio;
 
 [RequireComponent(typeof(AudioSource))]
 [RequireComponent(typeof(Rigidbody))]
@@ -55,6 +56,7 @@ public class PrisonZombieAI : MonoBehaviour
     public AudioClip idleSound;
     public AudioClip walkSound;
     public AudioClip roarSound;
+    public AudioMixerGroup sfxMixerGroup;
 
     [Header("References")]
     public Animator animator;
@@ -100,17 +102,20 @@ public class PrisonZombieAI : MonoBehaviour
         baseDamageToPlayer = damageToPlayer;
         baseAttackCooldown = attackCooldown;
 
+
         rb = GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
         rb.isKinematic = false;
 
         sfxAudioSource = GetComponent<AudioSource>();
+        sfxAudioSource.outputAudioMixerGroup = sfxMixerGroup;
         sfxAudioSource.spatialBlend = 1f;
         sfxAudioSource.rolloffMode = AudioRolloffMode.Linear;
         sfxAudioSource.minDistance = 2f;
         sfxAudioSource.maxDistance = 8f;
 
         walkAudioSource = gameObject.AddComponent<AudioSource>();
+        walkAudioSource.outputAudioMixerGroup = sfxMixerGroup;
         walkAudioSource.spatialBlend = 1f;
         walkAudioSource.rolloffMode = AudioRolloffMode.Linear;
         walkAudioSource.minDistance = 2f;

@@ -13811,6 +13811,10 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 148c2cf3117b6214fa5a34a60af80ba0, type: 3}
   - sentence: Only then shall you leave this place.
     clip: {fileID: 8300000, guid: ba5c247c70734e5418476255dbacc035, type: 3}
+  afterIntroClip: {fileID: 8300000, guid: c92d7639529389746b27e0d657edcd92, type: 3}
+  finalClip: {fileID: 8300000, guid: 75114c4c55ec3094f86687627446f41c, type: 3}
+  afterIntroVolume: 1
+  finalClipVolume: 1
   introCanvasGroup: {fileID: 127328566}
   txt1: {fileID: 1562080753}
   txt2: {fileID: 902806730}
@@ -36570,7 +36574,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 133451126432789121, guid: 37acf924d13abde49898458ba1054559, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0

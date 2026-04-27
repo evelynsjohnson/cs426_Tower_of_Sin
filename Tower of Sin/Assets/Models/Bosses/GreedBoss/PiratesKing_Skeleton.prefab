@@ -2405,13 +2405,13 @@ MonoBehaviour:
   bossSpawnPoint: {fileID: 0}
   bossSpawnPointLedge: {fileID: 0}
   wakeRange: 15
-  attackRange: 7
+  attackRange: 6
   phase4MinDistance: 7
   faceSpeed: 10
-  baseMaxHP: 800
-  baseAttackDamage: 15
-  attack1SweepSteps: 25
-  attack1SweepDamageWindow: 0.35
+  baseMaxHP: 700
+  baseAttackDamage: 10
+  attack1SweepSteps: 30
+  attack1SweepDamageWindow: 0.3
   attack1TelegraphTime: 1.1
   attack1ActiveTime: 0.4
   attack1Cooldown: 1
@@ -2425,15 +2425,15 @@ MonoBehaviour:
   version1BurstGap: 0.2
   version2LightGap: 0.6
   version2DetonationGap: 0.6
-  version2PauseBeforeReverse: 0
-  phase2LoopPause: 0
+  version2PauseBeforeReverse: 1
+  phase2LoopPause: 1
   explosionPrefab: {fileID: 1819053320288612861, guid: d67aaed3dcf449b4daa3ef9b53904d01, type: 3}
   phase4LoopPause: 7
   skeletonPrefab: {fileID: 6288716307037633073, guid: 658cc4ba203db14409170198089fa19d, type: 3}
-  phase4MinSoldiersPerSpawn: 2
-  phase4MaxSoldiersPerSpawn: 6
-  phase4MinSoldierSpawnInterval: 8
-  phase4MaxSoldierSpawnInterval: 10
+  phase4MinSoldiersPerSpawn: 0
+  phase4MaxSoldiersPerSpawn: 3
+  phase4MinSoldierSpawnInterval: 10
+  phase4MaxSoldierSpawnInterval: 15
   navmeshSpawnRadius: 30
   navmeshSampleRadius: 8
   bossHealthBarFill: {fileID: 0}

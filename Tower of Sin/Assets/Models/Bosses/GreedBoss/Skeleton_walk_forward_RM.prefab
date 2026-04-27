@@ -2575,13 +2575,13 @@ MonoBehaviour:
   currentHP: 0
   currentATK: 0
   maxHP: 0
-  walkSpeed: 2
-  runSpeed: 2
+  walkSpeed: 1
+  runSpeed: 1
   attackRange: 2
   runDistance: 8
   rotationSpeed: 8
   stopDistanceBuffer: 0.15
-  attackCooldown: 3
+  attackCooldown: 5
   canDamagePlayer: 1
   spawnLowerAmount: 0
   crawlUpDuration: 0

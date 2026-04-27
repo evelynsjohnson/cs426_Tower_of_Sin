@@ -1,23 +1,28 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class PortalTeleporter : MonoBehaviour
 {
     private string sceneToLoad;
-    private static bool isTeleporting = false;
+
+    private static float lastTeleportTime = -999f; // persists across scenes
+    private float teleportCooldown = 5f;
 
     private void OnTriggerEnter(Collider other)
     {
         FirstPersonMovement player = other.GetComponentInParent<FirstPersonMovement>();
 
-        if (player == null || isTeleporting)
+        if (player == null)
             return;
 
         // only let the actual root object trigger it
         if (player.gameObject != other.transform.root.gameObject)
             return;
 
-        isTeleporting = true;
+        if (Time.time - lastTeleportTime < teleportCooldown)
+            return;
+
+        lastTeleportTime = Time.time;
 
         string curSceneName = SceneManager.GetActiveScene().name;
 
@@ -29,7 +34,8 @@ public class PortalTeleporter : MonoBehaviour
                 sceneToLoad = "Boss_Scene";
             else
                 sceneToLoad = "Dungeon_Scene";
-                Debug.Log("Teleported to dungeon scene: " + FloorTextController.floorNumber);
+
+            Debug.Log("Teleported to dungeon scene: " + FloorTextController.floorNumber);
         }
         else if (curSceneName == "Boss_Scene")
         {
@@ -47,10 +53,5 @@ public class PortalTeleporter : MonoBehaviour
         }
 
         SceneManager.LoadScene(sceneToLoad);
-    }
-
-    private void OnDisable()
-    {
-        isTeleporting = false;
     }
 }

@@ -25,7 +25,18 @@ public class PortalManager : MonoBehaviour
 
             if (teleporter != null)
             {
-                teleporter.gameObject.SetActive(isWinning);
+                GameObject tpObj = teleporter.gameObject;
+
+                // Toggle active (visuals)
+                tpObj.SetActive(isWinning);
+
+                // Disable ALL colliders (this is the important part)
+                Collider[] cols = tpObj.GetComponentsInChildren<Collider>(true);
+                foreach (Collider col in cols)
+                {
+                    col.enabled = isWinning;
+                    col.isTrigger = isWinning;
+                }
             }
         }
     }
