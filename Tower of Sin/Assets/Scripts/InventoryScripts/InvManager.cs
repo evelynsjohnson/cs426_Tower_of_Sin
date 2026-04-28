@@ -19,6 +19,7 @@ public class InvManager : MonoBehaviour
 
     public static InvManager Instance;
 
+    //Fields for where the items will show as "equiped" on the player
     public RawImage helmet;
     public RawImage chest;
     public RawImage pant;
@@ -28,6 +29,7 @@ public class InvManager : MonoBehaviour
     public RawImage ring1;
     public RawImage ring2;
 
+    //Basic textures to show when no items equiped
     public Texture helmetBase;
     public Texture chestBase;
     public Texture pantBase;
@@ -43,11 +45,11 @@ public class InvManager : MonoBehaviour
     public TextMeshProUGUI finalDefenseText; //Inv UI final defense text
     public TextMeshProUGUI finalHealthText; //Inv UI final health text
 
-    private PlayerHealth healthManager;
+    private PlayerHealth healthManager; //Used to update max health
 
-    private FirstPersonMovement attackManager;
+    private FirstPersonMovement attackManager; //Used to update attack damage
 
-    public List<ItemData> inventory = new List<ItemData>();
+    public List<ItemData> inventory = new List<ItemData>(); //List containing items in player inventory
 
     void OnEnable()
     {
@@ -95,15 +97,15 @@ public class InvManager : MonoBehaviour
         switch (item.type)
         {
             case ItemType.Helmet:
-                if (helmet.texture.Equals(item.icon)) //uneqip items
+                if (helmet.texture.Equals(item.icon)) //Change slot to default texture
                 {
                     helmet.texture = helmetBase;
                 }
-                else
+                else //change slot to item icon
                 {
                     helmet.texture = item.icon;
                 }
-                updateStats(item, helmet.texture.Equals(item.icon));
+                updateStats(item, helmet.texture.Equals(item.icon)); //changes stats text based on if equipping (+) or unequiping (-)
                 break;
             case ItemType.Chest:
                 if (chest.texture.Equals(item.icon))
@@ -172,16 +174,18 @@ public class InvManager : MonoBehaviour
                 updateStats(item, ring1.texture.Equals(item.icon));
                 break;
         }
+        //updates max health
         healthManager = GetComponentInParent<PlayerHealth>();
         healthManager.UpdateHealth();
 
+        //updates attack damage
         attackManager = GetComponentInParent<FirstPersonMovement>();
         attackManager.UpdateAttack();
     }
 
     private void updateStats(ItemData item, bool add)
     {
-        if (!add)
+        if (!add) //if equipping an item, add item stats
         {
             attackBonusText.text = "+" + (float.Parse(attackBonusText.text) - item.damage).ToString();
             defenseBonusText.text = "+" + (float.Parse(defenseBonusText.text) - item.defense).ToString();
@@ -191,7 +195,7 @@ public class InvManager : MonoBehaviour
             finalDefenseText.text = "+" + (float.Parse(finalDefenseText.text) - item.defense).ToString();
             finalHealthText.text = "+" + (float.Parse(finalHealthText.text) - item.health).ToString();
         }
-        else
+        else //if unequipping na item, subtract item stats
         {
             attackBonusText.text = "+" + (float.Parse(attackBonusText.text) + item.damage).ToString();
             defenseBonusText.text = "+" + (float.Parse(defenseBonusText.text) + item.defense).ToString();
@@ -204,6 +208,7 @@ public class InvManager : MonoBehaviour
 
     }
 
+    //add an item to inventory list
     public void AddItem(ItemData item)
     {
         inventory.Add(item);

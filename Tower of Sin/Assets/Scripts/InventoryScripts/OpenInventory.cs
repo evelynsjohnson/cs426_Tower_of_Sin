@@ -90,18 +90,27 @@ public class OpenInventory : MonoBehaviour
         inventory = manager.getInventory();
 
         int index = 0;
+
+        //goes through each item slot or until through every item in inventory
         foreach (Transform row in slots.transform)
         {
             foreach (Transform slot in row)
             {
                 if (index >= inventory.Count) return;
+
+                //changes slot image to item icon
                 RawImage image = slot.GetComponent<RawImage>();
                 image.texture = inventory[index].icon;
+
+                //slots are set to transparent images by default, this "un transparents" them
                 UnityEngine.Color temp = image.color;
                 temp.a = 1.0f;
                 image.color = temp;
+
+                //sets the item data for the button
                 ItemButton button = slot.GetComponent<ItemButton>();
                 button.item = inventory[index];
+
                 index++;
             }
         }

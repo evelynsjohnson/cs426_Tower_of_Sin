@@ -44,11 +44,13 @@ public class ItemButton : MonoBehaviour, IPointerClickHandler, IPointerEnterHand
             itemStatsPanel.SetActive(true);
 
             string itemText = item.name + "\nATK: +" + item.damage + "\nDEF: +" + item.defense + "\nHP: +" + item.health;
-
             itemStatsText.text = itemText;
+
+            //changes color of shown icon based on item rarity
             UnityEngine.Color hue = getColor(item.rank);
             itemPicture.texture = item.icon;
             itemPicture.color = hue;
+
             UnityEngine.Debug.Log("End of trying");
         }
 

@@ -68,13 +68,14 @@ public class OpenChest : MonoBehaviour
 
         audioSource = GetComponent<AudioSource>();
 
-        // Find the player by tag
         GameObject player = GameObject.FindGameObjectWithTag("Player");
 
         if (player != null)
         {
             playerTransform = player.transform;
         }
+
+        //on start get a random item to spawn from list of items
         itmeToSpawn = Random.Range(0, lootItems.Count);
     }
 
@@ -98,28 +99,18 @@ public class OpenChest : MonoBehaviour
 
 
     private IEnumerator ToggleChest()
-
-
     {
         isAnimating = true;
 
         isOpen = !isOpen;
 
-
         UnityEngine.Vector3 startPosition = transform.position;
-
-
         UnityEngine.Vector3 endPosition = isOpen ? targetOpenPosition : closedPosition;
 
-
         Quaternion startRotation = transform.rotation;
-
-
         Quaternion endRotation = isOpen ? targetOpenRotation : closedRotation;
 
-        // Play sound
         AudioClip soundToPlay = isOpen ? chestOpenSound : chestCloseSound;
-
 
         if (soundToPlay != null)
         {
@@ -132,7 +123,6 @@ public class OpenChest : MonoBehaviour
         // Animate the chest
         float elapsedTime = 0f;
 
-
         while (elapsedTime < animationDuration)
         {
             float t = elapsedTime / animationDuration;
@@ -141,8 +131,6 @@ public class OpenChest : MonoBehaviour
             t = Mathf.SmoothStep(0, 1, t);
 
             transform.position = UnityEngine.Vector3.Lerp(startPosition, endPosition, t);
-
-
             transform.rotation = Quaternion.Slerp(startRotation, endRotation, t);
 
             elapsedTime += Time.deltaTime;
@@ -156,7 +144,10 @@ public class OpenChest : MonoBehaviour
 
             ItemData item = lootItems[itmeToSpawn];
 
+            //create the orb
             GameObject droppedItem = Instantiate(itemPrefab, spawnPoint.transform.position, Quaternion.identity);
+
+            //sets the item the orb is holding
             SpawnedItem itemScript = droppedItem.GetComponent<SpawnedItem>();
             itemScript.SetItem(item);
         }

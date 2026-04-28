@@ -18,25 +18,22 @@ public class SpawnedItem : MonoBehaviour
         sphere = GetComponentInChildren<MeshRenderer>();
         particle = GetComponentInChildren<ParticleSystem>();
 
+        //changes the color of the orb
         UnityEngine.Color hue = getColor(item.rank);
         sphere.material.color = hue;
         var par = particle.main;
         par.startColor = hue;
     }
 
-    // Update is called once per frame
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
             inventory = playerTransform.GetComponent<InvManager>();
-
             inventory.AddItem(item);
 
-
             playerUI = FindFirstObjectByType<UIManager>();
-
-
             playerUI.ShowPickup(item.name);
 
             Destroy(gameObject);
